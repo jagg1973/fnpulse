@@ -126,7 +126,7 @@
     ],
     "deployment": {
         "github": {
-            "repository": "",
+            "repository": "https://github.com/jagg1973/fnpulse.git",
             "branch": "main"
         },
         "cloudflare": {
