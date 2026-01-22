@@ -1,0 +1,251 @@
+/* Advertise Page Styles */
+
+/* Hero Section - High Impact */
+.ad-hero {
+    background: linear-gradient(rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.9)), url('../img/market-bg.jpg');
+    /* Fallback / Overlay */
+    background-size: cover;
+    background-position: center;
+    color: white;
+    padding: 6rem 0;
+    text-align: center;
+}
+
+.ad-hero h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    color: #fff;
+    letter-spacing: -0.02em;
+}
+
+.ad-hero .lead {
+    font-size: 1.4rem;
+    color: #cbd5e1;
+    max-width: 700px;
+    margin: 0 auto 2.5rem;
+}
+
+.hero-cta-group {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* Stats Row */
+.stats-container {
+    background-color: white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    margin-top: -3rem;
+    /* Overlap effect */
+    position: relative;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    text-align: center;
+    gap: 2rem;
+}
+
+.stat-item h3 {
+    font-size: 2.5rem;
+    color: var(--accent);
+    font-weight: 800;
+    margin: 0;
+    line-height: 1;
+}
+
+.stat-item p {
+    font-size: 0.95rem;
+    color: #64748b;
+    margin-top: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+}
+
+.stat-item:not(:last-child) {
+    border-right: 1px solid #e2e8f0;
+}
+
+@media (max-width: 992px) {
+    .stats-container {
+        grid-template-columns: repeat(2, 1fr);
+        margin-top: 2rem;
+    }
+
+    .stat-item:nth-child(2) {
+        border-right: none;
+    }
+
+    .stat-item:nth-child(even) {
+        border-right: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .stats-container {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-item:not(:last-child) {
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+}
+
+/* Products/Formats Grid */
+.ad-formats-section {
+    padding: 5rem 0;
+    background-color: #f8fafc;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.section-header h2 {
+    font-size: 2.2rem;
+    color: #1e293b;
+    margin-bottom: 1rem;
+}
+
+.formats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.format-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #e2e8f0;
+}
+
+.format-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.format-preview {
+    height: 200px;
+    background-color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    background-size: cover;
+    background-position: center;
+}
+
+.format-details {
+    padding: 1.5rem;
+}
+
+.format-details h3 {
+    margin: 0 0 0.5rem;
+    color: #334155;
+}
+
+.format-details p {
+    color: #64748b;
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+}
+
+.format-specs {
+    font-size: 0.85rem;
+    color: #475569;
+    background-color: #f1f5f9;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+/* Audience Section */
+.audience-section {
+    padding: 5rem 0;
+}
+
+.audience-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+.demographics-list li {
+    margin-bottom: 1rem;
+    padding-left: 2rem;
+    position: relative;
+    font-size: 1.1rem;
+    color: #475569;
+}
+
+.demographics-list li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-weight: bold;
+}
+
+/* Lead Form Section */
+.contact-sales-section {
+    background-color: #1e293b;
+    color: white;
+    padding: 5rem 0;
+}
+
+.sales-form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 2.5rem;
+    border-radius: 8px;
+    color: #1e293b;
+}
+
+.sales-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.sales-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.sales-form input,
+.sales-form select,
+.sales-form textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    font-family: inherit;
+}
+
+.btn-submit {
+    width: 100%;
+    background-color: var(--accent);
+    color: white;
+    font-weight: bold;
+    padding: 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.btn-submit:hover {
+    background-color: #2563eb;
+    /* Slightly darker blue */
+}

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= mode==='create' ? 'New' : 'Edit' %> Article - FNPulse Admin
+    </title>
+    <link rel="stylesheet" href="/public/css/admin.css">
+    <!-- Include a rich text editor -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>FNPulse</h2>
+                <p>Admin Dashboard</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-item">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/articles" class="nav-item active">
+                    <span class="icon">📝</span>
+                    <span>Articles</span>
+                </a>
+                <a href="/authors" class="nav-item">
+                    <span class="icon">👤</span>
+                    <span>Authors</span>
+                </a>
+                <a href="/ads" class="nav-item">
+                    <span class="icon">📢</span>
+                    <span>Ad Banners</span>
+                </a>
+                <a href="/images" class="nav-item">
+                    <span class="icon">🖼️</span>
+                    <span>Images</span>
+                </a>
+                <a href="/settings" class="nav-item">
+                    <span class="icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <div>
+                    <a href="/articles" class="back-link">← Back to Articles</a>
+                    <h1>
+                        <%= mode==='create' ? 'Create New' : 'Edit' %> Article
+                    </h1>
+                </div>
+                <div class="header-actions">
+                    <button type="button" onclick="saveArticle(true)" class="btn btn-secondary">Save Draft</button>
+                    <button type="button" onclick="saveArticle(false)" class="btn btn-primary">Publish</button>
+                </div>
+            </header>
+
+            <form id="articleForm" class="article-form">
+                <!-- Basic Information -->
+                <div class="form-section">
+                    <h3>Basic Information</h3>
+
+                    <div class="form-group">
+                        <label for="title">Article Title *</label>
+                        <input type="text" id="title" name="title" class="form-control"
+                            value="<%= article ? article.title : '' %>" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="category">Category *</label>
+                            <select id="category" name="category" class="form-control" required>
+                                <option value="">Select Category</option>
+                                <option value="Markets" <%=article && article.category==='Markets' ? 'selected' : '' %>
+                                    >Markets</option>
+                                <option value="Economy" <%=article && article.category==='Economy' ? 'selected' : '' %>
+                                    >Economy</option>
+                                <option value="Technology" <%=article && article.category==='Technology' ? 'selected'
+                                    : '' %>>Technology</option>
+                                <option value="Cryptocurrency" <%=article && article.category==='Cryptocurrency'
+                                    ? 'selected' : '' %>>Cryptocurrency</option>
+                                <option value="Stocks" <%=article && article.category==='Stocks' ? 'selected' : '' %>
+                                    >Stocks</option>
+                                <option value="Forex" <%=article && article.category==='Forex' ? 'selected' : '' %>
+                                    >Forex</option>
+                                <option value="Commodities" <%=article && article.category==='Commodities' ? 'selected'
+                                    : '' %>>Commodities</option>
+                                <option value="Bonds" <%=article && article.category==='Bonds' ? 'selected' : '' %>
+                                    >Bonds</option>
+                                <option value="Analysis" <%=article && article.category==='Analysis' ? 'selected' : ''
+                                    %>>Analysis</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="author">Author *</label>
+                            <select id="author" name="author" class="form-control" required>
+                                <option value="">Loading authors...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="excerpt">Excerpt / Lead Paragraph *</label>
+                        <textarea id="excerpt" name="excerpt" class="form-control" rows="3"
+                            required><%= article ? article.excerpt : '' %></textarea>
+                        <small>This will appear as the article lead and in search results</small>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="readTime">Read Time (minutes)</label>
+                            <input type="number" id="readTime" name="readTime" class="form-control"
+                                value="<%= article ? (article.readTime || 5) : 5 %>" min="1">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="publishTime">Publish Time</label>
+                            <input type="text" id="publishTime" name="publishTime" class="form-control"
+                                value="<%= article ? (article.publishTime || '09:00 AM EST') : '09:00 AM EST' %>">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Featured Image -->
+                <div class="form-section">
+                    <h3>Featured Image</h3>
+
+                    <div class="form-group">
+                        <label for="featuredImage">Image URL *</label>
+                        <div class="image-input-group">
+                            <input type="text" id="featuredImage" name="featuredImage" class="form-control"
+                                value="<%= article ? article.featuredImage : '' %>" required>
+                            <button type="button" onclick="openImagePicker()" class="btn btn-secondary">Browse</button>
+                        </div>
+                        <% if (article && article.featuredImage) { %>
+                            <div class="image-preview">
+                                <img src="/site-assets/<%= article.featuredImage %>" alt="Featured image">
+                            </div>
+                            <% } %>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="featuredImageAlt">Image Alt Text</label>
+                        <input type="text" id="featuredImageAlt" name="featuredImageAlt" class="form-control"
+                            value="<%= article ? (article.featuredImageAlt || '') : '' %>">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="featuredImageCaption">Image Caption</label>
+                        <input type="text" id="featuredImageCaption" name="featuredImageCaption" class="form-control"
+                            value="<%= article ? (article.featuredImageCaption || '') : '' %>">
+                    </div>
+                </div>
+
+                <!-- Article Content -->
+                <div class="form-section">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h3>Article Content *</h3>
+                        <div class="editor-mode-toggle">
+                            <button type="button" id="richTextBtn" class="mode-btn active" onclick="switchToRichText()">
+                                📝 Rich Text
+                            </button>
+                            <button type="button" id="htmlBtn" class="mode-btn" onclick="switchToHTML()">
+                                &lt;/&gt; HTML
+                            </button>
+                        </div>
+                    </div>
+                    <div id="editor" style="height: 400px; display: block;">
+                        <%= article && article.content && article.content.body ? article.content.body : '' %>
+                    </div>
+                    <textarea id="htmlEditor"
+                        style="height: 400px; display: none; font-family: monospace; padding: 10px;"
+                        class="form-control"></textarea>
+                    <input type="hidden" id="body" name="body">
+                </div>
+
+                <!-- SEO Settings -->
+                <div class="form-section">
+                    <h3>SEO & Meta Tags</h3>
+
+                    <div class="form-group">
+                        <label for="metaTitle">Meta Title</label>
+                        <input type="text" id="metaTitle" name="metaTitle" class="form-control"
+                            value="<%= article ? (article.title || '') : '' %>" maxlength="60">
+                        <small><span id="metaTitleCount">0</span>/60 characters (Leave empty to use article
+                            title)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="metaDescription">Meta Description *</label>
+                        <textarea id="metaDescription" name="metaDescription" class="form-control" rows="2"
+                            maxlength="160" required><%= article ? article.metaDescription : '' %></textarea>
+                        <small><span id="metaDescCount">0</span>/160 characters</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tickerContent">Ticker News Text</label>
+                        <input type="text" id="tickerContent" name="tickerContent" class="form-control"
+                            value="<%= article ? (article.tickerContent || '') : '' %>">
+                        <small>Leave empty to use default site ticker</small>
+                    </div>
+                </div>
+
+                <!-- Author Bio -->
+                <div class="form-section">
+                    <h3>Author Information</h3>
+
+                    <div class="form-group">
+                        <label for="authorBio">Author Bio</label>
+                        <textarea id="authorBio" name="authorBio" class="form-control"
+                            rows="2"><%= article ? (article.authorBio || '') : '' %></textarea>
+                    </div>
+                </div>
+
+                <!-- Hidden fields for edit mode -->
+                <% if (mode==='edit' && article) { %>
+                    <input type="hidden" name="filename" value="<%= article.filename %>">
+                    <input type="hidden" name="publishDate" value="<%= article.publishDate %>">
+                    <% } %>
+
+                        <!-- Bottom Action Buttons -->
+                        <div class="form-section" style="border-top: 2px solid #e5e7eb; padding-top: 20px;">
+                            <div class="header-actions" style="justify-content: flex-end; gap: 10px;">
+                                <button type="button" onclick="previewArticle()" class="btn btn-secondary">👁️
+                                    Preview</button>
+                                <button type="button" onclick="saveArticle(true)" class="btn btn-secondary">💾 Save
+                                    Draft</button>
+                                <button type="button" onclick="saveArticle(false)" class="btn btn-primary">✅
+                                    Publish</button>
+                            </div>
+                        </div>
+            </form>
+        </main>
+    </div>
+
+    <!-- Image Picker Modal -->
+    <div id="imagePickerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Select Image</h3>
+                <button onclick="closeImagePicker()" class="modal-close">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="imageGrid" class="image-grid">
+                    Loading images...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script src="/public/js/admin.js"></script>
+    <script>
+        // Initialize Quill editor
+        const quill = new Quill('#editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    ['blockquote', 'code-block'],
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    ['link', 'image'],
+                    ['clean']
+                ]
+            }
+        });
+
+        // Set initial content if editing
+        <% if (article && article.content && article.content.body) { %>
+            <% const safeContent = article.content.body.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, ''); %>
+                quill.root.innerHTML = '<%- safeContent %>';
+            // Also initialize the HTML editor with the same content
+            document.getElementById('htmlEditor').value = '<%- safeContent %>';
+        <% } %>
+
+            // Load authors
+            let currentMode = 'richtext';
+        async function loadAuthors() {
+            try {
+                const response = await fetch('/api/authors');
+                const authors = await response.json();
+                const authorSelect = document.getElementById('author');
+
+                authorSelect.innerHTML = '<option value="">Select Author</option>' +
+                    authors.map(author => `<option value="${author.name}">${author.name}</option>`).join('');
+
+                // Set current author if editing
+                <% if (article && article.author) { %>
+                    authorSelect.value = '<%= article.author %>';
+                <% } else { %>
+                    if (authors.length > 0) {
+                        authorSelect.value = authors[0].name;
+                    }
+                <% } %>
+            } catch (error) {
+                console.error('Error loading authors:', error);
+                document.getElementById('author').innerHTML = '<option value="Jesus Guzman">Jesus Guzman</option>';
+            }
+        }
+
+        // HTML mode toggle functions
+        function switchToHTML() {
+            currentMode = 'html';
+            const htmlEditor = document.getElementById('htmlEditor');
+            htmlEditor.value = quill.root.innerHTML;
+            document.getElementById('editor').style.display = 'none';
+            htmlEditor.style.display = 'block';
+            document.getElementById('richTextBtn').classList.remove('active');
+            document.getElementById('htmlBtn').classList.add('active');
+        }
+
+        function switchToRichText() {
+            if (currentMode === 'html') {
+                const htmlEditor = document.getElementById('htmlEditor');
+                quill.root.innerHTML = htmlEditor.value;
+            }
+            currentMode = 'richtext';
+            document.getElementById('htmlEditor').style.display = 'none';
+            document.getElementById('editor').style.display = 'block';
+            document.getElementById('richTextBtn').classList.add('active');
+            document.getElementById('htmlBtn').classList.remove('active');
+        }
+
+        // Initialize
+        loadAuthors();
+
+        // Meta title character count
+        const metaTitle = document.getElementById('metaTitle');
+        const metaTitleCount = document.getElementById('metaTitleCount');
+
+        function updateMetaTitleCount() {
+            metaTitleCount.textContent = metaTitle.value.length;
+        }
+        metaTitle.addEventListener('input', updateMetaTitleCount);
+        updateMetaTitleCount();
+
+        // Meta description character count
+        const metaDesc = document.getElementById('metaDescription');
+        const metaDescCount = document.getElementById('metaDescCount');
+
+        function updateMetaCount() {
+            metaDescCount.textContent = metaDesc.value.length;
+        }
+        metaDesc.addEventListener('input', updateMetaCount);
+        updateMetaCount();
+
+        // Save article
+        async function saveArticle(isDraft) {
+            const form = document.getElementById('articleForm');
+            const formData = new FormData(form);
+
+            // Get content from current editor mode
+            if (currentMode === 'html') {
+                formData.set('body', document.getElementById('htmlEditor').value);
+            } else {
+                formData.set('body', quill.root.innerHTML);
+            }
+
+            // Convert to JSON
+            const data = {};
+            formData.forEach((value, key) => data[key] = value);
+
+            const mode = '<%= mode %>';
+            const url = mode === 'create' ? '/api/articles' : `/api/articles/${data.filename}`;
+            const method = mode === 'create' ? 'POST' : 'PUT';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ Article saved successfully!');
+                    window.location.href = '/articles';
+                } else {
+                    alert('❌ Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        // Image picker
+        async function openImagePicker() {
+            const modal = document.getElementById('imagePickerModal');
+            modal.style.display = 'flex';
+
+            try {
+                const response = await fetch('/api/images/list');
+                const images = await response.json();
+
+                const grid = document.getElementById('imageGrid');
+                grid.innerHTML = images.map(img => `
+                    <div class="image-item" onclick="selectImage('${img.path}')">
+                        <img src="/site-assets/${img.path}" alt="${img.filename}">
+                        <p>${img.filename}</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('imageGrid').innerHTML = 'Error loading images';
+            }
+        }
+
+        function closeImagePicker() {
+            document.getElementById('imagePickerModal').style.display = 'none';
+        }
+
+        function selectImage(path) {
+            document.getElementById('featuredImage').value = path;
+            closeImagePicker();
+        }
+
+        // Close modal on outside click
+        window.onclick = function (event) {
+            const modal = document.getElementById('imagePickerModal');
+            if (event.target === modal) {
+                closeImagePicker();
+            }
+        }
+
+        // Preview article
+        function previewArticle() {
+            const title = document.getElementById('title').value;
+            const category = document.getElementById('category').value;
+            const author = document.getElementById('author').value;
+            const excerpt = document.getElementById('excerpt').value;
+            const featuredImage = document.getElementById('featuredImage').value;
+
+            // Get content from current editor mode
+            let content;
+            if (currentMode === 'html') {
+                content = document.getElementById('htmlEditor').value;
+            } else {
+                content = quill.root.innerHTML;
+            }
+
+            if (!title || !content) {
+                alert('Please add a title and content before previewing');
+                return;
+            }
+
+            // Create preview HTML
+            const previewHTML = `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>${title} - Preview</title>
+                    <link rel="stylesheet" href="/site-assets/css/fnpulse.css">
+                    <style>
+                        .preview-banner {
+                            background: #f59e0b;
+                            color: white;
+                            padding: 10px;
+                            text-align: center;
+                            font-weight: bold;
+                            position: sticky;
+                            top: 0;
+                            z-index: 9999;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="preview-banner">📝 PREVIEW MODE - This is how your article will look</div>
+                    <main class="container article-container" style="margin-top: 20px;">
+                        <div class="breadcrumb">
+                            <a href="#">Home</a> <span>/</span> <a href="#">${category}</a> <span>/</span> <span class="current">${title}</span>
+                        </div>
+                        <div class="article-layout">
+                            <article class="article-main">
+                                <header class="article-header">
+                                    <span class="post-cat-large">${category}</span>
+                                    <h1 class="article-title">${title}</h1>
+                                    <p class="article-lead">${excerpt}</p>
+                                    <div class="author-info">
+                                        <span class="byline">By <a href="#">${author}</a></span>
+                                        <time class="publish-time">Just now</time>
+                                    </div>
+                                </header>
+                                ${featuredImage ? `
+                                <figure class="article-featured-image">
+                                    <img src="/site-assets/${featuredImage}" alt="${title}">
+                                </figure>
+                                ` : ''}
+                                <div class="article-body">
+                                    ${content}
+                                </div>
+                            </article>
+                        </div>
+                    </main>
+                </body>
+                </html>
+            `;
+
+            // Open preview in new window
+            const previewWindow = window.open('', '_blank');
+            previewWindow.document.write(previewHTML);
+            previewWindow.document.close();
+        }
+    </script>
+</body>
+
+</html>

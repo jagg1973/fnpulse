@@ -1,0 +1,8 @@
+node_modules/
+*.log
+.DS_Store
+data/backup/
+
+# Deployment artifacts
+deploy/
+deploy.zip

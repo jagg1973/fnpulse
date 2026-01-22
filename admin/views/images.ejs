@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Images - FNPulse Admin</title>
+    <link rel="stylesheet" href="/public/css/admin.css">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>FNPulse</h2>
+                <p>Admin Dashboard</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-item">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/articles" class="nav-item">
+                    <span class="icon">📝</span>
+                    <span>Articles</span>
+                </a>
+                <a href="/authors" class="nav-item">
+                    <span class="icon">👤</span>
+                    <span>Authors</span>
+                </a>
+                <a href="/ads" class="nav-item">
+                    <span class="icon">📢</span>
+                    <span>Ad Banners</span>
+                </a>
+                <a href="/images" class="nav-item active">
+                    <span class="icon">🖼️</span>
+                    <span>Images</span>
+                </a>
+                <a href="/settings" class="nav-item">
+                    <span class="icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="/site-assets/index.html" target="_blank" class="btn-preview">
+                    <span class="icon">👁️</span>
+                    Preview Site
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Image Library</h1>
+                <button onclick="document.getElementById('imageUpload').click()" class="btn btn-primary">
+                    <span class="icon">⬆️</span>
+                    Upload Images
+                </button>
+            </header>
+
+            <input type="file" id="imageUpload" accept="image/*" multiple style="display: none;"
+                onchange="uploadImages(event)">
+
+            <div class="upload-progress" id="uploadProgress" style="display: none;">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p id="progressText">Uploading...</p>
+            </div>
+
+            <div class="images-grid">
+                <% if (images && images.length> 0) { %>
+                    <% images.forEach(image=> { %>
+                        <div class="image-card">
+                            <div class="image-wrapper">
+                                <img src="<%= image.url %>" alt="<%= image.filename %>">
+                            </div>
+                            <div class="image-info">
+                                <p class="image-name" title="<%= image.filename %>">
+                                    <%= image.filename %>
+                                </p>
+                                <div class="image-actions">
+                                    <button onclick="copyImagePath('<%= image.path %>')" class="btn-icon"
+                                        title="Copy path">
+                                        📋
+                                    </button>
+                                    <button onclick="deleteImage('<%= image.filename %>')" class="btn-icon btn-danger"
+                                        title="Delete">
+                                        🗑️
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <% }) %>
+                            <% } else { %>
+                                <div class="empty-state">
+                                    <span class="empty-icon">🖼️</span>
+                                    <h3>No images yet</h3>
+                                    <p>Upload your first image to get started</p>
+                                    <button onclick="document.getElementById('imageUpload').click()"
+                                        class="btn btn-primary">
+                                        Upload Images
+                                    </button>
+                                </div>
+                                <% } %>
+            </div>
+        </main>
+    </div>
+
+    <script src="/public/js/admin.js"></script>
+    <script>
+        async function uploadImages(event) {
+            const files = event.target.files;
+            if (!files.length) return;
+
+            const progress = document.getElementById('uploadProgress');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+
+            progress.style.display = 'block';
+
+            let completed = 0;
+            const total = files.length;
+
+            for (const file of files) {
+                const formData = new FormData();
+                formData.append('image', file);
+
+                try {
+                    const response = await fetch('/api/images/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (!result.success) {
+                        alert(`Failed to upload ${file.name}: ${result.error}`);
+                    }
+                } catch (error) {
+                    alert(`Error uploading ${file.name}: ${error.message}`);
+                }
+
+                completed++;
+                const percent = (completed / total) * 100;
+                progressFill.style.width = percent + '%';
+                progressText.textContent = `Uploading ${completed} of ${total}...`;
+            }
+
+            progressText.textContent = '✅ Upload complete!';
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
+
+        function copyImagePath(path) {
+            navigator.clipboard.writeText(path).then(() => {
+                alert('✅ Image path copied to clipboard!');
+            }).catch(err => {
+                alert('❌ Failed to copy: ' + err.message);
+            });
+        }
+
+        async function deleteImage(filename) {
+            if (!confirm(`Delete "${filename}"? This cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/images/${filename}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ Image deleted successfully');
+                    location.reload();
+                } else {
+                    alert('❌ Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

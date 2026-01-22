@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= author ? 'Edit' : 'New' %> Author - FNPulse Admin
+    </title>
+    <link rel="stylesheet" href="/public/css/admin.css">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>FNPulse</h2>
+                <p>Admin Dashboard</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-item">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/articles" class="nav-item">
+                    <span class="icon">📝</span>
+                    <span>Articles</span>
+                </a>
+                <a href="/authors" class="nav-item active">
+                    <span class="icon">👤</span>
+                    <span>Authors</span>
+                </a>
+                <a href="/ads" class="nav-item">
+                    <span class="icon">📢</span>
+                    <span>Ad Banners</span>
+                </a>
+                <a href="/images" class="nav-item">
+                    <span class="icon">🖼️</span>
+                    <span>Images</span>
+                </a>
+                <a href="/settings" class="nav-item">
+                    <span class="icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-header">
+                <h1>
+                    <%= author ? 'Edit Author' : 'Add New Author' %>
+                </h1>
+                <a href="/authors" class="btn">Back to Authors</a>
+            </div>
+
+            <form id="authorForm" class="editor-form">
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="name">Full Name *</label>
+                        <input type="text" id="name" name="name" value="<%= author ? author.name : '' %>" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" value="<%= author ? author.email : '' %>">
+                    </div>
+                    <div class="form-group">
+                        <label for="title">Title/Position</label>
+                        <input type="text" id="title" name="title" value="<%= author ? author.title : '' %>"
+                            placeholder="e.g., Senior Financial Reporter">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="bio">Bio</label>
+                        <textarea id="bio" name="bio" rows="4"><%= author ? author.bio : '' %></textarea>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="avatar">Avatar Image Path</label>
+                        <div class="image-input-group">
+                            <input type="text" id="avatar" name="avatar"
+                                value="<%= author ? author.avatar : 'img/author-face.jpg' %>">
+                            <button type="button" onclick="openImagePicker()" class="btn btn-small">Choose
+                                Image</button>
+                        </div>
+                        <small>Upload images in the Images section, then paste the path here</small>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="twitter">Twitter/X Profile URL</label>
+                        <input type="url" id="twitter" name="twitter" value="<%= author ? author.twitter : '' %>"
+                            placeholder="https://twitter.com/username">
+                    </div>
+                    <div class="form-group">
+                        <label for="linkedin">LinkedIn Profile URL</label>
+                        <input type="url" id="linkedin" name="linkedin" value="<%= author ? author.linkedin : '' %>"
+                            placeholder="https://linkedin.com/in/username">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <%= author ? 'Update Author' : 'Create Author' %>
+                    </button>
+                    <a href="/authors" class="btn">Cancel</a>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <!-- Image Picker Modal -->
+    <div id="imagePickerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Select Image</h2>
+                <button onclick="closeImagePicker()" class="close-btn">&times;</button>
+            </div>
+            <div id="imageGrid" class="image-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        const isEditMode = <%= author ? 'true' : 'false' %>;
+        const authorId = '<%= author ? author.id : '' %>';
+
+        document.getElementById('authorForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                title: document.getElementById('title').value,
+                bio: document.getElementById('bio').value,
+                avatar: document.getElementById('avatar').value,
+                twitter: document.getElementById('twitter').value,
+                linkedin: document.getElementById('linkedin').value
+            };
+
+            try {
+                const url = isEditMode ? '/api/authors/' + authorId : '/api/authors';
+                const method = isEditMode ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    window.location.href = '/authors';
+                } else {
+                    const error = await response.json();
+                    alert('Error saving author: ' + error.message);
+                }
+            } catch (error) {
+                alert('Error saving author: ' + error.message);
+            }
+        });
+
+        async function openImagePicker() {
+            const modal = document.getElementById('imagePickerModal');
+            const grid = document.getElementById('imageGrid');
+
+            try {
+                const response = await fetch('/api/images/list');
+                const images = await response.json();
+
+                grid.innerHTML = images.map(img => '<div class="image-item" onclick="selectImage(\'' + img.path + '\')"><img src="/site-assets/' + img.path + '" alt="' + img.filename + '"><p>' + img.filename + '</p></div>').join('');
+
+                modal.style.display = 'flex';
+            } catch (error) {
+                alert('Error loading images: ' + error.message);
+            }
+        }
+
+        function closeImagePicker() {
+            document.getElementById('imagePickerModal').style.display = 'none';
+        }
+
+        function selectImage(path) {
+            document.getElementById('avatar').value = path;
+            closeImagePicker();
+        }
+
+        window.onclick = (event) => {
+            const modal = document.getElementById('imagePickerModal');
+            if (event.target === modal) {
+                closeImagePicker();
+            }
+        };
+    </script>
+</body>
+
+</html>

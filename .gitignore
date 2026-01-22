@@ -1,0 +1,23 @@
+# Node modules
+admin/node_modules/
+admin/*.log
+admin/.DS_Store
+admin/data/backup/
+
+# Deployment artifacts
+admin/deploy/
+admin/deploy.zip
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp files
+*.tmp
+*.bak

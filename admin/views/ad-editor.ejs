@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= ad ? 'Edit' : 'New' %> Ad Banner - FNPulse Admin
+    </title>
+    <link rel="stylesheet" href="/public/css/admin.css">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>FNPulse</h2>
+                <p>Admin Dashboard</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-item">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/articles" class="nav-item">
+                    <span class="icon">📝</span>
+                    <span>Articles</span>
+                </a>
+                <a href="/authors" class="nav-item">
+                    <span class="icon">👤</span>
+                    <span>Authors</span>
+                </a>
+                <a href="/ads" class="nav-item active">
+                    <span class="icon">📢</span>
+                    <span>Ad Banners</span>
+                </a>
+                <a href="/images" class="nav-item">
+                    <span class="icon">🖼️</span>
+                    <span>Images</span>
+                </a>
+                <a href="/settings" class="nav-item">
+                    <span class="icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-header">
+                <h1>
+                    <%= ad ? 'Edit Ad Banner' : 'Add New Ad Banner' %>
+                </h1>
+                <a href="/ads" class="btn">Back to Ad Banners</a>
+            </div>
+
+            <form id="adForm" class="editor-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Banner Name *</label>
+                        <input type="text" id="name" name="name" value="<%= ad ? ad.name : '' %>" required
+                            placeholder="e.g., Header Leaderboard">
+                    </div>
+                    <div class="form-group">
+                        <label for="location">Location *</label>
+                        <select id="location" name="location" required>
+                            <option value="">Select Location</option>
+                            <option value="header" <%=ad && ad.location==='header' ? 'selected' : '' %>>Header</option>
+                            <option value="sidebar" <%=ad && ad.location==='sidebar' ? 'selected' : '' %>>Sidebar
+                            </option>
+                            <option value="article-body" <%=ad && ad.location==='article-body' ? 'selected' : '' %>
+                                >Article Body</option>
+                            <option value="footer" <%=ad && ad.location==='footer' ? 'selected' : '' %>>Footer</option>
+                            <option value="between-articles" <%=ad && ad.location==='between-articles' ? 'selected' : ''
+                                %>>Between Articles</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="size">Size</label>
+                        <select id="size" name="size">
+                            <option value="728x90" <%=ad && ad.size==='728x90' ? 'selected' : '' %>>728x90 (Leaderboard)
+                            </option>
+                            <option value="300x250" <%=ad && ad.size==='300x250' ? 'selected' : '' %>>300x250 (Medium
+                                Rectangle)</option>
+                            <option value="336x280" <%=ad && ad.size==='336x280' ? 'selected' : '' %>>336x280 (Large
+                                Rectangle)</option>
+                            <option value="300x600" <%=ad && ad.size==='300x600' ? 'selected' : '' %>>300x600 (Half
+                                Page)</option>
+                            <option value="970x250" <%=ad && ad.size==='970x250' ? 'selected' : '' %>>970x250
+                                (Billboard)</option>
+                            <option value="custom" <%=ad && !['728x90', '300x250' , '336x280' , '300x600' , '970x250'
+                                ].includes(ad.size) ? 'selected' : '' %>>Custom</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="type">Type *</label>
+                        <select id="type" name="type" required onchange="updateContentField()">
+                            <option value="image" <%=ad && ad.type==='image' ? 'selected' : '' %>>Image Banner</option>
+                            <option value="code" <%=ad && ad.type==='code' ? 'selected' : '' %>>HTML Code</option>
+                            <option value="adsense" <%=ad && ad.type==='adsense' ? 'selected' : '' %>>Google AdSense
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="content" id="contentLabel">Image URL or HTML Code *</label>
+                        <textarea id="content" name="content" rows="5" required><%= ad ? ad.content : '' %></textarea>
+                        <small id="contentHelp">For images, provide the image path. For HTML/AdSense, paste the full
+                            code.</small>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="link">Link URL</label>
+                        <input type="url" id="link" name="link" value="<%= ad ? ad.link : '' %>"
+                            placeholder="https://example.com">
+                        <small>Only for image banners</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="altText">Alt Text</label>
+                        <input type="text" id="altText" name="altText" value="<%= ad ? ad.altText : '' %>"
+                            placeholder="Advertisement">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label>Display On Pages</label>
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" name="pages" value="all" <%=ad && ad.pages.includes('all')
+                                    ? 'checked' : '' %>>
+                                All Pages
+                            </label>
+                            <label>
+                                <input type="checkbox" name="pages" value="home" <%=ad && ad.pages.includes('home')
+                                    ? 'checked' : '' %>>
+                                Home
+                            </label>
+                            <label>
+                                <input type="checkbox" name="pages" value="articles" <%=ad &&
+                                    ad.pages.includes('articles') ? 'checked' : '' %>>
+                                Articles
+                            </label>
+                            <label>
+                                <input type="checkbox" name="pages" value="category" <%=ad &&
+                                    ad.pages.includes('category') ? 'checked' : '' %>>
+                                Category Pages
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="enabled" name="enabled" <%=ad && ad.enabled ? 'checked' : !ad
+                                ? 'checked' : '' %>>
+                            Enable this banner
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <%= ad ? 'Update Banner' : 'Create Banner' %>
+                    </button>
+                    <a href="/ads" class="btn">Cancel</a>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <script>
+        const isEditMode = <%= ad ? 'true' : 'false' %>;
+        const adId = '<%= ad ? ad.id : '' %>';
+
+        function updateContentField() {
+            const type = document.getElementById('type').value;
+            const label = document.getElementById('contentLabel');
+            const help = document.getElementById('contentHelp');
+
+            if (type === 'image') {
+                label.textContent = 'Image URL *';
+                help.textContent = 'Provide the path to the banner image (e.g., img/banner-728x90.jpg)';
+            } else if (type === 'code') {
+                label.textContent = 'HTML Code *';
+                help.textContent = 'Paste the complete HTML code for the banner';
+            } else if (type === 'adsense') {
+                label.textContent = 'AdSense Code *';
+                help.textContent = 'Paste your Google AdSense code here';
+            }
+        }
+
+        document.getElementById('adForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const pagesCheckboxes = document.querySelectorAll('input[name="pages"]:checked');
+            const pages = Array.from(pagesCheckboxes).map(cb => cb.value);
+
+            if (pages.length === 0) {
+                alert('Please select at least one page to display the banner');
+                return;
+            }
+
+            const formData = {
+                name: document.getElementById('name').value,
+                location: document.getElementById('location').value,
+                size: document.getElementById('size').value,
+                type: document.getElementById('type').value,
+                content: document.getElementById('content').value,
+                link: document.getElementById('link').value,
+                altText: document.getElementById('altText').value,
+                enabled: document.getElementById('enabled').checked,
+                pages: pages
+            };
+
+            try {
+                const url = isEditMode ? '/api/ads/' + adId : '/api/ads';
+                const method = isEditMode ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    window.location.href = '/ads';
+                } else {
+                    const error = await response.json();
+                    alert('Error saving ad banner: ' + error.message);
+                }
+            } catch (error) {
+                alert('Error saving ad banner: ' + error.message);
+            }
+        });
+
+        // Initialize content field label based on current type
+        updateContentField();
+    </script>
+</body>
+
+</html>

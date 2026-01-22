@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - FNPulse Admin</title>
+    <link rel="stylesheet" href="/public/css/admin.css">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>FNPulse</h2>
+                <p>Admin Dashboard</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-item <%= page === 'dashboard' ? 'active' : '' %>">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/articles" class="nav-item <%= page === 'articles' ? 'active' : '' %>">
+                    <span class="icon">📝</span>
+                    <span>Articles</span>
+                </a>
+                <a href="/authors" class="nav-item <%= page === 'authors' ? 'active' : '' %>">
+                    <span class="icon">👤</span>
+                    <span>Authors</span>
+                </a>
+                <a href="/ads" class="nav-item <%= page === 'ads' ? 'active' : '' %>">
+                    <span class="icon">📢</span>
+                    <span>Ad Banners</span>
+                </a>
+                <a href="/images" class="nav-item <%= page === 'images' ? 'active' : '' %>">
+                    <span class="icon">🖼️</span>
+                    <span>Images</span>
+                </a>
+                <a href="/settings" class="nav-item <%= page === 'settings' ? 'active' : '' %>">
+                    <span class="icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="/site-assets/index.html" target="_blank" class="btn-preview">
+                    <span class="icon">👁️</span>
+                    Preview Site
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Dashboard</h1>
+                <p>Welcome to FNPulse Admin</p>
+            </header>
+
+            <div class="dashboard-grid">
+                <!-- Quick Actions -->
+                <div class="card quick-actions">
+                    <h3>Quick Actions</h3>
+                    <div class="action-buttons">
+                        <a href="/articles/new" class="btn btn-primary">
+                            <span class="icon">➕</span>
+                            New Article
+                        </a>
+                        <a href="/images" class="btn btn-secondary">
+                            <span class="icon">⬆️</span>
+                            Upload Image
+                        </a>
+                        <button onclick="pushToGitHub()" class="btn btn-primary"
+                            style="background: linear-gradient(135deg, #24292e 0%, #0969da 100%);">
+                            <span class="icon">📤</span>
+                            Push to GitHub
+                        </button>
+                        <button onclick="updateSite()" class="btn btn-secondary">
+                            <span class="icon">🌐</span>
+                            Update Site
+                        </button>
+                        <button onclick="regenerateAll()" class="btn btn-secondary">
+                            <span class="icon">🔄</span>
+                            Regenerate All
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Site Overview -->
+                <div class="card stats-overview">
+                    <h3>Site Overview</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value">
+                                <%= typeof stats !=='undefined' ? stats.articles : 0 %>
+                            </div>
+                            <div class="stat-label">Total Articles</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">
+                                <%= typeof stats !=='undefined' ? stats.images : 0 %>
+                            </div>
+                            <div class="stat-label">Images</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">
+                                <%= typeof stats !=='undefined' ? stats.categories : 0 %>
+                            </div>
+                            <div class="stat-label">Categories</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">
+                                <%= typeof stats !=='undefined' ? stats.authors : 0 %>
+                            </div>
+                            <div class="stat-label">Authors</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">
+                                <%= typeof stats !=='undefined' ? stats.adBanners : 0 %>
+                            </div>
+                            <div class="stat-label">Ad Banners</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="card recent-activity">
+                    <h3>Getting Started</h3>
+                    <div class="activity-list">
+                        <div class="activity-item">
+                            <span class="activity-icon">📝</span>
+                            <div class="activity-content">
+                                <strong>Create Your First Article</strong>
+                                <p>Click "New Article" to start creating content</p>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">🖼️</span>
+                            <div class="activity-content">
+                                <strong>Upload Images</strong>
+                                <p>Manage your media files in the Images section</p>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">⚙️</span>
+                            <div class="activity-content">
+                                <strong>Configure Settings</strong>
+                                <p>Customize site-wide settings, navigation, and more</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Status -->
+                <div class="card system-status">
+                    <h3>System Status</h3>
+                    <div class="status-list">
+                        <div class="status-item">
+                            <span class="status-indicator success"></span>
+                            <span>Server Running</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-indicator success"></span>
+                            <span>Files Accessible</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-indicator info"></span>
+                            <span>Ready for Deployment</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Git Status -->
+                <div class="card" id="gitStatusCard">
+                    <h3>📦 Git Status</h3>
+                    <div id="gitStatusContent">
+                        <p style="color: #6c757d;">Loading...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3>ℹ️ About This Admin Tool</h3>
+                <p>
+                    This local admin dashboard helps you manage your FNPulse static site efficiently.
+                    All changes are saved directly to your local files. After making updates, simply
+                    upload the modified files to Cloudflare Pages to deploy your changes.
+                </p>
+                <div class="deployment-steps">
+                    <h4>Deployment Workflow:</h4>
+                    <ol>
+                        <li>Create or edit content using this dashboard</li>
+                        <li>Preview your changes locally</li>
+                        <li>Upload the updated <code>/News</code> folder to Cloudflare Pages</li>
+                    </ol>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/public/js/admin.js"></script>
+    <script>
+        // Load dashboard stats
+        fetch('/articles')
+            .then(async (res) => {
+                const html = await res.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                // This is a simplified approach - in real implementation we'd have an API endpoint
+            })
+            .catch(err => console.error('Error loading stats:', err));
+
+        // Load Git status on page load
+        loadGitStatus();
+
+        // Update site (homepage, categories, author pages)
+        async function updateSite() {
+            if (!confirm('This will update the homepage, category pages, and author pages with the latest articles. Continue?')) {
+                return;
+            }
+
+            const btn = event.target.closest('button');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="icon">⏳</span> Updating...';
+
+            try {
+                const response = await fetch('/api/update-site', { method: 'POST' });
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ Site updated successfully! Homepage, categories, and author pages are now current.');
+                } else {
+                    alert('❌ Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span class="icon">🌐</span> Update Site';
+            }
+        }
+
+        // Load Git status
+        async function loadGitStatus() {
+            try {
+                const response = await fetch('/api/git/status');
+                const status = await response.json();
+                
+                const container = document.getElementById('gitStatusContent');
+                
+                if (!status.initialized) {
+                    container.innerHTML = `
+                        <p style="color: #f59e0b; margin-bottom: 12px;">⚠️ Git not initialized</p>
+                        <button onclick="initGit()" class="btn btn-secondary" style="font-size: 14px;">
+                            Initialize Git
+                        </button>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <div style="font-size: 14px; line-height: 1.8;">
+                        <p><strong>Branch:</strong> ${status.branch}</p>
+                        <p><strong>Repository:</strong> ${status.remote}</p>
+                        <p><strong>Status:</strong> ${status.hasChanges ? 
+                            `<span style="color: #f59e0b;">⚠️ ${status.changesCount} uncommitted changes</span>` : 
+                            `<span style="color: #10b981;">✓ Clean</span>`}</p>
+                        <p><strong>Last Commit:</strong> ${status.lastCommit}</p>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading Git status:', error);
+                document.getElementById('gitStatusContent').innerHTML = 
+                    `<p style="color: #ef4444;">Error loading Git status</p>`;
+            }
+        }
+
+        // Initialize Git
+        async function initGit() {
+            if (!confirm('This will initialize a Git repository in your FNPulse folder. Make sure you have configured your GitHub repository URL in Settings first. Continue?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/git/init', { method: 'POST' });
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ Git initialized successfully! Now configure your GitHub repository in Settings.');
+                    loadGitStatus();
+                } else {
+                    alert('❌ Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        // Push to GitHub
+        async function pushToGitHub() {
+            const commitMessage = prompt('Enter commit message:', 'Update site content from admin');
+            if (!commitMessage) return;
+
+            const btn = event.target.closest('button');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="icon">⏳</span> Pushing...';
+
+            try {
+                const response = await fetch('/api/git/push', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ commitMessage })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    if (result.skipped) {
+                        alert('ℹ️ No changes to commit');
+                    } else {
+                        alert(`✅ Successfully pushed to GitHub!\n\nRepository: ${result.repository}\nBranch: ${result.branch}\n\n🚀 Cloudflare Pages will automatically deploy your changes.`);
+                    }
+                    loadGitStatus();
+                } else {
+                    alert('❌ Push failed: ' + result.error);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span class="icon">📤</span> Push to GitHub';
+            }
+        }
+
+        // Deploy to Cloudflare Pages
+        async function deploySite() {
+            if (!confirm('This will deploy your site to Cloudflare Pages. Make sure your site is ready. Continue?')) {
+                return;
+            }
+
+            const btn = event.target.closest('button');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="icon">⏳</span> Deploying...';
+
+            try {
+                const response = await fetch('/api/deploy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ method: 'wrangler' }) // Use 'api' for direct API method
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(`✅ Deployment successful!\n\n${result.message}\n\nURL: ${result.url || 'Check Cloudflare dashboard'}`);
+                } else {
+                    alert('❌ Deployment failed: ' + result.error);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span class="icon">🚀</span> Deploy to CF';
+            }
+        }
+
+        // Regenerate all pages
+        async function regenerateAll() {
+            if (!confirm('This will update navigation and global elements across all pages. Continue?')) {
+                return;
+            }
+
+            const btn = event.target.closest('button');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="icon">⏳</span> Processing...';
+
+            try {
+                const response = await fetch('/api/regenerate-all', { method: 'POST' });
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ All pages regenerated successfully!');
+                } else {
+                    alert('❌ Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span class="icon">🔄</span> Regenerate All';
+            }
+        }
+    </script>
+</body>
+
+</html>

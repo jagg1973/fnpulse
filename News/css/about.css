@@ -1,0 +1,320 @@
+/* --- ABOUT PAGE STYLES --- */
+
+/* Hero Section */
+.about-hero {
+    position: relative;
+    background-color: var(--surface-dark);
+    color: var(--ink-inverse);
+    padding: 4rem 1rem;
+    text-align: center;
+    overflow: hidden;
+    margin-bottom: 3rem;
+    border-radius: 0 0 12px 12px;
+}
+
+.about-hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at top right, #3b82f6 0%, transparent 40%),
+        radial-gradient(circle at bottom left, #1e293b 0%, transparent 40%);
+    opacity: 0.2;
+    z-index: 0;
+}
+
+.about-hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.about-hero h1 {
+    font-family: "Playfair Display", serif;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: white;
+}
+
+.about-hero p {
+    font-size: 1.15rem;
+    color: #cbd5e1;
+    line-height: 1.6;
+}
+
+/* Intro Grid */
+.intro-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    margin-bottom: 4rem;
+    align-items: center;
+}
+
+@media(min-width: 768px) {
+    .intro-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.intro-text h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: var(--ink);
+}
+
+.intro-text p {
+    font-size: 1.05rem;
+    color: var(--ink-light);
+    margin-bottom: 1.5rem;
+}
+
+.intro-visual {
+    position: relative;
+    z-index: 1;
+    /* Ensure visual stack is handled */
+}
+
+.intro-visual img {
+    border-radius: 8px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    width: 100%;
+    /* Ensure responsiveness */
+}
+
+.stat-card-float {
+    position: absolute;
+    bottom: -15px;
+    right: 20px;
+    /* Default: Inside right on mobile/small screens */
+    left: auto;
+    background: white;
+    padding: 1.25rem;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    max-width: 180px;
+    border-left: 4px solid var(--accent);
+    z-index: 2;
+}
+
+@media(min-width: 992px) {
+    .stat-card-float {
+        right: auto;
+        left: -30px;
+        /* Float out to the left only on large screens */
+        bottom: 30px;
+        padding: 1.5rem;
+        max-width: 200px;
+    }
+}
+
+.stat-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--ink-light);
+    font-weight: 500;
+}
+
+
+/* Values Grid */
+.values-section {
+    background-color: #f8fafc;
+    padding: 4rem 2rem;
+    border-radius: 12px;
+    margin-bottom: 4rem;
+}
+
+.section-title-center {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.section-title-center h2 {
+    font-size: 2rem;
+}
+
+.values-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+@media(min-width: 768px) {
+    .values-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.value-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.value-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+.value-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.value-card h3 {
+    margin-bottom: 0.75rem;
+}
+
+.value-card p {
+    font-size: 0.95rem;
+    color: var(--ink-light);
+    margin: 0;
+}
+
+/* Team Section */
+.team-section {
+    margin-bottom: 4rem;
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.team-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.team-photo {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    background-color: #e2e8f0;
+    /* placeholder bg */
+}
+
+.team-content {
+    padding: 1.5rem;
+}
+
+.team-role {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.team-name {
+    font-size: 1.25rem;
+    margin: 0 0 0.5rem 0;
+}
+
+.team-bio {
+    font-size: 0.9rem;
+    color: var(--ink-light);
+    margin-bottom: 0;
+}
+
+
+/* Trust Badges */
+.trust-strip {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    padding: 2rem 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4rem;
+}
+
+.trust-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--ink-light);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.trust-item span {
+    font-size: 1.2rem;
+    /* emoji size */
+}
+
+/* Call to Action Box */
+.cta-box {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: white;
+    padding: 3rem 2rem;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.cta-box h2 {
+    color: white;
+    margin-bottom: 1rem;
+}
+
+.cta-box p {
+    color: #cbd5e1;
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.btn-primary {
+    display: inline-block;
+    background-color: var(--accent);
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #1d4ed8;
+    color: white;
+}
+
+.btn-outline {
+    display: inline-block;
+    background-color: transparent;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 0.75rem 2rem;
+    border-radius: 6px;
+    font-weight: 600;
+    margin-left: 1rem;
+    transition: 0.2s;
+}
+
+.btn-outline:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}

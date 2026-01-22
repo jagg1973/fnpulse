@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Articles - FNPulse Admin</title>
+    <link rel="stylesheet" href="/public/css/admin.css">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>FNPulse</h2>
+                <p>Admin Dashboard</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-item">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/articles" class="nav-item active">
+                    <span class="icon">📝</span>
+                    <span>Articles</span>
+                </a>
+                <a href="/authors" class="nav-item">
+                    <span class="icon">👤</span>
+                    <span>Authors</span>
+                </a>
+                <a href="/ads" class="nav-item">
+                    <span class="icon">📢</span>
+                    <span>Ad Banners</span>
+                </a>
+                <a href="/images" class="nav-item">
+                    <span class="icon">🖼️</span>
+                    <span>Images</span>
+                </a>
+                <a href="/settings" class="nav-item">
+                    <span class="icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="/site-assets/index.html" target="_blank" class="btn-preview">
+                    <span class="icon">👁️</span>
+                    Preview Site
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Articles</h1>
+                <a href="/articles/new" class="btn btn-primary">
+                    <span class="icon">➕</span>
+                    New Article
+                </a>
+            </header>
+
+            <div class="search-filter">
+                <input type="text" id="searchArticles" placeholder="Search articles..." class="search-input">
+                <select id="filterCategory" class="filter-select">
+                    <option value="">All Categories</option>
+                    <option value="markets">Markets</option>
+                    <option value="economy">Economy</option>
+                    <option value="technology">Technology</option>
+                    <option value="crypto">Crypto</option>
+                    <option value="stocks">Stocks</option>
+                </select>
+            </div>
+
+            <div class="articles-table-wrapper">
+                <table class="articles-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Author</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (articles && articles.length> 0) { %>
+                            <% articles.forEach(article=> { %>
+                                <tr>
+                                    <td class="article-title-cell">
+                                        <strong>
+                                            <%= article.title %>
+                                        </strong>
+                                        <small>
+                                            <%= article.filename %>
+                                        </small>
+                                    </td>
+                                    <td><span class="badge">
+                                            <%= article.category || 'Uncategorized' %>
+                                        </span></td>
+                                    <td>
+                                        <%= article.author || 'Unknown' %>
+                                    </td>
+                                    <td>
+                                        <%= article.publishDate ? new Date(article.publishDate).toLocaleDateString()
+                                            : '-' %>
+                                    </td>
+                                    <td class="actions-cell">
+                                        <a href="/articles/edit/<%= article.filename %>" class="btn-icon" title="Edit">
+                                            ✏️
+                                        </a>
+                                        <a href="/site-assets/<%= article.filename %>" target="_blank" class="btn-icon"
+                                            title="Preview">
+                                            👁️
+                                        </a>
+                                        <button onclick="deleteArticle('<%= article.filename %>')"
+                                            class="btn-icon btn-danger" title="Delete">
+                                            🗑️
+                                        </button>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="5" class="empty-state">
+                                                <div class="empty-content">
+                                                    <span class="empty-icon">📝</span>
+                                                    <h3>No articles yet</h3>
+                                                    <p>Create your first article to get started</p>
+                                                    <a href="/articles/new" class="btn btn-primary">Create Article</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script src="/public/js/admin.js"></script>
+    <script>
+        // Search functionality
+        document.getElementById('searchArticles').addEventListener('input', filterArticles);
+        document.getElementById('filterCategory').addEventListener('change', filterArticles);
+
+        function filterArticles() {
+            const searchTerm = document.getElementById('searchArticles').value.toLowerCase();
+            const category = document.getElementById('filterCategory').value.toLowerCase();
+            const rows = document.querySelectorAll('.articles-table tbody tr');
+
+            rows.forEach(row => {
+                const title = row.querySelector('.article-title-cell')?.textContent.toLowerCase() || '';
+                const cat = row.querySelector('.badge')?.textContent.toLowerCase() || '';
+
+                const matchesSearch = title.includes(searchTerm);
+                const matchesCategory = !category || cat.includes(category);
+
+                row.style.display = matchesSearch && matchesCategory ? '' : 'none';
+            });
+        }
+
+        // Delete article
+        async function deleteArticle(filename) {
+            if (!confirm(`Are you sure you want to delete "${filename}"? This cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/articles/${filename}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ Article deleted successfully');
+                    location.reload();
+                } else {
+                    alert('❌ Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

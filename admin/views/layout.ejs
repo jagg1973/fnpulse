@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FNPulse Admin Dashboard</title>
+    <link rel="stylesheet" href="/public/css/admin.css">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>FNPulse</h2>
+                <p>Admin Dashboard</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-item <%= page === 'dashboard' ? 'active' : '' %>">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/articles" class="nav-item <%= page === 'articles' ? 'active' : '' %>">
+                    <span class="icon">📝</span>
+                    <span>Articles</span>
+                </a>
+                <a href="/images" class="nav-item <%= page === 'images' ? 'active' : '' %>">
+                    <span class="icon">🖼️</span>
+                    <span>Images</span>
+                </a>
+                <a href="/settings" class="nav-item <%= page === 'settings' ? 'active' : '' %>">
+                    <span class="icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="/site-assets/index.html" target="_blank" class="btn-preview">
+                    <span class="icon">👁️</span>
+                    Preview Site
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <%- body %>
+        </main>
+    </div>
+
+    <script src="/public/js/admin.js"></script>
+</body>
+
+</html>

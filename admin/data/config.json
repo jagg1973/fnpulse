@@ -1,0 +1,138 @@
+{
+    "siteName": "FNPulse",
+    "siteUrl": "https://www.FNPulse.com",
+    "siteDescription": "FNPulse delivers fast, reliable financial news, market analysis, press releases, and research.",
+    "siteTagline": "Financial News & Research",
+    "logoPath": "img/logo.png",
+    "logoHeight": "50px",
+    "socialLinks": {
+        "facebook": "#",
+        "linkedin": "#",
+        "twitter": "#"
+    },
+    "adPlacements": {
+        "headerLeaderboard": "728x90 Leaderboard Ad Space",
+        "sidebarBanner": "300x250 Medium Rectangle Ad",
+        "articleInline": "336x280 Large Rectangle Ad"
+    },
+    "tickerNews": "Markets rally as CPI falls to 2.8% • Gold hits record high • Tech stocks rebound...",
+    "pagination": {
+        "articlesPerPage": 12,
+        "excerptLength": 150
+    },
+    "seo": {
+        "defaultImage": "https://www.FNPulse.com/img/news-1200x800-1.jpg",
+        "twitterHandle": "@FNPulse"
+    },
+    "navigation": [
+        {
+            "id": "home",
+            "label": "Home",
+            "url": "index.html",
+            "children": []
+        },
+        {
+            "id": "markets",
+            "label": "Markets",
+            "url": "markets.html",
+            "children": [
+                {
+                    "id": "stocks",
+                    "label": "Stocks",
+                    "url": "stocks.html"
+                },
+                {
+                    "id": "forex",
+                    "label": "Forex",
+                    "url": "forex.html"
+                },
+                {
+                    "id": "crypto",
+                    "label": "Crypto",
+                    "url": "crypto.html"
+                },
+                {
+                    "id": "commodities",
+                    "label": "Commodities",
+                    "url": "commodities.html"
+                }
+            ]
+        },
+        {
+            "id": "economy",
+            "label": "Economy",
+            "url": "economy.html",
+            "children": []
+        },
+        {
+            "id": "technology",
+            "label": "Technology",
+            "url": "technology.html",
+            "children": []
+        },
+        {
+            "id": "analysis",
+            "label": "Analysis",
+            "url": "analysis.html",
+            "children": []
+        }
+    ],
+    "categories": [
+        {
+            "id": "markets",
+            "name": "Markets",
+            "slug": "markets"
+        },
+        {
+            "id": "economy",
+            "name": "Economy",
+            "slug": "economy"
+        },
+        {
+            "id": "technology",
+            "name": "Technology",
+            "slug": "technology"
+        },
+        {
+            "id": "crypto",
+            "name": "Crypto",
+            "slug": "crypto"
+        },
+        {
+            "id": "stocks",
+            "name": "Stocks",
+            "slug": "stocks"
+        },
+        {
+            "id": "forex",
+            "name": "Forex",
+            "slug": "forex"
+        },
+        {
+            "id": "commodities",
+            "name": "Commodities",
+            "slug": "commodities"
+        },
+        {
+            "id": "bonds",
+            "name": "Bonds",
+            "slug": "bonds"
+        },
+        {
+            "id": "analysis",
+            "name": "Analysis",
+            "slug": "analysis"
+        }
+    ],
+    "deployment": {
+        "github": {
+            "repository": "",
+            "branch": "main"
+        },
+        "cloudflare": {
+            "accountId": "",
+            "projectName": "",
+            "apiToken": ""
+        }
+    }
+}

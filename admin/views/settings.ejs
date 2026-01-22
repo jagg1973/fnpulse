@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - FNPulse Admin</title>
+    <link rel="stylesheet" href="/public/css/admin.css">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>FNPulse</h2>
+                <p>Admin Dashboard</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-item">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/articles" class="nav-item">
+                    <span class="icon">📝</span>
+                    <span>Articles</span>
+                </a>
+                <a href="/authors" class="nav-item">
+                    <span class="icon">👤</span>
+                    <span>Authors</span>
+                </a>
+                <a href="/ads" class="nav-item">
+                    <span class="icon">📢</span>
+                    <span>Ad Banners</span>
+                </a>
+                <a href="/images" class="nav-item">
+                    <span class="icon">🖼️</span>
+                    <span>Images</span>
+                </a>
+                <a href="/settings" class="nav-item active">
+                    <span class="icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Site Settings</h1>
+                <button onclick="saveSettings()" class="btn btn-primary">
+                    <span class="icon">💾</span>
+                    Save Settings
+                </button>
+            </header>
+
+            <form id="settingsForm" class="settings-form">
+                <!-- General Settings -->
+                <div class="form-section">
+                    <h3>General Information</h3>
+
+                    <div class="form-group">
+                        <label for="siteName">Site Name</label>
+                        <input type="text" id="siteName" name="siteName" class="form-control"
+                            value="<%= config.siteName %>">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="siteUrl">Site URL</label>
+                        <input type="url" id="siteUrl" name="siteUrl" class="form-control"
+                            value="<%= config.siteUrl %>">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="siteDescription">Site Description</label>
+                        <textarea id="siteDescription" name="siteDescription" class="form-control"
+                            rows="2"><%= config.siteDescription %></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="siteTagline">Site Tagline</label>
+                        <input type="text" id="siteTagline" name="siteTagline" class="form-control"
+                            value="<%= config.siteTagline %>">
+                    </div>
+                </div>
+
+                <!-- Ticker News -->
+                <div class="form-section">
+                    <h3>Live News Ticker</h3>
+
+                    <div class="form-group">
+                        <label for="tickerNews">Ticker Content</label>
+                        <textarea id="tickerNews" name="tickerNews" class="form-control"
+                            rows="2"><%= config.tickerNews %></textarea>
+                        <small>Use • to separate news items</small>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <div class="form-section">
+                    <h3>Main Navigation</h3>
+                    <div id="navigationItems">
+                        <% config.navigation.forEach((item, index)=> { %>
+                            <div class="nav-item-row">
+                                <input type="text" placeholder="Label" value="<%= item.label %>"
+                                    name="nav_label_<%= index %>" class="form-control">
+                                <input type="text" placeholder="URL" value="<%= item.url %>" name="nav_url_<%= index %>"
+                                    class="form-control">
+                                <button type="button" onclick="removeNavItem(this)"
+                                    class="btn-icon btn-danger">🗑️</button>
+                            </div>
+                            <% }) %>
+                    </div>
+                    <button type="button" onclick="addNavItem()" class="btn btn-secondary">+ Add Menu Item</button>
+                </div>
+
+                <!-- Social Links -->
+                <div class="form-section">
+                    <h3>Social Media Links</h3>
+
+                    <div class="form-group">
+                        <label for="facebook">Facebook URL</label>
+                        <input type="url" id="facebook" name="socialLinks.facebook" class="form-control"
+                            value="<%= config.socialLinks.facebook %>">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="linkedin">LinkedIn URL</label>
+                        <input type="url" id="linkedin" name="socialLinks.linkedin" class="form-control"
+                            value="<%= config.socialLinks.linkedin %>">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="twitter">Twitter/X URL</label>
+                        <input type="url" id="twitter" name="socialLinks.twitter" class="form-control"
+                            value="<%= config.socialLinks.twitter %>">
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="form-section">
+                    <h3>Pagination Settings</h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="articlesPerPage">Articles Per Page</label>
+                            <input type="number" id="articlesPerPage" name="pagination.articlesPerPage"
+                                class="form-control" value="<%= config.pagination.articlesPerPage %>" min="1">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="excerptLength">Excerpt Length (characters)</label>
+                            <input type="number" id="excerptLength" name="pagination.excerptLength" class="form-control"
+                                value="<%= config.pagination.excerptLength %>" min="50">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEO Defaults -->
+                <div class="form-section">
+                    <h3>SEO Defaults</h3>
+
+                    <div class="form-group">
+                        <label for="defaultImage">Default OG Image URL</label>
+                        <input type="url" id="defaultImage" name="seo.defaultImage" class="form-control"
+                            value="<%= config.seo.defaultImage %>">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="twitterHandle">Twitter Handle</label>
+                        <input type="text" id="twitterHandle" name="seo.twitterHandle" class="form-control"
+                            value="<%= config.seo.twitterHandle %>">
+                    </div>
+                </div>
+
+                <!-- Ad Placements -->
+                <div class="form-section">
+                    <h3>Ad Placeholder Text</h3>
+
+                    <div class="form-group">
+                        <label for="headerLeaderboard">Header Leaderboard (728x90)</label>
+                        <input type="text" id="headerLeaderboard" name="adPlacements.headerLeaderboard"
+                            class="form-control" value="<%= config.adPlacements.headerLeaderboard %>">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sidebarBanner">Sidebar Banner (300x250)</label>
+                        <input type="text" id="sidebarBanner" name="adPlacements.sidebarBanner" class="form-control"
+                            value="<%= config.adPlacements.sidebarBanner %>">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="articleInline">Article Inline (336x280)</label>
+                        <input type="text" id="articleInline" name="adPlacements.articleInline" class="form-control"
+                            value="<%= config.adPlacements.articleInline %>">
+                    </div>
+                </div>
+
+                <!-- GitHub & Cloudflare Pages Deployment -->
+                <div class="form-section">
+                    <h3>📦 GitHub Repository</h3>
+                    <p>Connect your GitHub repository for automatic Cloudflare Pages deployment</p>
+
+                    <div class="form-group">
+                        <label for="githubRepo">GitHub Repository URL</label>
+                        <input type="text" id="githubRepo" name="deployment.github.repository" class="form-control"
+                            value="<%= config.deployment?.github?.repository || '' %>"
+                            placeholder="https://github.com/username/fnpulse.git">
+                        <small>Your GitHub repository URL (HTTPS format)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="githubBranch">Branch</label>
+                        <input type="text" id="githubBranch" name="deployment.github.branch" class="form-control"
+                            value="<%= config.deployment?.github?.branch || 'main' %>"
+                            placeholder="main">
+                        <small>The branch to push changes to (usually 'main' or 'master')</small>
+                    </div>
+
+                    <div class="alert" style="background: #f0f7ff; padding: 12px; border-radius: 4px; margin-top: 10px; border-left: 4px solid #0969da;">
+                        <strong>📋 Workflow:</strong>
+                        <ol style="margin: 8px 0 0 16px; font-size: 13px;">
+                            <li>Make changes in the admin dashboard</li>
+                            <li>Click "Push to GitHub" on the dashboard</li>
+                            <li>Cloudflare Pages automatically deploys your site</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Cloudflare Pages Configuration -->
+                <div class="form-section">
+                    <h3>☁️ Cloudflare Pages</h3>
+                    <p>Configure Cloudflare Pages to connect with your GitHub repository</p>
+
+                    <div class="form-group">
+                        <label for="cfAccountId">Account ID</label>
+                        <input type="text" id="cfAccountId" name="deployment.cloudflare.accountId" class="form-control"
+                            value="<%= config.deployment?.cloudflare?.accountId || '' %>" placeholder="abc123def456...">
+                        <small>Find this in your Cloudflare dashboard → Workers & Pages → Overview</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cfProjectName">Project Name</label>
+                        <input type="text" id="cfProjectName" name="deployment.cloudflare.projectName"
+                            class="form-control" value="<%= config.deployment?.cloudflare?.projectName || '' %>"
+                            placeholder="fnpulse">
+                        <small>Your Cloudflare Pages project name</small>
+                    </div>
+
+                    <div class="alert"
+                        style="background: #e3f2fd; padding: 12px; border-radius: 4px; margin-top: 10px;">
+                        <strong>Cloudflare Setup (One-time):</strong>
+                        <ol style="margin: 8px 0 0 16px; font-size: 13px;">
+                            <li>Go to Cloudflare Dashboard → Workers & Pages</li>
+                            <li>Click "Create application" → "Pages" → "Connect to Git"</li>
+                            <li>Authorize Cloudflare to access your GitHub account</li>
+                            <li>Select your FNPulse repository</li>
+                            <li>Set <strong>Build output directory</strong> to: <code>/News</code></li>
+                            <li>Click "Save and Deploy"</li>
+                            <li>After setup, Cloudflare will auto-deploy on every push!</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Batch Operations -->
+                <div class="form-section">
+                    <h3>Batch Operations</h3>
+                    <p>Apply settings changes to all existing pages</p>
+
+                    <button type="button" onclick="regenerateAll()" class="btn btn-warning">
+                        <span class="icon">🔄</span>
+                        Regenerate All Pages
+                    </button>
+                    <small class="help-text">This will update navigation, footer, and ticker across all pages</small>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <script src="/public/js/admin.js"></script>
+    <script>
+        function addNavItem() {
+            const container = document.getElementById('navigationItems');
+            const index = container.children.length;
+            const row = document.createElement('div');
+            row.className = 'nav-item-row';
+            row.innerHTML = `
+                <input type="text" placeholder="Label" name="nav_label_${index}" class="form-control">
+                <input type="text" placeholder="URL" name="nav_url_${index}" class="form-control">
+                <button type="button" onclick="removeNavItem(this)" class="btn-icon btn-danger">🗑️</button>
+            `;
+            container.appendChild(row);
+        }
+
+        function removeNavItem(button) {
+            button.parentElement.remove();
+        }
+
+        async function saveSettings() {
+            const form = document.getElementById('settingsForm');
+            const formData = new FormData(form);
+
+            // Build config object
+            const config = {
+                siteName: formData.get('siteName'),
+                siteUrl: formData.get('siteUrl'),
+                siteDescription: formData.get('siteDescription'),
+                siteTagline: formData.get('siteTagline'),
+                tickerNews: formData.get('tickerNews'),
+                logoPath: 'img/logo.png',
+                logoHeight: '50px',
+                socialLinks: {
+                    facebook: formData.get('socialLinks.facebook'),
+                    linkedin: formData.get('socialLinks.linkedin'),
+                    twitter: formData.get('socialLinks.twitter')
+                },
+                adPlacements: {
+                    headerLeaderboard: formData.get('adPlacements.headerLeaderboard'),
+                    sidebarBanner: formData.get('adPlacements.sidebarBanner'),
+                    articleInline: formData.get('adPlacements.articleInline')
+                },
+                deployment: {
+                    github: {
+                        repository: formData.get('deployment.github.repository'),
+                        branch: formData.get('deployment.github.branch') || 'main'
+                    },
+                    cloudflare: {
+                        accountId: formData.get('deployment.cloudflare.accountId'),
+                        projectName: formData.get('deployment.cloudflare.projectName'),
+                        apiToken: formData.get('deployment.cloudflare.apiToken')
+                    }
+                },
+                pagination: {
+                    articlesPerPage: parseInt(formData.get('pagination.articlesPerPage')),
+                    excerptLength: parseInt(formData.get('pagination.excerptLength'))
+                },
+                seo: {
+                    defaultImage: formData.get('seo.defaultImage'),
+                    twitterHandle: formData.get('seo.twitterHandle')
+                },
+                navigation: [],
+                categories: <%= JSON.stringify(config.categories) %>
+            };
+
+            // Extract navigation items
+            const navRows = document.querySelectorAll('.nav-item-row');
+            navRows.forEach((row, index) => {
+                const label = row.querySelector(`input[name="nav_label_${index}"]`)?.value;
+                const url = row.querySelector(`input[name="nav_url_${index}"]`)?.value;
+                if (label && url) {
+                    config.navigation.push({ label, url });
+                }
+            });
+
+            try {
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ Settings saved successfully!');
+                } else {
+                    alert('❌ Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        async function regenerateAll() {
+            if (!confirm('This will update navigation and global elements across all pages. Continue?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/regenerate-all', { method: 'POST' });
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ All pages regenerated successfully!');
+                } else {
+                    alert('❌ Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

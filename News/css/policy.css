@@ -1,0 +1,259 @@
+/* --- PRIVACY PAGE STYLES --- */
+
+/* Hero Banner */
+.policy-hero {
+    background-color: var(--surface-dark);
+    color: white;
+    padding: 3rem 0 4rem 0;
+    text-align: center;
+    border-radius: 0 0 12px 12px;
+    margin-bottom: -3rem;
+    /* Overlap effect */
+    position: relative;
+    z-index: 0;
+}
+
+.policy-hero h1 {
+    font-size: 2.5rem;
+    font-family: "Playfair Display", serif;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+.policy-hero p {
+    color: #cbd5e1;
+    font-size: 1.1rem;
+}
+
+/* Main Layout Card */
+.policy-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+    /* Lifted card effect */
+    padding: 3rem;
+    max-width: 900px;
+    margin: 0 auto 4rem auto;
+    position: relative;
+    z-index: 1;
+    border: 1px solid var(--border);
+}
+
+@media(max-width: 768px) {
+    .policy-card {
+        padding: 1.5rem;
+        margin-top: 0;
+    }
+}
+
+/* Sidebar Navigation (Desktop) */
+.policy-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+}
+
+@media(min-width: 992px) {
+    .policy-layout {
+        grid-template-columns: 240px 1fr;
+    }
+
+    .policy-sidebar {
+        position: sticky;
+        top: 120px;
+        align-self: start;
+        padding-top: 5rem;
+        padding-bottom: 5rem;
+    }
+}
+
+.policy-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-left: 2px solid #e2e8f0;
+}
+
+.policy-nav li {
+    margin-bottom: 0;
+}
+
+.policy-nav a {
+    display: block;
+    padding: 0.75rem 0 0.75rem 1.5rem;
+    color: var(--ink-light);
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-decoration: none;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.policy-nav a::before {
+    content: '';
+    position: absolute;
+    left: -2px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: transparent;
+    transition: background 0.2s;
+}
+
+.policy-nav a:hover,
+.policy-nav a.active {
+    color: var(--accent);
+    background: linear-gradient(to right, #f8fafc, transparent);
+}
+
+.policy-nav a.active::before {
+    background: var(--accent);
+}
+
+/* Content Typography Updates */
+.policy-content h2 {
+    font-size: 1.75rem;
+    color: #0f172a;
+    margin-top: 3rem;
+    /* Breathing room */
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+    scroll-margin-top: 120px;
+    /* Offset for sticky headers */
+}
+
+.policy-content h2:first-child {
+    margin-top: 0;
+}
+
+.policy-content p {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: #475569;
+    margin-bottom: 1.5rem;
+}
+
+/* Interactive Data Table */
+.data-table-container {
+    overflow-x: auto;
+    margin: 2rem 0;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    text-align: left;
+    background: white;
+}
+
+.modern-table th {
+    background: #f8fafc;
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+    color: #334155;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.modern-table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: #475569;
+}
+
+.modern-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Highlights & Icons */
+.policy-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.policy-icon-card {
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+}
+
+.policy-icon-card:hover {
+    border-color: #cbd5e1;
+    background: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.policy-icon {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+.policy-icon-card strong {
+    display: block;
+    color: #334155;
+    margin-bottom: 0.25rem;
+}
+
+.policy-icon-card span {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+/* Contact Banner facelift */
+.help-banner {
+    background: linear-gradient(to right, #ecfdf5, #f0fdf4);
+    border: 1px solid #d1fae5;
+    border-radius: 12px;
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-top: 4rem;
+}
+
+@media(min-width: 768px) {
+    .help-banner {
+        flex-direction: row;
+        text-align: left;
+        justify-content: space-between;
+    }
+}
+
+.help-text h3 {
+    color: #065f46;
+    margin-bottom: 0.5rem;
+}
+
+.help-text p {
+    color: #047857;
+    margin: 0;
+}
+
+.help-action .btn-white {
+    background: white;
+    color: #059669;
+    border: 1px solid #10b981;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.help-action .btn-white:hover {
+    background: #059669;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}

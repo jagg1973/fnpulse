@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Ad Banners - FNPulse Admin</title>
+    <link rel="stylesheet" href="/public/css/admin.css">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>FNPulse</h2>
+                <p>Admin Dashboard</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-item">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/articles" class="nav-item">
+                    <span class="icon">📝</span>
+                    <span>Articles</span>
+                </a>
+                <a href="/authors" class="nav-item">
+                    <span class="icon">👤</span>
+                    <span>Authors</span>
+                </a>
+                <a href="/ads" class="nav-item active">
+                    <span class="icon">📢</span>
+                    <span>Ad Banners</span>
+                </a>
+                <a href="/images" class="nav-item">
+                    <span class="icon">🖼️</span>
+                    <span>Images</span>
+                </a>
+                <a href="/settings" class="nav-item">
+                    <span class="icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-header">
+                <h1>Manage Ad Banners</h1>
+                <a href="/ads/new" class="btn btn-primary">Add New Ad Banner</a>
+            </div>
+
+            <% if (ads.length===0) { %>
+                <div class="empty-state">
+                    <p>No ad banners yet. Create your first ad banner to get started!</p>
+                    <a href="/ads/new" class="btn btn-primary">Add New Ad Banner</a>
+                </div>
+                <% } else { %>
+                    <div class="ads-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Status</th>
+                                    <th>Name</th>
+                                    <th>Location</th>
+                                    <th>Size</th>
+                                    <th>Type</th>
+                                    <th>Pages</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% ads.forEach(ad=> { %>
+                                    <tr class="<%= ad.enabled ? '' : 'ad-disabled' %>">
+                                        <td>
+                                            <span
+                                                class="status-badge <%= ad.enabled ? 'status-active' : 'status-inactive' %>">
+                                                <%= ad.enabled ? 'Active' : 'Disabled' %>
+                                            </span>
+                                        </td>
+                                        <td><strong>
+                                                <%= ad.name %>
+                                            </strong></td>
+                                        <td>
+                                            <%= ad.location %>
+                                        </td>
+                                        <td>
+                                            <%= ad.size %>
+                                        </td>
+                                        <td>
+                                            <%= ad.type %>
+                                        </td>
+                                        <td>
+                                            <%= ad.pages.join(', ') %></td>
+                                    <td class="actions-cell">
+                                        <button onclick="toggleAd(' <%=ad.id %>', <%= ad.enabled %>)" class="btn
+                                                    btn-small" title="<%= ad.enabled ? 'Disable' : 'Enable' %>">
+                                                        <%= ad.enabled ? '⏸' : '▶' %>
+                                                            </button>
+                                                            <a href="/ads/edit/<%= ad.id %>"
+                                                                class="btn btn-small">Edit</a>
+                                                            <button onclick="deleteAd('<%= ad.id %>', '<%= ad.name %>')"
+                                                                class="btn btn-small btn-danger">Delete</button>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                    <% } %>
+        </main>
+    </div>
+
+    <script>
+        async function toggleAd(id, currentStatus) {
+            try {
+                const response = await fetch('/api/ads/' + id + '/toggle', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ enabled: !currentStatus })
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const error = await response.json();
+                    alert('Error toggling ad: ' + error.message);
+                }
+            } catch (error) {
+                alert('Error toggling ad: ' + error.message);
+            }
+        }
+
+        async function deleteAd(id, name) {
+            if (!confirm('Are you sure you want to delete ad banner "' + name + '"? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/ads/' + id, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const error = await response.json();
+                    alert('Error deleting ad: ' + error.message);
+                }
+            } catch (error) {
+                alert('Error deleting ad: ' + error.message);
+            }
+        }
+    </script>
+</body>
+
+</html>
