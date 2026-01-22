@@ -148,7 +148,7 @@ async function initializeGit(repository, branch = 'main') {
 
         if (fs.existsSync(path.join(ROOT_DIR, '.git'))) {
             console.log('ℹ️  Git already initialized');
-            
+
             // Update remote if different
             try {
                 const currentRemote = execSync('git remote get-url origin', { encoding: 'utf-8' }).trim();
@@ -160,7 +160,7 @@ async function initializeGit(repository, branch = 'main') {
                 execSync(`git remote add origin ${repository}`, { stdio: 'inherit' });
                 console.log('✓ Added remote');
             }
-            
+
             return { success: true, message: 'Git repository updated' };
         }
 

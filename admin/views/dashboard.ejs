@@ -180,19 +180,37 @@
             </div>
 
             <div class="info-card">
-                <h3>ℹ️ About This Admin Tool</h3>
+                <h3>📦 Deployment Workflow</h3>
                 <p>
-                    This local admin dashboard helps you manage your FNPulse static site efficiently.
-                    All changes are saved directly to your local files. After making updates, simply
-                    upload the modified files to Cloudflare Pages to deploy your changes.
+                    Your site uses a modern <strong>Git-based deployment</strong> workflow for version control and
+                    automatic deployments.
                 </p>
                 <div class="deployment-steps">
-                    <h4>Deployment Workflow:</h4>
+                    <h4>How it works:</h4>
                     <ol>
-                        <li>Create or edit content using this dashboard</li>
-                        <li>Preview your changes locally</li>
-                        <li>Upload the updated <code>/News</code> folder to Cloudflare Pages</li>
+                        <li><strong>Edit content</strong> - Create or update articles using this dashboard</li>
+                        <li><strong>Push to GitHub</strong> - Click the "Push to GitHub" button above</li>
+                        <li><strong>Auto-deploy</strong> - Cloudflare Pages automatically deploys your site (~1 min)
+                        </li>
+                        <li><strong>Live!</strong> - Your changes are visible to the world</li>
                     </ol>
+                    <div
+                        style="background: #f0f7ff; padding: 12px; border-radius: 4px; margin-top: 12px; border-left: 4px solid #0969da;">
+                        <strong>💡 Benefits:</strong>
+                        <ul style="margin: 8px 0 0 20px; font-size: 13px;">
+                            <li>Version history - Track all changes</li>
+                            <li>Safe backups - Everything stored on GitHub</li>
+                            <li>Easy rollbacks - Undo mistakes anytime</li>
+                            <li>One-click publishing - No manual uploads</li>
+                        </ul>
+                    </div>
+                    <div
+                        style="margin-top: 12px; padding: 10px; background: #fffbeb; border-radius: 4px; border-left: 4px solid #f59e0b;">
+                        <strong>⚠️ First time?</strong> See <a
+                            href="https://github.com/YOUR_USERNAME/fnpulse/blob/main/SETUP_CHECKLIST.md" target="_blank"
+                            style="color: #0969da;">Setup Checklist</a> or configure in <a href="/settings"
+                            style="color: #0969da;">Settings</a>
+                    </div>
                 </div>
             </div>
         </main>
@@ -245,9 +263,9 @@
             try {
                 const response = await fetch('/api/git/status');
                 const status = await response.json();
-                
+
                 const container = document.getElementById('gitStatusContent');
-                
+
                 if (!status.initialized) {
                     container.innerHTML = `
                         <p style="color: #f59e0b; margin-bottom: 12px;">⚠️ Git not initialized</p>
@@ -257,20 +275,20 @@
                     `;
                     return;
                 }
-                
+
                 container.innerHTML = `
                     <div style="font-size: 14px; line-height: 1.8;">
                         <p><strong>Branch:</strong> ${status.branch}</p>
                         <p><strong>Repository:</strong> ${status.remote}</p>
-                        <p><strong>Status:</strong> ${status.hasChanges ? 
-                            `<span style="color: #f59e0b;">⚠️ ${status.changesCount} uncommitted changes</span>` : 
-                            `<span style="color: #10b981;">✓ Clean</span>`}</p>
+                        <p><strong>Status:</strong> ${status.hasChanges ?
+                        `<span style="color: #f59e0b;">⚠️ ${status.changesCount} uncommitted changes</span>` :
+                        `<span style="color: #10b981;">✓ Clean</span>`}</p>
                         <p><strong>Last Commit:</strong> ${status.lastCommit}</p>
                     </div>
                 `;
             } catch (error) {
                 console.error('Error loading Git status:', error);
-                document.getElementById('gitStatusContent').innerHTML = 
+                document.getElementById('gitStatusContent').innerHTML =
                     `<p style="color: #ef4444;">Error loading Git status</p>`;
             }
         }
