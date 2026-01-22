@@ -100,7 +100,7 @@
                 <div class="form-section">
                     <h3>Main Navigation</h3>
                     <div id="navigationItems">
-                        <% config.navigation.forEach((item, index)=> { %>
+                        <% config.navigation.forEach((item, index) => { %>
                             <div class="nav-item-row">
                                 <input type="text" placeholder="Label" value="<%= item.label %>"
                                     name="nav_label_<%= index %>" class="form-control">
@@ -109,7 +109,7 @@
                                 <button type="button" onclick="removeNavItem(this)"
                                     class="btn-icon btn-danger">🗑️</button>
                             </div>
-                            <% }) %>
+                        <% }); %>
                     </div>
                     <button type="button" onclick="addNavItem()" class="btn btn-secondary">+ Add Menu Item</button>
                 </div>
@@ -339,7 +339,7 @@
                     twitterHandle: formData.get('seo.twitterHandle')
                 },
                 navigation: [],
-                categories: <%= JSON.stringify(config.categories) %>
+                categories: <%- JSON.stringify(config.categories) %>
             };
 
             // Extract navigation items
