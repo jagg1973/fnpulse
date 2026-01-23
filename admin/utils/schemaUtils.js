@@ -31,10 +31,48 @@ function ensureHeadStructure($, options = {}) {
         head.append(`<link rel="canonical" href="${canonical}">`);
     }
 
+    const canonicalUrl = $('link[rel="canonical"]').attr('href') || (config?.siteUrl && filename ? `${config.siteUrl}/${filename.replace(/^\//, '')}` : config?.siteUrl || '');
+    const description = $('meta[name="description"]').attr('content') || config?.siteDescription || '';
+    const defaultImage = config?.seo?.defaultImage || (config?.siteUrl ? `${config.siteUrl}/img/news-1200x800-1.jpg` : '');
+
+    if (!$('meta[property="og:type"]').length) {
+        head.append(`<meta property="og:type" content="website">`);
+    }
+    if (!$('meta[property="og:title"]').length) {
+        head.append(`<meta property="og:title" content="${titleText}">`);
+    }
+    if (!$('meta[property="og:description"]').length && description) {
+        head.append(`<meta property="og:description" content="${description}">`);
+    }
+    if (!$('meta[property="og:url"]').length && canonicalUrl) {
+        head.append(`<meta property="og:url" content="${canonicalUrl}">`);
+    }
+    if (!$('meta[property="og:image"]').length && defaultImage) {
+        head.append(`<meta property="og:image" content="${defaultImage}">`);
+    }
+
+    if (!$('meta[property="twitter:card"]').length) {
+        head.append('<meta property="twitter:card" content="summary_large_image">');
+    }
+    if (!$('meta[property="twitter:title"]').length) {
+        head.append(`<meta property="twitter:title" content="${titleText}">`);
+    }
+    if (!$('meta[property="twitter:description"]').length && description) {
+        head.append(`<meta property="twitter:description" content="${description}">`);
+    }
+    if (!$('meta[property="twitter:url"]').length && canonicalUrl) {
+        head.append(`<meta property="twitter:url" content="${canonicalUrl}">`);
+    }
+    if (!$('meta[property="twitter:image"]').length && defaultImage) {
+        head.append(`<meta property="twitter:image" content="${defaultImage}">`);
+    }
+    if (config?.seo?.twitterHandle && !$('meta[property="twitter:site"]').length) {
+        head.append(`<meta property="twitter:site" content="${config.seo.twitterHandle}">`);
+    }
+
     const hasJsonLd = $('script[type="application/ld+json"]').length > 0;
     if (!hasJsonLd && config?.siteUrl) {
-        const description = $('meta[name="description"]').attr('content') || config.siteDescription || '';
-        const canonical = $('link[rel="canonical"]').attr('href') || `${config.siteUrl}/${filename || ''}`;
+        const canonical = canonicalUrl || `${config.siteUrl}/${filename || ''}`;
         const logoUrl = config.logoPath ? `${config.siteUrl}/${config.logoPath}` : `${config.siteUrl}/img/logo.png`;
 
         const schemaData = filename === 'index.html'
