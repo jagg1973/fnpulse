@@ -4,6 +4,7 @@ const slugify = require('slugify');
 const dayjs = require('dayjs');
 const cheerio = require('cheerio');
 const fileManager = require('./fileManager');
+const { ensureHeadStructure } = require('./schemaUtils');
 
 const NEWS_DIR = path.join(__dirname, '../../News');
 const TEMPLATE_PATH = path.join(__dirname, '../templates/article-template.html');
@@ -93,7 +94,9 @@ async function createArticle(data) {
             "name": config.siteName,
             "logo": {
                 "@type": "ImageObject",
-                "url": `${config.siteUrl}/${config.logoPath}`
+                "url": `${config.siteUrl}/${config.logoPath}`,
+                "width": 600,
+                "height": 60
             }
         },
         "description": data.metaDescription,
@@ -176,6 +179,7 @@ async function createArticle(data) {
     // Save file
     const filePath = path.join(NEWS_DIR, filename);
     await fs.mkdir(path.dirname(filePath), { recursive: true });
+    ensureHeadStructure($, { filename, config });
     await fs.writeFile(filePath, $.html());
 
     return { filename, path: filePath };
@@ -246,6 +250,10 @@ async function updateArticle(filename, data) {
         if (data.featuredImage) {
             schemaData.image = [data.featuredImage];
         }
+        if (schemaData.publisher && schemaData.publisher.logo) {
+            schemaData.publisher.logo.width = schemaData.publisher.logo.width || 600;
+            schemaData.publisher.logo.height = schemaData.publisher.logo.height || 60;
+        }
         $('script[type="application/ld+json"]').html(JSON.stringify(schemaData, null, 2));
     }
 
@@ -276,6 +284,7 @@ async function updateArticle(filename, data) {
     // Update footer description
     $('.f-desc').text(config.siteDescription || 'Latest financial news and market coverage from FNPulse.');
 
+    ensureHeadStructure($, { filename, config });
     await fs.writeFile(filePath, $.html());
 
     return { filename, path: filePath };
@@ -329,6 +338,7 @@ async function updatePageGlobals(filename, config) {
     }
 
     // Save updated file
+    ensureHeadStructure($, { filename, config });
     await fs.writeFile(filePath, $.html());
 }
 

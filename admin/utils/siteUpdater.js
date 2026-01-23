@@ -4,6 +4,7 @@ const cheerio = require('cheerio');
 const htmlParser = require('./htmlParser');
 const contentManager = require('./contentManager');
 const fileManager = require('./fileManager');
+const { ensureHeadStructure } = require('./schemaUtils');
 
 const NEWS_DIR = path.join(__dirname, '../../News');
 
@@ -76,6 +77,7 @@ async function updateHomepage() {
         }
     });
 
+    ensureHeadStructure($, { filename: 'index.html', config });
     await fs.writeFile(homepagePath, $.html());
     console.log('✓ Homepage updated');
 }
@@ -135,6 +137,7 @@ async function updateFooterRecentPosts() {
             $('.f-desc').text(config.siteDescription);
         }
 
+        ensureHeadStructure($, { filename: file, config });
         const normalized = normalizeHtmlTextAmpersands($.html());
         await fs.writeFile(filePath, normalized);
     }
@@ -195,6 +198,8 @@ async function updateCategoryPage(categoryName) {
         $('.news-list').html(articlesHtml);
     }
 
+    const config = await fileManager.getConfig();
+    ensureHeadStructure($, { filename: categoryFile, config });
     await fs.writeFile(categoryPath, $.html());
     console.log(`✓ ${categoryName} page updated`);
 }
@@ -272,6 +277,8 @@ async function updateAuthorPage(authorName) {
         $('.articles-grid').html(articlesHtml);
     }
 
+    const config = await fileManager.getConfig();
+    ensureHeadStructure($, { filename: authorFile, config });
     await fs.writeFile(authorPath, $.html());
     console.log(`✓ ${authorName} author page updated`);
 }

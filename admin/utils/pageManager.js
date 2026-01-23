@@ -1,5 +1,7 @@
 const fs = require('fs').promises;
 const path = require('path');
+const fileManager = require('./fileManager');
+const { normalizeHtmlDocument } = require('./schemaUtils');
 
 const NEWS_DIR = path.join(__dirname, '../../News');
 const PAGE_TEMPLATE = path.join(__dirname, '../templates/page-template.html');
@@ -39,7 +41,9 @@ async function createPage(filename, html) {
         throw new Error('Invalid filename');
     }
     const filePath = path.join(NEWS_DIR, filename);
-    await fs.writeFile(filePath, html || '');
+    const config = await fileManager.getConfig();
+    const normalized = normalizeHtmlDocument(html || '', { filename, config });
+    await fs.writeFile(filePath, normalized);
     return { filename, path: filePath };
 }
 
@@ -48,7 +52,9 @@ async function updatePage(filename, html) {
         throw new Error('Invalid filename');
     }
     const filePath = path.join(NEWS_DIR, filename);
-    await fs.writeFile(filePath, html || '');
+    const config = await fileManager.getConfig();
+    const normalized = normalizeHtmlDocument(html || '', { filename, config });
+    await fs.writeFile(filePath, normalized);
     return { filename, path: filePath };
 }
 
