@@ -514,7 +514,7 @@ app.post('/api/git/init', async (req, res) => {
 
 app.post('/api/regenerate-all', async (req, res) => {
     try {
-        await templateGenerator.regenerateAllPages();
+        await siteUpdater.updateEntireSite();
         const config = await fileManager.getConfig();
         if (config?.deployment?.github?.repository) {
             const commitMessage = `Regenerate pages (${new Date().toISOString()})`;
