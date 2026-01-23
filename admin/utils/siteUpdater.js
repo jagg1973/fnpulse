@@ -2,6 +2,8 @@ const fs = require('fs').promises;
 const path = require('path');
 const cheerio = require('cheerio');
 const htmlParser = require('./htmlParser');
+const contentManager = require('./contentManager');
+const fileManager = require('./fileManager');
 
 const NEWS_DIR = path.join(__dirname, '../../News');
 
@@ -10,6 +12,7 @@ const NEWS_DIR = path.join(__dirname, '../../News');
  */
 async function updateHomepage() {
     const articles = await htmlParser.parseAllArticles();
+    const config = await fileManager.getConfig();
 
     // Sort by publish date (newest first)
     articles.sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate));
@@ -17,6 +20,11 @@ async function updateHomepage() {
     const homepagePath = path.join(NEWS_DIR, 'index.html');
     const html = await fs.readFile(homepagePath, 'utf-8');
     const $ = cheerio.load(html, { xmlMode: false, decodeEntities: false });
+
+    if (config) {
+        $('title').text(`${config.siteName} — ${config.siteTagline}`);
+        $('meta[name="description"]').attr('content', config.siteDescription);
+    }
 
     // Update hero section articles (if we have at least 3)
     if (articles.length >= 3) {
@@ -70,6 +78,68 @@ async function updateHomepage() {
 
     await fs.writeFile(homepagePath, $.html());
     console.log('✓ Homepage updated');
+}
+
+/**
+ * Update footer recent posts for all pages
+ */
+async function updateFooterRecentPosts() {
+    const articles = await htmlParser.parseAllArticles();
+    const config = await fileManager.getConfig();
+    const footerSelections = await contentManager.getFooterPosts();
+
+    const articleByFilename = new Map(articles.map(article => [article.filename, article]));
+    const selectedArticles = footerSelections
+        .map(filename => articleByFilename.get(filename))
+        .filter(Boolean);
+
+    const fallbackArticles = articles
+        .sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate))
+        .slice(0, 3);
+
+    const footerArticles = (selectedArticles.length > 0 ? selectedArticles : fallbackArticles).slice(0, 3);
+
+    const files = await fs.readdir(NEWS_DIR);
+    const htmlFiles = files.filter(f => f.endsWith('.html'));
+
+    for (const file of htmlFiles) {
+        const filePath = path.join(NEWS_DIR, file);
+        const html = await fs.readFile(filePath, 'utf-8');
+        const $ = cheerio.load(html, { xmlMode: false, decodeEntities: false });
+
+        const footerPostsContainer = $('.footer-widget').filter((i, el) => {
+            const title = $(el).find('h4').first().text().trim().toLowerCase();
+            return title === 'recent post' || title === 'recent posts';
+        }).find('.f-posts');
+
+        if (footerPostsContainer.length > 0) {
+            const postsHtml = footerArticles.map(article => {
+                const image = article.featuredImage || 'img/news-350x223-1.jpg';
+                const dateLabel = formatFooterDate(article.publishDate);
+                return `
+                    <article class="f-post-item">
+                        <img src="${image}" alt="thumb">
+                        <div>
+                            <a href="${article.filename}">${article.title}</a>
+                            <span class="f-date">${dateLabel}</span>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+
+            footerPostsContainer.html(postsHtml);
+        }
+
+        // Refresh global messaging
+        if (config && config.siteDescription) {
+            $('.f-desc').text(config.siteDescription);
+        }
+
+        const normalized = normalizeHtmlTextAmpersands($.html());
+        await fs.writeFile(filePath, normalized);
+    }
+
+    console.log('✓ Footer recent posts updated');
 }
 
 /**
@@ -232,6 +302,7 @@ async function updateEntireSite() {
         await updateHomepage();
         await updateAllCategoryPages();
         await updateAllAuthorPages();
+        await updateFooterRecentPosts();
         console.log('\n✓ Site update complete!');
     } catch (error) {
         console.error('Error updating site:', error);
@@ -263,11 +334,27 @@ function formatDate(dateString) {
     }
 }
 
+function formatFooterDate(dateString) {
+    if (!dateString) return 'Recently';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function normalizeHtmlTextAmpersands(html) {
+    return html
+        .replace(/&amp;amp;/g, '&')
+        .replace(/>([^<]*)</g, (match, text) => {
+            const updated = text.replace(/&amp;/g, '&');
+            return `>${updated}<`;
+        });
+}
+
 module.exports = {
     updateHomepage,
     updateCategoryPage,
     updateAllCategoryPages,
     updateAuthorPage,
     updateAllAuthorPages,
-    updateEntireSite
+    updateEntireSite,
+    updateFooterRecentPosts
 };

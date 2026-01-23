@@ -1,4 +1,27 @@
 (() => {
+    // Normalize any literal "&amp;" sequences in visible text nodes.
+    const textWalker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+        acceptNode: (node) => {
+            const parent = node.parentNode;
+            if (!parent) return NodeFilter.FILTER_REJECT;
+            const tag = parent.nodeName.toLowerCase();
+            if (tag === 'script' || tag === 'style') {
+                return NodeFilter.FILTER_REJECT;
+            }
+            return node.nodeValue && node.nodeValue.includes('&amp;')
+                ? NodeFilter.FILTER_ACCEPT
+                : NodeFilter.FILTER_REJECT;
+        }
+    });
+
+    const textNodes = [];
+    while (textWalker.nextNode()) {
+        textNodes.push(textWalker.currentNode);
+    }
+    textNodes.forEach(node => {
+        node.nodeValue = node.nodeValue.replace(/&amp;/g, '&');
+    });
+
     const navToggle = document.querySelector(".mobile-toggle");
     const nav = document.querySelector(".nav-links");
 
@@ -89,6 +112,239 @@
             closeModal();
         }
     });
+
+    const tickerEl = document.querySelector('[data-live-ticker]');
+    const marketListEl = document.querySelector('[data-market-list]');
+    const marketTabs = document.querySelectorAll('[data-market-tab]');
+    const marketSourceEl = document.querySelector('[data-market-source]');
+    const eventsListEl = document.querySelector('[data-events-list]');
+
+    const API_PROXY = 'https://api.allorigins.win/raw?url=';
+    const MARKET_SOURCES = {
+        forex: 'FX rates: open.er-api.com',
+        crypto: 'Crypto prices: coingecko.com',
+        indices: 'Indices: Yahoo Finance'
+    };
+    const marketCache = new Map();
+
+    const formatNumber = (value, digits = 2) => new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits
+    }).format(value);
+
+    const formatPrice = (value) => new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(value);
+
+    const formatPercent = (value) => {
+        if (value === null || value === undefined || Number.isNaN(value)) return '—';
+        const sign = value > 0 ? '+' : '';
+        return `${sign}${formatNumber(value, 2)}%`;
+    };
+
+    const fetchWithTimeout = async (url, timeout = 10000) => {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeout);
+        try {
+            const response = await fetch(url, { signal: controller.signal });
+            if (!response.ok) {
+                throw new Error(`Request failed: ${response.status}`);
+            }
+            return response;
+        } finally {
+            clearTimeout(timer);
+        }
+    };
+
+    const proxied = (url) => `${API_PROXY}${encodeURIComponent(url)}`;
+
+    const renderMarketList = (items) => {
+        if (!marketListEl) return;
+        marketListEl.innerHTML = items.map(item => {
+            const changeClass = item.changeClass || 'neutral';
+            const changeText = item.changeText || '—';
+            return `
+                <li>
+                    <span>${item.label}</span>
+                    <strong>${item.value}</strong>
+                    <span class="${changeClass}">${changeText}</span>
+                </li>
+            `;
+        }).join('');
+    };
+
+    const setActiveTab = (tabName) => {
+        marketTabs.forEach(tab => {
+            const isActive = tab.dataset.marketTab === tabName;
+            tab.classList.toggle('is-active', isActive);
+            tab.setAttribute('aria-selected', String(isActive));
+        });
+    };
+
+    const loadForex = async () => {
+        if (marketCache.has('forex')) return marketCache.get('forex');
+        const response = await fetchWithTimeout('https://open.er-api.com/v6/latest/USD');
+        const data = await response.json();
+        if (!data || data.result !== 'success') throw new Error('Forex data unavailable');
+        const usdToEur = data.rates.EUR;
+        const usdToJpy = data.rates.JPY;
+        const usdToGbp = data.rates.GBP;
+        const items = [
+            { label: 'EUR/USD', value: formatNumber(1 / usdToEur, 4), changeText: '—', changeClass: 'neutral' },
+            { label: 'USD/JPY', value: formatNumber(usdToJpy, 2), changeText: '—', changeClass: 'neutral' },
+            { label: 'GBP/USD', value: formatNumber(1 / usdToGbp, 4), changeText: '—', changeClass: 'neutral' }
+        ];
+        marketCache.set('forex', items);
+        return items;
+    };
+
+    const loadCrypto = async () => {
+        if (marketCache.has('crypto')) return marketCache.get('crypto');
+        const url = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true';
+        const response = await fetchWithTimeout(url);
+        const data = await response.json();
+        const items = [
+            {
+                label: 'Bitcoin',
+                value: `$${formatPrice(data.bitcoin.usd)}`,
+                changeText: formatPercent(data.bitcoin.usd_24h_change),
+                changeClass: data.bitcoin.usd_24h_change >= 0 ? 'up' : 'down'
+            },
+            {
+                label: 'Ethereum',
+                value: `$${formatPrice(data.ethereum.usd)}`,
+                changeText: formatPercent(data.ethereum.usd_24h_change),
+                changeClass: data.ethereum.usd_24h_change >= 0 ? 'up' : 'down'
+            },
+            {
+                label: 'Solana',
+                value: `$${formatPrice(data.solana.usd)}`,
+                changeText: formatPercent(data.solana.usd_24h_change),
+                changeClass: data.solana.usd_24h_change >= 0 ? 'up' : 'down'
+            }
+        ];
+        marketCache.set('crypto', items);
+        return items;
+    };
+
+    const loadIndices = async () => {
+        if (marketCache.has('indices')) return marketCache.get('indices');
+        const symbols = ['^GSPC', '^DJI', '^IXIC'];
+        const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols.join(','))}`;
+        const response = await fetchWithTimeout(proxied(url));
+        const data = await response.json();
+        const results = data?.quoteResponse?.result || [];
+        const labelMap = {
+            '^GSPC': 'S&P 500',
+            '^DJI': 'Dow Jones',
+            '^IXIC': 'Nasdaq'
+        };
+        const items = results.map(result => ({
+            label: labelMap[result.symbol] || result.symbol,
+            value: formatPrice(result.regularMarketPrice),
+            changeText: formatPercent(result.regularMarketChangePercent),
+            changeClass: result.regularMarketChangePercent >= 0 ? 'up' : 'down'
+        }));
+        marketCache.set('indices', items);
+        return items;
+    };
+
+    const loadMarketData = async (tabName) => {
+        if (!marketListEl) return;
+        marketListEl.innerHTML = '<li class="market-loading">Loading market data…</li>';
+        try {
+            let items = [];
+            if (tabName === 'forex') items = await loadForex();
+            if (tabName === 'crypto') items = await loadCrypto();
+            if (tabName === 'indices') items = await loadIndices();
+            renderMarketList(items);
+            if (marketSourceEl) {
+                marketSourceEl.textContent = `Live data sources: ${MARKET_SOURCES[tabName]}.`;
+            }
+        } catch (error) {
+            marketListEl.innerHTML = '<li class="market-loading">Unable to load market data right now.</li>';
+            if (marketSourceEl) {
+                marketSourceEl.textContent = 'Live data temporarily unavailable.';
+            }
+        }
+    };
+
+    const loadLiveTicker = async () => {
+        if (!tickerEl) return;
+        try {
+            const rssUrl = 'https://www.marketwatch.com/rss/topstories';
+            const response = await fetchWithTimeout(proxied(rssUrl));
+            const text = await response.text();
+            const xmlDoc = new DOMParser().parseFromString(text, 'text/xml');
+            const titles = Array.from(xmlDoc.querySelectorAll('item > title'))
+                .map(node => node.textContent.trim())
+                .filter(Boolean)
+                .slice(0, 6);
+            if (titles.length) {
+                tickerEl.textContent = titles.join(' • ');
+            }
+        } catch (error) {
+            if (tickerEl.textContent.trim().length === 0) {
+                tickerEl.textContent = 'Live headlines unavailable at the moment.';
+            }
+        }
+    };
+
+    const loadEvents = async () => {
+        if (!eventsListEl) return;
+        try {
+            const eventsUrl = 'https://api.tradingeconomics.com/calendar/country/united%20states?c=guest:guest&f=json';
+            const response = await fetchWithTimeout(proxied(eventsUrl));
+            const data = await response.json();
+            const now = new Date();
+            const upcoming = data
+                .map(item => ({
+                    date: new Date(item.Date || item.date || item.datetime),
+                    event: item.Event || item.EventDescription || item.Title || 'Market Event',
+                    detail: item.Forecast || item.Actual || item.Previous || item.Consensus || 'Details pending'
+                }))
+                .filter(item => !Number.isNaN(item.date.getTime()) && item.date >= now)
+                .sort((a, b) => a.date - b.date)
+                .slice(0, 4);
+
+            if (!upcoming.length) {
+                throw new Error('No upcoming events');
+            }
+
+            eventsListEl.innerHTML = upcoming.map(item => {
+                const dateLabel = item.date.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
+                return `
+                    <li>
+                        <span>${dateLabel}</span>
+                        <div>
+                            <strong>${item.event}</strong>
+                            <small>${item.detail}</small>
+                        </div>
+                    </li>
+                `;
+            }).join('');
+        } catch (error) {
+            eventsListEl.innerHTML = '<li class="events-loading">Unable to load events right now.</li>';
+        }
+    };
+
+    if (marketTabs.length) {
+        marketTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.marketTab;
+                if (!tabName) return;
+                setActiveTab(tabName);
+                loadMarketData(tabName);
+            });
+        });
+        loadMarketData('forex');
+    }
+
+    loadLiveTicker();
+    loadEvents();
+    setInterval(loadLiveTicker, 300000);
+    setInterval(loadEvents, 900000);
 
 })();
 

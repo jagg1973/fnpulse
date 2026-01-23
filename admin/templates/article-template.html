@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Article Title — FNPulse</title>
     <meta name="description" content="Article description" />
+    <meta name="news_keywords" content="Markets, News, FNPulse" />
+    <meta property="article:section" content="Category" />
     <link rel="canonical" href="https://www.FNPulse.com/article" />
 
     <meta property="og:type" content="article" />
@@ -31,10 +33,14 @@
     {
       "@context": "https://schema.org",
       "@type": "NewsArticle",
-      "headline": "Article Title",
-      "image": ["https://www.FNPulse.com/img/news-1200x800-1.jpg"],
-      "datePublished": "2026-01-22T09:00:00+08:00",
-      "dateModified": "2026-01-22T09:00:00+08:00",
+            "headline": "Article Title",
+            "image": ["https://www.FNPulse.com/img/news-1200x800-1.jpg"],
+            "mainEntityOfPage": {
+                "@type": "WebPage",
+                "@id": "https://www.FNPulse.com/news/article-title"
+            },
+            "datePublished": "2026-01-22T09:00:00+08:00",
+            "dateModified": "2026-01-22T09:00:00+08:00",
       "author": [{
           "@type": "Person",
           "name": "Author Name",
@@ -47,7 +53,12 @@
           "@type": "ImageObject",
           "url": "https://www.FNPulse.com/img/logo.png"
         }
-      }
+            },
+            "articleSection": "Category",
+            "keywords": "Markets, News, FNPulse",
+            "inLanguage": "en",
+            "isAccessibleForFree": true,
+            "dateline": "New York"
     }
     </script>
 </head>
@@ -112,6 +123,12 @@
         <div class="article-layout">
             <article class="article-main">
                 <header class="article-header">
+                    <div class="news-kicker">
+                        <span class="news-badge">News</span>
+                        <span class="news-desk">Category Desk</span>
+                        <span class="news-updated">Updated <time datetime="2026-01-22T09:20:00+08:00">Jan 22, 2026 •
+                                09:20 AM EST</time></span>
+                    </div>
                     <span class="post-cat-large">Category</span>
                     <h1 class="article-title">Article Title</h1>
                     <p class="article-lead">
@@ -122,7 +139,15 @@
                             <img src="img/author-face.jpg" alt="Author" class="author-avatar-small">
                             <div class="author-text">
                                 <span class="byline">By <a href="author.html">Author Name</a></span>
-                                <time datetime="2026-01-22">Jan 22, 2026 • 09:00 AM EST</time>
+                                <span class="author-role">Staff Reporter</span>
+                                <span class="meta-line">
+                                    <span class="meta-label">Published</span>
+                                    <time class="meta-published" datetime="2026-01-22">Jan 22, 2026 • 09:00 AM
+                                        EST</time>
+                                    <span class="meta-sep">•</span>
+                                    <span class="meta-label">Dateline</span>
+                                    <span class="meta-dateline">New York</span>
+                                </span>
                             </div>
                         </div>
                         <div class="read-time">5 min read</div>
@@ -134,11 +159,27 @@
                     <figcaption>Image caption goes here</figcaption>
                 </figure>
 
+                <div class="key-points">
+                    <h2>Key Takeaways</h2>
+                    <ul class="key-points-list">
+                        <li>First key point about the story.</li>
+                        <li>Second key point with verified context.</li>
+                        <li>Third key point highlighting market impact.</li>
+                    </ul>
+                </div>
+
                 <div class="article-body">
                     <p>Article content goes here...</p>
                 </div>
 
                 <div class="article-footer">
+                    <div class="news-standards">
+                        <span class="standards-label">FNPulse Newsroom</span>
+                        <a href="editorial-standards.html">Editorial standards</a>
+                        <a href="contact.html">Report an error</a>
+                        <a href="privacy.html">Privacy</a>
+                    </div>
+                    <div class="source-line">Source: FNPulse Newsroom</div>
                     <div class="share-buttons">
                         <span>Share this:</span>
                         <a href="#" class="share-btn fb">Facebook</a>

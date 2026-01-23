@@ -382,6 +382,16 @@ body {
     gap: 0.5rem;
 }
 
+.checkbox-cell {
+    text-align: center;
+}
+
+.footer-toggle {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
 .empty-state {
     text-align: center;
     padding: 4rem 2rem;

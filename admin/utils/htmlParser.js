@@ -82,6 +82,16 @@ async function parseAllArticles() {
         f.startsWith('article-') && f.endsWith('.html')
     );
 
+    try {
+        const newsDir = path.join(NEWS_DIR, 'news');
+        const newsFiles = await fs.readdir(newsDir);
+        newsFiles
+            .filter(f => f.endsWith('.html'))
+            .forEach(f => articleFiles.push(`news/${f}`));
+    } catch (error) {
+        // news directory may not exist yet
+    }
+
     const articles = [];
     for (const file of articleFiles) {
         try {
@@ -92,7 +102,8 @@ async function parseAllArticles() {
                 category: article.category,
                 publishDate: article.publishDate,
                 author: article.author,
-                excerpt: article.excerpt
+                excerpt: article.excerpt,
+                featuredImage: article.featuredImage || (article.content && article.content.featuredImage) || ''
             });
         } catch (error) {
             console.error(`Error parsing ${file}:`, error.message);

@@ -13,7 +13,12 @@ const TEMPLATE_PATH = path.join(__dirname, '../templates/article-template.html')
  */
 function generateFilename(title) {
     const slug = slugify(title, { lower: true, strict: true });
-    return `article-${slug}.html`;
+    return `news/${slug}.html`;
+}
+
+function buildArticleUrl(config, filename) {
+    const normalized = filename.replace(/\\/g, '/');
+    return `${config.siteUrl}/${normalized}`;
 }
 
 /**
@@ -30,22 +35,40 @@ async function createArticle(data) {
     const filename = data.filename || generateFilename(data.title);
     const publishDate = data.publishDate || new Date().toISOString();
     const modifiedDate = data.modifiedDate || publishDate;
+    const articleUrl = buildArticleUrl(config, filename);
+    const displayDate = dayjs(publishDate).format('MMM DD, YYYY');
+    const displayUpdatedDate = dayjs(modifiedDate).format('MMM DD, YYYY');
+    const keywords = Array.isArray(data.keywords) && data.keywords.length
+        ? data.keywords.join(', ')
+        : [data.category, 'News', config.siteName].filter(Boolean).join(', ');
 
     // Update meta tags
     $('title').text(`${data.title} — ${config.siteName}`);
     $('meta[name="description"]').attr('content', data.metaDescription);
-    $('link[rel="canonical"]').attr('href', `${config.siteUrl}/${filename}`);
+    $('link[rel="canonical"]').attr('href', articleUrl);
+    if (data.keywords) {
+        const keywords = Array.isArray(data.keywords) ? data.keywords.join(', ') : data.keywords;
+        $('meta[name="news_keywords"]').attr('content', keywords);
+    }
+    if (data.category) {
+        $('meta[property="article:section"]').attr('content', data.category);
+    }
+    $('link[rel="canonical"]').attr('href', articleUrl);
+    $('meta[name="news_keywords"]').attr('content', keywords);
+    $('meta[property="article:section"]').attr('content', data.category || 'News');
 
     // Open Graph
     $('meta[property="og:title"]').attr('content', data.title);
     $('meta[property="og:description"]').attr('content', data.metaDescription);
-    $('meta[property="og:url"]').attr('content', `${config.siteUrl}/${filename}`);
+    $('meta[property="og:url"]').attr('content', articleUrl);
+    $('meta[property="og:url"]').attr('content', articleUrl);
     $('meta[property="og:image"]').attr('content', data.featuredImage || config.seo.defaultImage);
 
     // Twitter Card
     $('meta[property="twitter:title"]').attr('content', data.title);
     $('meta[property="twitter:description"]').attr('content', data.metaDescription);
-    $('meta[property="twitter:url"]').attr('content', `${config.siteUrl}/${filename}`);
+    $('meta[property="twitter:url"]').attr('content', articleUrl);
+    $('meta[property="twitter:url"]').attr('content', articleUrl);
     $('meta[property="twitter:image"]').attr('content', data.featuredImage || config.seo.defaultImage);
 
     // Schema.org JSON-LD
@@ -54,6 +77,10 @@ async function createArticle(data) {
         "@type": "NewsArticle",
         "headline": data.title,
         "image": [data.featuredImage || config.seo.defaultImage],
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": articleUrl
+        },
         "datePublished": publishDate,
         "dateModified": modifiedDate,
         "author": [{
@@ -69,7 +96,12 @@ async function createArticle(data) {
                 "url": `${config.siteUrl}/${config.logoPath}`
             }
         },
-        "description": data.metaDescription
+        "description": data.metaDescription,
+        "articleSection": data.category || 'News',
+        "keywords": keywords,
+        "inLanguage": "en",
+        "isAccessibleForFree": true,
+        "dateline": data.dateline || ''
     };
 
     $('script[type="application/ld+json"]').html(JSON.stringify(schemaData, null, 2));
@@ -77,8 +109,10 @@ async function createArticle(data) {
     // Update ticker
     $('.ticker-content').text(data.tickerContent || config.tickerNews);
 
+    // Update footer description
+    $('.f-desc').text(config.siteDescription || 'Latest financial news and market coverage from FNPulse.');
+
     // Update date display
-    const displayDate = dayjs(publishDate).format('MMM DD, YYYY');
     $('.date-display').text(displayDate);
 
     // Update breadcrumb
@@ -90,6 +124,17 @@ async function createArticle(data) {
     $('.post-cat-large').text(data.category);
     $('.article-title').text(data.title);
     $('.article-lead').text(data.excerpt);
+
+    // Newsroom indicators
+    const deskLabel = data.desk || `${data.category} Desk`;
+    $('.news-desk').text(deskLabel);
+    $('.news-updated time').attr('datetime', modifiedDate)
+        .text(`${displayUpdatedDate} • ${data.updatedTime || data.publishTime || '09:20 AM EST'}`);
+
+    $('.meta-published').attr('datetime', publishDate)
+        .text(`${displayDate} • ${data.publishTime || '09:00 AM EST'}`);
+    $('.meta-dateline').text(data.dateline || 'New York');
+    $('.author-role').text(data.authorRole || 'Staff Reporter');
 
     // Author info
     $('.author-info .byline a').text(data.author)
@@ -108,6 +153,20 @@ async function createArticle(data) {
     // Article body
     $('.article-body').html(data.body);
 
+    // Key points
+    if (Array.isArray(data.keyPoints) && data.keyPoints.length) {
+        const list = $('.key-points-list');
+        list.empty();
+        data.keyPoints.forEach(point => {
+            list.append(`<li>${point}</li>`);
+        });
+    } else {
+        $('.key-points').remove();
+    }
+
+    // Source line
+    $('.source-line').text(data.sourceLine || `Source: ${config.siteName} Newsroom`);
+
     // Author box
     $('.author-box h5').text(`About ${data.author}`);
     $('.author-box p').text(data.authorBio || `${data.author} is a financial journalist covering markets and economic policy.`);
@@ -116,6 +175,7 @@ async function createArticle(data) {
 
     // Save file
     const filePath = path.join(NEWS_DIR, filename);
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
     await fs.writeFile(filePath, $.html());
 
     return { filename, path: filePath };
@@ -163,12 +223,25 @@ async function updateArticle(filename, data) {
         schemaData.headline = data.title;
         schemaData.description = data.metaDescription;
         schemaData.dateModified = modifiedDate;
+        schemaData.mainEntityOfPage = {
+            "@type": "WebPage",
+            "@id": articleUrl
+        };
         if (data.author) {
             schemaData.author = [{
                 "@type": "Person",
                 "name": data.author,
                 "url": `${config.siteUrl}/author-${slugify(data.author, { lower: true, strict: true })}.html`
             }];
+        }
+        if (data.category) {
+            schemaData.articleSection = data.category;
+        }
+        if (data.keywords) {
+            schemaData.keywords = Array.isArray(data.keywords) ? data.keywords.join(', ') : data.keywords;
+        }
+        if (data.dateline) {
+            schemaData.dateline = data.dateline;
         }
         if (data.featuredImage) {
             schemaData.image = [data.featuredImage];
@@ -200,6 +273,9 @@ async function updateArticle(filename, data) {
     }
 
     // Save updated file
+    // Update footer description
+    $('.f-desc').text(config.siteDescription || 'Latest financial news and market coverage from FNPulse.');
+
     await fs.writeFile(filePath, $.html());
 
     return { filename, path: filePath };

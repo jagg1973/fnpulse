@@ -81,6 +81,14 @@ async function getAllAds() {
 }
 
 /**
+ * Get footer selected posts
+ */
+async function getFooterPosts() {
+    const data = await getContent();
+    return data.footerPosts || [];
+}
+
+/**
  * Get ad by ID
  */
 async function getAdById(id) {
@@ -144,6 +152,25 @@ async function deleteAd(id) {
 }
 
 /**
+ * Update footer post selection by filename
+ */
+async function setFooterPostSelection(filename, includeInFooter) {
+    const data = await getContent();
+    if (!data.footerPosts) data.footerPosts = [];
+
+    const exists = data.footerPosts.includes(filename);
+    if (includeInFooter && !exists) {
+        data.footerPosts.push(filename);
+    }
+    if (!includeInFooter && exists) {
+        data.footerPosts = data.footerPosts.filter(item => item !== filename);
+    }
+
+    await saveContent(data);
+    return data.footerPosts;
+}
+
+/**
  * Get content data
  */
 async function getContent() {
@@ -152,7 +179,7 @@ async function getContent() {
         return JSON.parse(contentData);
     } catch (error) {
         // If file doesn't exist, return default structure
-        return { authors: [], adBanners: [] };
+        return { authors: [], adBanners: [], footerPosts: [] };
     }
 }
 
@@ -183,5 +210,7 @@ module.exports = {
     getAdById,
     createAd,
     updateAd,
-    deleteAd
+    deleteAd,
+    getFooterPosts,
+    setFooterPostSelection
 };

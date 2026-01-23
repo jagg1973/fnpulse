@@ -13,6 +13,7 @@ const templateGenerator = require('./utils/templateGenerator');
 const fileManager = require('./utils/fileManager');
 const contentManager = require('./utils/contentManager');
 const siteUpdater = require('./utils/siteUpdater');
+const pageManager = require('./utils/pageManager');
 const deployer = require('./utils/deployer');
 const gitDeployer = require('./utils/gitDeployer');
 
@@ -65,7 +66,8 @@ app.get('/', async (req, res) => {
 app.get('/articles', async (req, res) => {
     try {
         const articles = await fileManager.getAllArticles();
-        res.render('articles', { page: 'articles', articles });
+        const footerPosts = await contentManager.getFooterPosts();
+        res.render('articles', { page: 'articles', articles, footerPosts });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -88,6 +90,13 @@ app.post('/api/articles', async (req, res) => {
     try {
         const result = await templateGenerator.createArticle(req.body);
 
+        if (typeof req.body.includeInFooter !== 'undefined') {
+            await contentManager.setFooterPostSelection(
+                result.filename,
+                req.body.includeInFooter === 'true' || req.body.includeInFooter === true
+            );
+        }
+
         // Update site pages with new article
         await siteUpdater.updateHomepage();
         if (req.body.category) {
@@ -96,6 +105,7 @@ app.post('/api/articles', async (req, res) => {
         if (req.body.author) {
             await siteUpdater.updateAuthorPage(req.body.author);
         }
+        await siteUpdater.updateFooterRecentPosts();
 
         res.json({ success: true, filename: result.filename });
     } catch (error) {
@@ -107,6 +117,13 @@ app.put('/api/articles/:filename', async (req, res) => {
     try {
         await templateGenerator.updateArticle(req.params.filename, req.body);
 
+        if (typeof req.body.includeInFooter !== 'undefined') {
+            await contentManager.setFooterPostSelection(
+                req.params.filename,
+                req.body.includeInFooter === 'true' || req.body.includeInFooter === true
+            );
+        }
+
         // Update site pages
         await siteUpdater.updateHomepage();
         if (req.body.category) {
@@ -115,6 +132,7 @@ app.put('/api/articles/:filename', async (req, res) => {
         if (req.body.author) {
             await siteUpdater.updateAuthorPage(req.body.author);
         }
+        await siteUpdater.updateFooterRecentPosts();
 
         res.json({ success: true });
     } catch (error) {
@@ -274,6 +292,56 @@ app.post('/api/regenerate-all', async (req, res) => {
     }
 });
 
+// Pages Routes
+app.get('/pages', async (req, res) => {
+    try {
+        const pages = await pageManager.getAllPages();
+        res.render('pages', { page: 'pages', pages });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/pages/new', async (req, res) => {
+    try {
+        const templateHtml = await pageManager.getPageTemplate();
+        res.render('page-editor', {
+            page: 'pages',
+            mode: 'create',
+            pageData: { filename: '', html: templateHtml }
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/pages/edit/:filename', async (req, res) => {
+    try {
+        const pageData = await pageManager.getPage(req.params.filename);
+        res.render('page-editor', { page: 'pages', mode: 'edit', pageData });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/pages', async (req, res) => {
+    try {
+        const result = await pageManager.createPage(req.body.filename, req.body.html);
+        res.json({ success: true, filename: result.filename });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.put('/api/pages/:filename', async (req, res) => {
+    try {
+        await pageManager.updatePage(req.params.filename, req.body.html);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Authors Routes
 app.get('/authors', async (req, res) => {
     try {
@@ -331,6 +399,27 @@ app.get('/api/authors', async (req, res) => {
     try {
         const authors = await contentManager.getAllAuthors();
         res.json(authors);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Footer posts routes
+app.get('/api/footer-posts', async (req, res) => {
+    try {
+        const footerPosts = await contentManager.getFooterPosts();
+        res.json(footerPosts);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.put('/api/footer-posts/:filename', async (req, res) => {
+    try {
+        const includeInFooter = req.body.includeInFooter === true || req.body.includeInFooter === 'true';
+        const footerPosts = await contentManager.setFooterPostSelection(req.params.filename, includeInFooter);
+        await siteUpdater.updateFooterRecentPosts();
+        res.json({ success: true, footerPosts });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

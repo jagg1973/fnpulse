@@ -79,6 +79,7 @@ async function backupFile(filename) {
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const backupPath = path.join(backupDir, `${timestamp}-${filename}`);
+    await fs.mkdir(path.dirname(backupPath), { recursive: true });
     await fs.copyFile(sourcePath, backupPath);
 }
 

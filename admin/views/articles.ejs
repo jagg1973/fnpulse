@@ -25,6 +25,10 @@
                     <span class="icon">📝</span>
                     <span>Articles</span>
                 </a>
+                <a href="/pages" class="nav-item">
+                    <span class="icon">📄</span>
+                    <span>Pages</span>
+                </a>
                 <a href="/authors" class="nav-item">
                     <span class="icon">👤</span>
                     <span>Authors</span>
@@ -80,6 +84,7 @@
                             <th>Category</th>
                             <th>Author</th>
                             <th>Date</th>
+                            <th>Footer</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -105,6 +110,11 @@
                                         <%= article.publishDate ? new Date(article.publishDate).toLocaleDateString()
                                             : '-' %>
                                     </td>
+                                    <td class="checkbox-cell">
+                                        <input type="checkbox" class="footer-toggle"
+                                            data-filename="<%= article.filename %>" <%=(footerPosts ||
+                                            []).includes(article.filename) ? 'checked' : '' %>>
+                                    </td>
                                     <td class="actions-cell">
                                         <a href="/articles/edit/<%= article.filename %>" class="btn-icon" title="Edit">
                                             ✏️
@@ -122,7 +132,7 @@
                                 <% }) %>
                                     <% } else { %>
                                         <tr>
-                                            <td colspan="5" class="empty-state">
+                                            <td colspan="6" class="empty-state">
                                                 <div class="empty-content">
                                                     <span class="empty-icon">📝</span>
                                                     <h3>No articles yet</h3>
@@ -140,6 +150,30 @@
 
     <script src="/public/js/admin.js"></script>
     <script>
+        const footerToggles = document.querySelectorAll('.footer-toggle');
+        footerToggles.forEach(toggle => {
+            toggle.addEventListener('change', async (event) => {
+                const filename = event.target.dataset.filename;
+                const includeInFooter = event.target.checked;
+
+                try {
+                    const response = await fetch(`/api/footer-posts/${filename}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ includeInFooter })
+                    });
+                    const result = await response.json();
+                    if (!result.success) {
+                        alert('❌ Error: ' + (result.error || 'Unable to update footer selection'));
+                        event.target.checked = !includeInFooter;
+                    }
+                } catch (error) {
+                    alert('❌ Error: ' + error.message);
+                    event.target.checked = !includeInFooter;
+                }
+            });
+        });
+
         // Search functionality
         document.getElementById('searchArticles').addEventListener('input', filterArticles);
         document.getElementById('filterCategory').addEventListener('change', filterArticles);

@@ -29,6 +29,10 @@
                     <span class="icon">📝</span>
                     <span>Articles</span>
                 </a>
+                <a href="/pages" class="nav-item">
+                    <span class="icon">📄</span>
+                    <span>Pages</span>
+                </a>
                 <a href="/authors" class="nav-item">
                     <span class="icon">👤</span>
                     <span>Authors</span>
@@ -127,6 +131,13 @@
                             <input type="text" id="publishTime" name="publishTime" class="form-control"
                                 value="<%= article ? (article.publishTime || '09:00 AM EST') : '09:00 AM EST' %>">
                         </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="includeInFooter" name="includeInFooter">
+                            Feature this article in the footer "Recent Post" section
+                        </label>
                     </div>
                 </div>
 
@@ -309,6 +320,21 @@
             }
         }
 
+        async function loadFooterSelection() {
+            const checkbox = document.getElementById('includeInFooter');
+            if (!checkbox) return;
+
+            try {
+                const response = await fetch('/api/footer-posts');
+                const footerPosts = await response.json();
+                <% if (article && article.filename) { %>
+                    checkbox.checked = footerPosts.includes('<%= article.filename %>');
+                <% } %>
+            } catch (error) {
+                console.error('Error loading footer selection:', error);
+            }
+        }
+
         // HTML mode toggle functions
         function switchToHTML() {
             currentMode = 'html';
@@ -334,6 +360,7 @@
 
         // Initialize
         loadAuthors();
+        loadFooterSelection();
 
         // Meta title character count
         const metaTitle = document.getElementById('metaTitle');
@@ -370,6 +397,7 @@
             // Convert to JSON
             const data = {};
             formData.forEach((value, key) => data[key] = value);
+            data.includeInFooter = document.getElementById('includeInFooter').checked;
 
             const mode = '<%= mode %>';
             const url = mode === 'create' ? '/api/articles' : `/api/articles/${data.filename}`;
