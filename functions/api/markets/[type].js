@@ -31,12 +31,41 @@ async function handleForex() {
     const usdToEur = data.rates.EUR;
     const usdToJpy = data.rates.JPY;
     const usdToGbp = data.rates.GBP;
+
+    const stooqMap = {
+        'EUR/USD': 'eurusd',
+        'USD/JPY': 'usdjpy',
+        'GBP/USD': 'gbpusd'
+    };
+    const stooqQuotes = await Promise.all(Object.entries(stooqMap).map(async ([label, symbol]) => {
+        const quote = await fetchStooqQuote(symbol);
+        return [label, quote];
+    }));
+    const changeMap = Object.fromEntries(stooqQuotes);
+
     const items = [
-        { label: 'EUR/USD', value: (1 / usdToEur).toFixed(4), changeText: '—', changeClass: 'neutral' },
-        { label: 'USD/JPY', value: usdToJpy.toFixed(2), changeText: '—', changeClass: 'neutral' },
-        { label: 'GBP/USD', value: (1 / usdToGbp).toFixed(4), changeText: '—', changeClass: 'neutral' }
+        buildForexItem('EUR/USD', (1 / usdToEur).toFixed(4), changeMap['EUR/USD']),
+        buildForexItem('USD/JPY', usdToJpy.toFixed(2), changeMap['USD/JPY']),
+        buildForexItem('GBP/USD', (1 / usdToGbp).toFixed(4), changeMap['GBP/USD'])
     ];
-    return jsonResponse({ items, source: 'FX rates: open.er-api.com' });
+    return jsonResponse({ items, source: 'FX rates: open.er-api.com / Stooq' });
+}
+
+function buildForexItem(label, value, stooqQuote) {
+    if (stooqQuote && stooqQuote.changePercent !== null) {
+        return {
+            label,
+            value,
+            changeText: `${stooqQuote.changePercent.toFixed(2)}%`,
+            changeClass: stooqQuote.changePercent >= 0 ? 'up' : 'down'
+        };
+    }
+    return {
+        label,
+        value,
+        changeText: '—',
+        changeClass: 'neutral'
+    };
 }
 
 async function handleCrypto() {
