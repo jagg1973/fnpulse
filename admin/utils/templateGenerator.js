@@ -6,6 +6,7 @@ const cheerio = require('cheerio');
 const fileManager = require('./fileManager');
 const { ensureHeadStructure } = require('./schemaUtils');
 const { minifyAssets } = require('./assetMinifier');
+const { minifyHtml } = require('./htmlMinifier');
 
 const NEWS_DIR = path.join(__dirname, '../../News');
 const TEMPLATE_PATH = path.join(__dirname, '../templates/article-template.html');
@@ -184,7 +185,7 @@ async function createArticle(data) {
     ensureHeadStructure($, { filename, config });
     updateAssetLinks($);
     await minifyAssets();
-    await fs.writeFile(filePath, $.html());
+    await fs.writeFile(filePath, await minifyHtml($.html()));
 
     return { filename, path: filePath };
 }
@@ -291,7 +292,7 @@ async function updateArticle(filename, data) {
     ensureHeadStructure($, { filename, config });
     updateAssetLinks($);
     await minifyAssets();
-    await fs.writeFile(filePath, $.html());
+    await fs.writeFile(filePath, await minifyHtml($.html()));
 
     return { filename, path: filePath };
 }
@@ -347,7 +348,7 @@ async function updatePageGlobals(filename, config) {
     ensureHeadStructure($, { filename, config });
     updateAssetLinks($);
     await minifyAssets();
-    await fs.writeFile(filePath, $.html());
+    await fs.writeFile(filePath, await minifyHtml($.html()));
 }
 
 module.exports = {

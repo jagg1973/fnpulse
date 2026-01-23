@@ -4,6 +4,7 @@ const fileManager = require('./fileManager');
 const { normalizeHtmlDocument } = require('./schemaUtils');
 const { updateAssetLinks } = require('./assetUtils');
 const { minifyAssets } = require('./assetMinifier');
+const { minifyHtml } = require('./htmlMinifier');
 
 const NEWS_DIR = path.join(__dirname, '../../News');
 const PAGE_TEMPLATE = path.join(__dirname, '../templates/page-template.html');
@@ -48,7 +49,7 @@ async function createPage(filename, html) {
     const $ = require('cheerio').load(normalized, { xmlMode: false, decodeEntities: false });
     updateAssetLinks($);
     await minifyAssets();
-    await fs.writeFile(filePath, $.html());
+    await fs.writeFile(filePath, await minifyHtml($.html()));
     return { filename, path: filePath };
 }
 
@@ -62,7 +63,7 @@ async function updatePage(filename, html) {
     const $ = require('cheerio').load(normalized, { xmlMode: false, decodeEntities: false });
     updateAssetLinks($);
     await minifyAssets();
-    await fs.writeFile(filePath, $.html());
+    await fs.writeFile(filePath, await minifyHtml($.html()));
     return { filename, path: filePath };
 }
 
