@@ -3,6 +3,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const multer = require('multer');
 const fs = require('fs').promises;
+const cheerio = require('cheerio');
 
 const app = express();
 const PORT = 3000;
@@ -211,6 +212,113 @@ app.post('/api/settings', async (req, res) => {
     try {
         await fileManager.saveConfig(req.body);
         res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+const fetchWithTimeout = async (url, timeout = 10000) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeout);
+    try {
+        const response = await fetch(url, { signal: controller.signal });
+        if (!response.ok) {
+            throw new Error(`Request failed: ${response.status}`);
+        }
+        return response;
+    } finally {
+        clearTimeout(timer);
+    }
+};
+
+app.get('/api/live-ticker', async (req, res) => {
+    try {
+        const rssUrl = 'https://www.marketwatch.com/rss/topstories';
+        const response = await fetchWithTimeout(rssUrl);
+        const xml = await response.text();
+        const $ = cheerio.load(xml, { xmlMode: true });
+        const titles = $('item > title').toArray().map(el => $(el).text().trim()).filter(Boolean).slice(0, 6);
+        res.json({ headlines: titles });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/markets/:type', async (req, res) => {
+    try {
+        const type = req.params.type;
+        if (type === 'forex') {
+            const response = await fetchWithTimeout('https://open.er-api.com/v6/latest/USD');
+            const data = await response.json();
+            if (!data || data.result !== 'success') {
+                throw new Error('Forex data unavailable');
+            }
+            const usdToEur = data.rates.EUR;
+            const usdToJpy = data.rates.JPY;
+            const usdToGbp = data.rates.GBP;
+            const items = [
+                { label: 'EUR/USD', value: (1 / usdToEur).toFixed(4), changeText: '—', changeClass: 'neutral' },
+                { label: 'USD/JPY', value: usdToJpy.toFixed(2), changeText: '—', changeClass: 'neutral' },
+                { label: 'GBP/USD', value: (1 / usdToGbp).toFixed(4), changeText: '—', changeClass: 'neutral' }
+            ];
+            return res.json({ items, source: 'FX rates: open.er-api.com' });
+        }
+
+        if (type === 'crypto') {
+            const url = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true';
+            const response = await fetchWithTimeout(url);
+            const data = await response.json();
+            const items = [
+                { label: 'Bitcoin', value: `$${Number(data.bitcoin.usd).toFixed(2)}`, changeText: `${data.bitcoin.usd_24h_change.toFixed(2)}%`, changeClass: data.bitcoin.usd_24h_change >= 0 ? 'up' : 'down' },
+                { label: 'Ethereum', value: `$${Number(data.ethereum.usd).toFixed(2)}`, changeText: `${data.ethereum.usd_24h_change.toFixed(2)}%`, changeClass: data.ethereum.usd_24h_change >= 0 ? 'up' : 'down' },
+                { label: 'Solana', value: `$${Number(data.solana.usd).toFixed(2)}`, changeText: `${data.solana.usd_24h_change.toFixed(2)}%`, changeClass: data.solana.usd_24h_change >= 0 ? 'up' : 'down' }
+            ];
+            return res.json({ items, source: 'Crypto prices: coingecko.com' });
+        }
+
+        if (type === 'indices') {
+            const symbols = ['^GSPC', '^DJI', '^IXIC'];
+            const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols.join(','))}`;
+            const response = await fetchWithTimeout(url);
+            const data = await response.json();
+            const results = data?.quoteResponse?.result || [];
+            const labelMap = { '^GSPC': 'S&P 500', '^DJI': 'Dow Jones', '^IXIC': 'Nasdaq' };
+            const items = results.map(result => ({
+                label: labelMap[result.symbol] || result.symbol,
+                value: Number(result.regularMarketPrice).toFixed(2),
+                changeText: `${Number(result.regularMarketChangePercent).toFixed(2)}%`,
+                changeClass: result.regularMarketChangePercent >= 0 ? 'up' : 'down'
+            }));
+            return res.json({ items, source: 'Indices: Yahoo Finance' });
+        }
+
+        return res.status(400).json({ error: 'Unsupported market type' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/events', async (req, res) => {
+    try {
+        const eventsUrl = 'https://api.tradingeconomics.com/calendar/country/united%20states?c=guest:guest&f=json';
+        const response = await fetchWithTimeout(eventsUrl);
+        const data = await response.json();
+        const now = new Date();
+        const upcoming = data
+            .map(item => ({
+                date: new Date(item.Date || item.date || item.datetime),
+                event: item.Event || item.EventDescription || item.Title || 'Market Event',
+                detail: item.Forecast || item.Actual || item.Previous || item.Consensus || 'Details pending'
+            }))
+            .filter(item => !Number.isNaN(item.date.getTime()) && item.date >= now)
+            .sort((a, b) => a.date - b.date)
+            .slice(0, 4)
+            .map(item => ({
+                date: item.date.toISOString(),
+                event: item.event,
+                detail: item.detail
+            }));
+        res.json({ events: upcoming });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
