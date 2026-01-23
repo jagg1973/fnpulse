@@ -120,6 +120,10 @@
     const eventsListEl = document.querySelector('[data-events-list]');
 
     const API_PROXY = 'https://api.allorigins.win/raw?url=';
+    const localApiBase = window.location.origin && window.location.origin !== 'null'
+        ? window.location.origin
+        : 'http://localhost:3000';
+    const apiUrl = (path) => `${localApiBase}${path}`;
     const MARKET_SOURCES = {
         forex: 'FX rates: open.er-api.com',
         crypto: 'Crypto prices: coingecko.com',
@@ -195,7 +199,7 @@
 
     const loadForex = async () => {
         if (marketCache.has('forex')) return marketCache.get('forex');
-        const { response, source } = await fetchLocalFirst('/api/markets/forex', 'https://open.er-api.com/v6/latest/USD');
+        const { response, source } = await fetchLocalFirst(apiUrl('/api/markets/forex'), 'https://open.er-api.com/v6/latest/USD');
         const data = await response.json();
         if (source === 'local' && data.items) {
             marketCache.set('forex', data.items);
@@ -217,7 +221,7 @@
     const loadCrypto = async () => {
         if (marketCache.has('crypto')) return marketCache.get('crypto');
         const url = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true';
-        const { response, source } = await fetchLocalFirst('/api/markets/crypto', url);
+        const { response, source } = await fetchLocalFirst(apiUrl('/api/markets/crypto'), url);
         const data = await response.json();
         if (source === 'local' && data.items) {
             marketCache.set('crypto', data.items);
@@ -251,7 +255,7 @@
         if (marketCache.has('indices')) return marketCache.get('indices');
         const symbols = ['^GSPC', '^DJI', '^IXIC'];
         const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols.join(','))}`;
-        const { response, source } = await fetchLocalFirst('/api/markets/indices', proxied(url));
+        const { response, source } = await fetchLocalFirst(apiUrl('/api/markets/indices'), proxied(url));
         const data = await response.json();
         if (source === 'local' && data.items) {
             marketCache.set('indices', data.items);
@@ -297,7 +301,7 @@
         if (!tickerEl) return;
         try {
             const rssUrl = 'https://www.marketwatch.com/rss/topstories';
-            const { response, source } = await fetchLocalFirst('/api/live-ticker', proxied(rssUrl));
+            const { response, source } = await fetchLocalFirst(apiUrl('/api/live-ticker'), proxied(rssUrl));
             if (source === 'local') {
                 const data = await response.json();
                 if (Array.isArray(data.headlines) && data.headlines.length) {
@@ -325,7 +329,7 @@
         if (!eventsListEl) return;
         try {
             const eventsUrl = 'https://api.tradingeconomics.com/calendar/country/united%20states?c=guest:guest&f=json';
-            const { response, source } = await fetchLocalFirst('/api/events', proxied(eventsUrl));
+            const { response, source } = await fetchLocalFirst(apiUrl('/api/events'), proxied(eventsUrl));
             const data = await response.json();
             if (source === 'local' && Array.isArray(data.events)) {
                 eventsListEl.innerHTML = data.events.map(item => {
