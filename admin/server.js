@@ -291,14 +291,77 @@ app.get('/api/markets/:type', async (req, res) => {
             const response = await fetchWithTimeout(url);
             const data = await response.json();
             const results = data?.quoteResponse?.result || [];
-            const labelMap = { '^GSPC': 'S&P 500', '^DJI': 'Dow Jones', '^IXIC': 'Nasdaq' };
-            const items = results.map(result => ({
-                label: labelMap[result.symbol] || result.symbol,
-                value: Number(result.regularMarketPrice).toFixed(2),
-                changeText: `${Number(result.regularMarketChangePercent).toFixed(2)}%`,
-                changeClass: result.regularMarketChangePercent >= 0 ? 'up' : 'down'
+            if (results.length) {
+                const labelMap = { '^GSPC': 'S&P 500', '^DJI': 'Dow Jones', '^IXIC': 'Nasdaq' };
+                const items = results.map(result => ({
+                    label: labelMap[result.symbol] || result.symbol,
+                    value: Number(result.regularMarketPrice).toFixed(2),
+                    changeText: `${Number(result.regularMarketChangePercent).toFixed(2)}%`,
+                    changeClass: result.regularMarketChangePercent >= 0 ? 'up' : 'down'
+                }));
+                return res.json({ items, source: 'Indices: Yahoo Finance' });
+            }
+
+            const stooqSymbols = [
+                { symbol: '^spx', label: 'S&P 500' },
+                { symbol: '^dji', label: 'Dow Jones' },
+                { symbol: '^ndq', label: 'Nasdaq' }
+            ];
+            const items = await Promise.all(stooqSymbols.map(async ({ symbol, label }) => {
+                const quote = await fetchStooqQuote(symbol);
+                if (!quote) return null;
+                return {
+                    label,
+                    value: Number(quote.price).toFixed(2),
+                    changeText: quote.changePercent !== null ? `${quote.changePercent.toFixed(2)}%` : '—',
+                    changeClass: quote.changePercent === null ? 'neutral' : quote.changePercent >= 0 ? 'up' : 'down'
+                };
             }));
-            return res.json({ items, source: 'Indices: Yahoo Finance' });
+            const filtered = items.filter(Boolean);
+            if (!filtered.length) {
+                return res.status(502).json({ error: 'Indices data unavailable' });
+            }
+            return res.json({ items: filtered, source: 'Indices: Stooq' });
+        }
+
+        if (type === 'commodities') {
+            const symbols = ['GC=F', 'SI=F', 'CL=F', 'BZ=F'];
+            const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols.join(','))}`;
+            const response = await fetchWithTimeout(url);
+            const data = await response.json();
+            const results = data?.quoteResponse?.result || [];
+            if (results.length) {
+                const labelMap = { 'GC=F': 'Gold', 'SI=F': 'Silver', 'CL=F': 'WTI Crude', 'BZ=F': 'Brent Crude' };
+                const items = results.map(result => ({
+                    label: labelMap[result.symbol] || result.symbol,
+                    value: Number(result.regularMarketPrice).toFixed(2),
+                    changeText: `${Number(result.regularMarketChangePercent).toFixed(2)}%`,
+                    changeClass: result.regularMarketChangePercent >= 0 ? 'up' : 'down'
+                }));
+                return res.json({ items, source: 'Commodities: Yahoo Finance' });
+            }
+
+            const stooqSymbols = [
+                { symbol: 'xauusd', label: 'Gold' },
+                { symbol: 'xagusd', label: 'Silver' },
+                { symbol: 'cl.f', label: 'WTI Crude' },
+                { symbol: 'brent', label: 'Brent Crude' }
+            ];
+            const items = await Promise.all(stooqSymbols.map(async ({ symbol, label }) => {
+                const quote = await fetchStooqQuote(symbol);
+                if (!quote) return null;
+                return {
+                    label,
+                    value: Number(quote.price).toFixed(2),
+                    changeText: quote.changePercent !== null ? `${quote.changePercent.toFixed(2)}%` : '—',
+                    changeClass: quote.changePercent === null ? 'neutral' : quote.changePercent >= 0 ? 'up' : 'down'
+                };
+            }));
+            const filtered = items.filter(Boolean);
+            if (!filtered.length) {
+                return res.status(502).json({ error: 'Commodities data unavailable' });
+            }
+            return res.json({ items: filtered, source: 'Commodities: Stooq' });
         }
 
         return res.status(400).json({ error: 'Unsupported market type' });
@@ -306,6 +369,22 @@ app.get('/api/markets/:type', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+async function fetchStooqQuote(symbol) {
+    const url = `https://stooq.com/q/l/?s=${encodeURIComponent(symbol)}&f=sd2t2ohlcv&h&e=csv`;
+    const response = await fetchWithTimeout(url);
+    if (!response.ok) return null;
+    const text = await response.text();
+    const lines = text.trim().split('\n');
+    if (lines.length < 2) return null;
+    const values = lines[1].split(',');
+    if (values.length < 7) return null;
+    const open = Number(values[3]);
+    const close = Number(values[6]);
+    if (!Number.isFinite(close)) return null;
+    const changePercent = Number.isFinite(open) && open > 0 ? ((close - open) / open) * 100 : null;
+    return { price: close, changePercent };
+}
 
 app.get('/api/events', async (req, res) => {
     try {

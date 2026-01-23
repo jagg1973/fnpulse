@@ -127,7 +127,8 @@
     const MARKET_SOURCES = {
         forex: 'FX rates: open.er-api.com',
         crypto: 'Crypto prices: coingecko.com',
-        indices: 'Indices: Yahoo Finance'
+        indices: 'Indices: Yahoo Finance / Stooq',
+        commodities: 'Commodities: Yahoo Finance / Stooq'
     };
     const marketCache = new Map();
 
@@ -277,6 +278,33 @@
         return items;
     };
 
+    const loadCommodities = async () => {
+        if (marketCache.has('commodities')) return marketCache.get('commodities');
+        const yahooSymbols = ['GC=F', 'SI=F', 'CL=F', 'BZ=F'];
+        const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(yahooSymbols.join(','))}`;
+        const { response, source } = await fetchLocalFirst(apiUrl('/api/markets/commodities'), proxied(url));
+        const data = await response.json();
+        if (source === 'local' && data.items) {
+            marketCache.set('commodities', data.items);
+            return data.items;
+        }
+        const results = data?.quoteResponse?.result || [];
+        const labelMap = {
+            'GC=F': 'Gold',
+            'SI=F': 'Silver',
+            'CL=F': 'WTI Crude',
+            'BZ=F': 'Brent Crude'
+        };
+        const items = results.map(result => ({
+            label: labelMap[result.symbol] || result.symbol,
+            value: formatPrice(result.regularMarketPrice),
+            changeText: formatPercent(result.regularMarketChangePercent),
+            changeClass: result.regularMarketChangePercent >= 0 ? 'up' : 'down'
+        }));
+        marketCache.set('commodities', items);
+        return items;
+    };
+
     const loadMarketData = async (tabName) => {
         if (!marketListEl) return;
         marketListEl.innerHTML = '<li class="market-loading">Loading market data…</li>';
@@ -285,6 +313,7 @@
             if (tabName === 'forex') items = await loadForex();
             if (tabName === 'crypto') items = await loadCrypto();
             if (tabName === 'indices') items = await loadIndices();
+            if (tabName === 'commodities') items = await loadCommodities();
             renderMarketList(items);
             if (marketSourceEl) {
                 marketSourceEl.textContent = `Live data sources: ${MARKET_SOURCES[tabName]}.`;
@@ -332,6 +361,10 @@
             const { response, source } = await fetchLocalFirst(apiUrl('/api/events'), proxied(eventsUrl));
             const data = await response.json();
             if (source === 'local' && Array.isArray(data.events)) {
+                if (!data.events.length) {
+                    eventsListEl.innerHTML = '<li class="events-loading">No upcoming events in the feed.</li>';
+                    return;
+                }
                 eventsListEl.innerHTML = data.events.map(item => {
                     const dateObj = new Date(item.date);
                     const dateLabel = dateObj.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
@@ -359,7 +392,8 @@
                 .slice(0, 4);
 
             if (!upcoming.length) {
-                throw new Error('No upcoming events');
+                eventsListEl.innerHTML = '<li class="events-loading">No upcoming events in the feed.</li>';
+                return;
             }
 
             eventsListEl.innerHTML = upcoming.map(item => {
