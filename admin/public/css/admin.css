@@ -466,6 +466,122 @@ body {
     color: var(--secondary);
 }
 
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.editor-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.helper-text {
+    color: var(--secondary);
+    font-size: 0.9rem;
+    margin-top: 0.35rem;
+}
+
+.editor-tabs {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.editor-tab {
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.editor-tab.is-active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.page-editor {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.page-editor[data-view="split"] {
+    grid-template-columns: 1fr 1fr;
+}
+
+.page-editor[data-view="preview"] .editor-pane-code {
+    display: none;
+}
+
+.page-editor[data-view="code"] .editor-pane-preview {
+    display: none;
+}
+
+.editor-textarea {
+    min-height: 420px;
+    resize: vertical;
+}
+
+.editor-pane-preview {
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: white;
+    display: flex;
+    flex-direction: column;
+}
+
+.preview-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: #f8fafc;
+}
+
+.preview-label {
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.btn-small {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+}
+
+#pagePreview {
+    width: 100%;
+    min-height: 420px;
+    border: none;
+    background: white;
+}
+
+@media (max-width: 1024px) {
+    .page-editor[data-view="split"] {
+        grid-template-columns: 1fr;
+    }
+}
+
 .image-input-group {
     display: flex;
     gap: 0.5rem;

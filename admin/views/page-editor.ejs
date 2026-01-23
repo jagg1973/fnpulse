@@ -84,9 +84,37 @@
                 </div>
 
                 <div class="form-section">
-                    <h3>Page HTML</h3>
-                    <textarea id="html" name="html" class="form-control" rows="18"
-                        style="font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;"><%- pageData && pageData.html ? pageData.html : '' %></textarea>
+                    <div class="editor-header">
+                        <div>
+                            <h3>Page Content</h3>
+                            <p class="helper-text">Switch between raw HTML and a rendered preview.</p>
+                        </div>
+                        <div class="editor-tabs" role="tablist" aria-label="Editor views">
+                            <button type="button" class="editor-tab is-active" data-editor-view="code" role="tab"
+                                aria-selected="true">HTML</button>
+                            <button type="button" class="editor-tab" data-editor-view="split" role="tab"
+                                aria-selected="false">Split</button>
+                            <button type="button" class="editor-tab" data-editor-view="preview" role="tab"
+                                aria-selected="false">Preview</button>
+                        </div>
+                    </div>
+
+                    <div class="page-editor" data-editor-view-container>
+                        <div class="editor-pane editor-pane-code">
+                            <label class="sr-only" for="html">Page HTML</label>
+                            <textarea id="html" name="html" class="form-control editor-textarea" rows="18"
+                                style="font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;"><%- pageData && pageData.html ? pageData.html : '' %></textarea>
+                        </div>
+                        <div class="editor-pane editor-pane-preview">
+                            <div class="preview-toolbar">
+                                <span class="preview-label">Live Preview</span>
+                                <button type="button" class="btn btn-secondary btn-small"
+                                    id="refreshPreview">Refresh</button>
+                            </div>
+                            <iframe id="pagePreview" title="Page preview"
+                                sandbox="allow-same-origin allow-scripts allow-forms"></iframe>
+                        </div>
+                    </div>
                 </div>
             </form>
         </main>
@@ -94,6 +122,60 @@
 
     <script src="/public/js/admin.js"></script>
     <script>
+        const editorTabs = document.querySelectorAll('[data-editor-view]');
+        const editorContainer = document.querySelector('[data-editor-view-container]');
+        const htmlInput = document.getElementById('html');
+        const previewFrame = document.getElementById('pagePreview');
+        const refreshBtn = document.getElementById('refreshPreview');
+
+        function setEditorView(view) {
+            if (!editorContainer) return;
+            editorContainer.dataset.view = view;
+            editorTabs.forEach(tab => {
+                const isActive = tab.dataset.editorView === view;
+                tab.classList.toggle('is-active', isActive);
+                tab.setAttribute('aria-selected', String(isActive));
+            });
+            if (view !== 'code') {
+                updatePreview();
+            }
+        }
+
+        function injectBaseTag(html) {
+            if (!html) return '';
+            if (/<base\s/i.test(html)) return html;
+            if (/<head[^>]*>/i.test(html)) {
+                return html.replace(/<head([^>]*)>/i, '<head$1><base href="/site-assets/">');
+            }
+            return `<base href="/site-assets/">${html}`;
+        }
+
+        let previewTimer;
+        function updatePreview() {
+            if (!previewFrame || !htmlInput) return;
+            const raw = htmlInput.value || '';
+            const withBase = injectBaseTag(raw);
+            previewFrame.srcdoc = withBase;
+        }
+
+        editorTabs.forEach(tab => {
+            tab.addEventListener('click', () => setEditorView(tab.dataset.editorView));
+        });
+
+        if (htmlInput) {
+            htmlInput.addEventListener('input', () => {
+                if (editorContainer?.dataset.view === 'code') return;
+                clearTimeout(previewTimer);
+                previewTimer = setTimeout(updatePreview, 400);
+            });
+        }
+
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', updatePreview);
+        }
+
+        setEditorView('code');
+
         async function savePage() {
             const form = document.getElementById('pageForm');
             const formData = new FormData(form);
