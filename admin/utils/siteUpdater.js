@@ -5,6 +5,8 @@ const htmlParser = require('./htmlParser');
 const contentManager = require('./contentManager');
 const fileManager = require('./fileManager');
 const { ensureHeadStructure } = require('./schemaUtils');
+const { updateAssetLinks } = require('./assetUtils');
+const { minifyAssets } = require('./assetMinifier');
 
 const NEWS_DIR = path.join(__dirname, '../../News');
 
@@ -77,6 +79,7 @@ async function updateHomepage() {
         }
     });
 
+    updateAssetLinks($);
     ensureHeadStructure($, { filename: 'index.html', config });
     await fs.writeFile(homepagePath, $.html());
     console.log('✓ Homepage updated');
@@ -137,6 +140,7 @@ async function updateFooterRecentPosts() {
             $('.f-desc').text(config.siteDescription);
         }
 
+        updateAssetLinks($);
         ensureHeadStructure($, { filename: file, config });
         const normalized = normalizeHtmlTextAmpersands($.html());
         await fs.writeFile(filePath, normalized);
@@ -199,6 +203,7 @@ async function updateCategoryPage(categoryName) {
     }
 
     const config = await fileManager.getConfig();
+    updateAssetLinks($);
     ensureHeadStructure($, { filename: categoryFile, config });
     await fs.writeFile(categoryPath, $.html());
     console.log(`✓ ${categoryName} page updated`);
@@ -278,6 +283,7 @@ async function updateAuthorPage(authorName) {
     }
 
     const config = await fileManager.getConfig();
+    updateAssetLinks($);
     ensureHeadStructure($, { filename: authorFile, config });
     await fs.writeFile(authorPath, $.html());
     console.log(`✓ ${authorName} author page updated`);
@@ -306,6 +312,7 @@ async function updateEntireSite() {
     console.log('Updating entire site...\n');
 
     try {
+        await minifyAssets();
         await updateHomepage();
         await updateAllCategoryPages();
         await updateAllAuthorPages();

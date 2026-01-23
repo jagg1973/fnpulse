@@ -32,6 +32,7 @@ async function createArticle(data) {
         xmlMode: false,
         decodeEntities: false
     });
+    const { updateAssetLinks } = require('./assetUtils');
 
     const filename = data.filename || generateFilename(data.title);
     const publishDate = data.publishDate || new Date().toISOString();
@@ -180,6 +181,7 @@ async function createArticle(data) {
     const filePath = path.join(NEWS_DIR, filename);
     await fs.mkdir(path.dirname(filePath), { recursive: true });
     ensureHeadStructure($, { filename, config });
+    updateAssetLinks($);
     await fs.writeFile(filePath, $.html());
 
     return { filename, path: filePath };
@@ -285,6 +287,7 @@ async function updateArticle(filename, data) {
     $('.f-desc').text(config.siteDescription || 'Latest financial news and market coverage from FNPulse.');
 
     ensureHeadStructure($, { filename, config });
+    updateAssetLinks($);
     await fs.writeFile(filePath, $.html());
 
     return { filename, path: filePath };
@@ -339,6 +342,7 @@ async function updatePageGlobals(filename, config) {
 
     // Save updated file
     ensureHeadStructure($, { filename, config });
+    updateAssetLinks($);
     await fs.writeFile(filePath, $.html());
 }
 
