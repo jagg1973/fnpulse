@@ -193,6 +193,11 @@ app.delete('/api/images/:filename', async (req, res) => {
 app.post('/api/update-site', async (req, res) => {
     try {
         await siteUpdater.updateEntireSite();
+        const config = await fileManager.getConfig();
+        if (config?.deployment?.github?.repository) {
+            const commitMessage = `Update site content (${new Date().toISOString()})`;
+            await gitDeployer.pushToGitHub(config, commitMessage);
+        }
         res.json({ success: true, message: 'Site updated successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -510,6 +515,11 @@ app.post('/api/git/init', async (req, res) => {
 app.post('/api/regenerate-all', async (req, res) => {
     try {
         await templateGenerator.regenerateAllPages();
+        const config = await fileManager.getConfig();
+        if (config?.deployment?.github?.repository) {
+            const commitMessage = `Regenerate pages (${new Date().toISOString()})`;
+            await gitDeployer.pushToGitHub(config, commitMessage);
+        }
         res.json({ success: true, message: 'All pages regenerated successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });
