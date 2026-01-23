@@ -46,6 +46,18 @@ async function pushToGitHub(config, commitMessage = 'Update site content') {
         console.log('📝 Staging changes...');
         execSync('git add .', { stdio: 'inherit' });
 
+        // Ensure git user identity is set for commits
+        try {
+            execSync('git config user.email', { stdio: 'pipe' });
+        } catch (error) {
+            execSync('git config user.email "admin@fnpulse.com"', { stdio: 'inherit' });
+        }
+        try {
+            execSync('git config user.name', { stdio: 'pipe' });
+        } catch (error) {
+            execSync('git config user.name "FNPulse Admin"', { stdio: 'inherit' });
+        }
+
         // Check if there are changes to commit
         try {
             execSync('git diff-index --quiet HEAD --', { stdio: 'pipe' });
