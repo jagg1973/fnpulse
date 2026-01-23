@@ -38,6 +38,9 @@ function ensureHeadStructure($, options = {}) {
     if (!$('meta[property="og:type"]').length) {
         head.append(`<meta property="og:type" content="website">`);
     }
+    if (config?.siteName && !$('meta[property="og:site_name"]').length) {
+        head.append(`<meta property="og:site_name" content="${config.siteName}">`);
+    }
     if (!$('meta[property="og:title"]').length) {
         head.append(`<meta property="og:title" content="${titleText}">`);
     }
@@ -68,6 +71,9 @@ function ensureHeadStructure($, options = {}) {
     }
     if (config?.seo?.twitterHandle && !$('meta[property="twitter:site"]').length) {
         head.append(`<meta property="twitter:site" content="${config.seo.twitterHandle}">`);
+    }
+    if (config?.seo?.twitterHandle && !$('meta[property="twitter:creator"]').length) {
+        head.append(`<meta property="twitter:creator" content="${config.seo.twitterHandle}">`);
     }
 
     const hasJsonLd = $('script[type="application/ld+json"]').length > 0;
@@ -115,6 +121,41 @@ function ensureHeadStructure($, options = {}) {
             };
 
         head.append(`<script type="application/ld+json">${JSON.stringify(schemaData, null, 2)}</script>`);
+    }
+
+    const existingJsonLd = $('script[type="application/ld+json"]').toArray().map(el => $(el).html());
+    const hasWebSiteSchema = existingJsonLd.some(script => script && script.includes('"@type": "WebSite"'));
+    const hasOrganizationSchema = existingJsonLd.some(script => script && script.includes('"@type": "Organization"'));
+
+    if ((!hasWebSiteSchema || !hasOrganizationSchema) && config?.siteUrl) {
+        const logoUrl = config.logoPath ? `${config.siteUrl}/${config.logoPath}` : `${config.siteUrl}/img/logo.png`;
+        const siteSchema = {
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "Organization",
+                    "@id": `${config.siteUrl}/#organization`,
+                    "name": config.siteName || 'FNPulse',
+                    "url": config.siteUrl,
+                    "logo": {
+                        "@type": "ImageObject",
+                        "url": logoUrl,
+                        "width": 600,
+                        "height": 60
+                    }
+                },
+                {
+                    "@type": "WebSite",
+                    "@id": `${config.siteUrl}/#website`,
+                    "name": config.siteName || titleText,
+                    "url": config.siteUrl,
+                    "publisher": {
+                        "@id": `${config.siteUrl}/#organization`
+                    }
+                }
+            ]
+        };
+        head.append(`<script type="application/ld+json">${JSON.stringify(siteSchema, null, 2)}</script>`);
     }
 }
 

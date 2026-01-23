@@ -5,6 +5,7 @@ const dayjs = require('dayjs');
 const cheerio = require('cheerio');
 const fileManager = require('./fileManager');
 const { ensureHeadStructure } = require('./schemaUtils');
+const { minifyAssets } = require('./assetMinifier');
 
 const NEWS_DIR = path.join(__dirname, '../../News');
 const TEMPLATE_PATH = path.join(__dirname, '../templates/article-template.html');
@@ -182,6 +183,7 @@ async function createArticle(data) {
     await fs.mkdir(path.dirname(filePath), { recursive: true });
     ensureHeadStructure($, { filename, config });
     updateAssetLinks($);
+    await minifyAssets();
     await fs.writeFile(filePath, $.html());
 
     return { filename, path: filePath };
@@ -288,6 +290,7 @@ async function updateArticle(filename, data) {
 
     ensureHeadStructure($, { filename, config });
     updateAssetLinks($);
+    await minifyAssets();
     await fs.writeFile(filePath, $.html());
 
     return { filename, path: filePath };
@@ -343,6 +346,7 @@ async function updatePageGlobals(filename, config) {
     // Save updated file
     ensureHeadStructure($, { filename, config });
     updateAssetLinks($);
+    await minifyAssets();
     await fs.writeFile(filePath, $.html());
 }
 
