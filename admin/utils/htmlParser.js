@@ -31,11 +31,13 @@ async function parseArticle(filename) {
         author: '',
         category: '',
         featuredImage: '',
-        excerpt: ''
+        excerpt: '',
+        contentType: ''
     };
 
     // Extract Schema.org JSON-LD
     const schemaScript = $('script[type="application/ld+json"]').html();
+    let schemaType = '';
     if (schemaScript) {
         try {
             article.schemaData = JSON.parse(schemaScript);
@@ -43,6 +45,11 @@ async function parseArticle(filename) {
             article.modifiedDate = article.schemaData.dateModified || '';
             if (article.schemaData.author && article.schemaData.author[0]) {
                 article.author = article.schemaData.author[0].name || '';
+            }
+            if (article.schemaData['@type']) {
+                schemaType = Array.isArray(article.schemaData['@type'])
+                    ? article.schemaData['@type'].join(',')
+                    : article.schemaData['@type'];
             }
         } catch (e) {
             console.error('Error parsing schema:', e);
@@ -66,6 +73,23 @@ async function parseArticle(filename) {
     article.category = articleMeta || '';
     article.excerpt = articleExcerpt || article.metaDescription;
     article.featuredImage = featuredImgSrc || '';
+
+    if (!article.contentType) {
+        const metaContentType = $('meta[name="content_type"]').attr('content')
+            || $('meta[name="article_type"]').attr('content')
+            || '';
+        if (metaContentType) {
+            article.contentType = metaContentType.toLowerCase();
+        } else if (filename.startsWith('news/')) {
+            article.contentType = 'news';
+        } else if (filename.startsWith('article-')) {
+            article.contentType = 'article';
+        } else if (String(schemaType).toLowerCase().includes('newsarticle')) {
+            article.contentType = 'news';
+        } else {
+            article.contentType = 'article';
+        }
+    }
 
     // Extract ticker content
     article.tickerContent = $('.ticker-content').text() || '';
@@ -103,7 +127,8 @@ async function parseAllArticles() {
                 publishDate: article.publishDate,
                 author: article.author,
                 excerpt: article.excerpt,
-                featuredImage: article.featuredImage || (article.content && article.content.featuredImage) || ''
+                featuredImage: article.featuredImage || (article.content && article.content.featuredImage) || '',
+                contentType: article.contentType || 'article'
             });
         } catch (error) {
             console.error(`Error parsing ${file}:`, error.message);

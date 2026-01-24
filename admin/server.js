@@ -75,7 +75,8 @@ app.get('/', async (req, res) => {
 
 app.get('/articles', async (req, res) => {
     try {
-        const articles = await fileManager.getAllArticles();
+        const allArticles = await fileManager.getAllArticles();
+        const articles = allArticles.filter(article => (article.contentType || 'article') !== 'news');
         const footerPosts = await contentManager.getFooterPosts();
         res.render('articles', { page: 'articles', articles, footerPosts });
     } catch (error) {
@@ -84,13 +85,38 @@ app.get('/articles', async (req, res) => {
 });
 
 app.get('/articles/new', (req, res) => {
-    res.render('article-editor', { page: 'articles', article: null, mode: 'create' });
+    res.render('article-editor', { page: 'articles', article: null, mode: 'create', contentType: 'article' });
 });
 
 app.get('/articles/edit/:filename', async (req, res) => {
     try {
         const article = await htmlParser.parseArticle(req.params.filename);
-        res.render('article-editor', { page: 'articles', article, mode: 'edit' });
+        res.render('article-editor', { page: 'articles', article, mode: 'edit', contentType: article.contentType || 'article' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/news', async (req, res) => {
+    try {
+        const allArticles = await fileManager.getAllArticles();
+        const articles = allArticles.filter(article => (article.contentType || 'article') === 'news');
+        const footerPosts = await contentManager.getFooterPosts();
+        res.render('news', { page: 'news', articles, footerPosts });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/news/new', (req, res) => {
+    res.render('article-editor', { page: 'news', article: null, mode: 'create', contentType: 'news' });
+});
+
+app.get('/news/edit/*', async (req, res) => {
+    try {
+        const filename = req.params[0] || req.params.filename;
+        const article = await htmlParser.parseArticle(filename);
+        res.render('article-editor', { page: 'news', article, mode: 'edit', contentType: article.contentType || 'news' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -123,13 +149,14 @@ app.post('/api/articles', async (req, res) => {
     }
 });
 
-app.put('/api/articles/:filename', async (req, res) => {
+app.put('/api/articles/*', async (req, res) => {
     try {
-        await templateGenerator.updateArticle(req.params.filename, req.body);
+        const filename = req.params[0] || req.params.filename;
+        await templateGenerator.updateArticle(filename, req.body);
 
         if (typeof req.body.includeInFooter !== 'undefined') {
             await contentManager.setFooterPostSelection(
-                req.params.filename,
+                filename,
                 req.body.includeInFooter === 'true' || req.body.includeInFooter === true
             );
         }
@@ -150,10 +177,11 @@ app.put('/api/articles/:filename', async (req, res) => {
     }
 });
 
-app.delete('/api/articles/:filename', async (req, res) => {
+app.delete('/api/articles/*', async (req, res) => {
     try {
-        await fileManager.deleteArticle(req.params.filename);
-        await contentManager.setFooterPostSelection(req.params.filename, false);
+        const filename = req.params[0] || req.params.filename;
+        await fileManager.deleteArticle(filename);
+        await contentManager.setFooterPostSelection(filename, false);
         await siteUpdater.updateEntireSite();
         res.json({ success: true });
     } catch (error) {

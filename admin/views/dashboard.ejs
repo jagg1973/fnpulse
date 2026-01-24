@@ -25,6 +25,10 @@
                     <span class="icon">📝</span>
                     <span>Articles</span>
                 </a>
+                <a href="/news" class="nav-item <%= page === 'news' ? 'active' : '' %>">
+                    <span class="icon">🗞️</span>
+                    <span>News</span>
+                </a>
                 <a href="/pages" class="nav-item <%= page === 'pages' ? 'active' : '' %>">
                     <span class="icon">📄</span>
                     <span>Pages</span>
@@ -69,6 +73,10 @@
                         <a href="/articles/new" class="btn btn-primary">
                             <span class="icon">➕</span>
                             New Article
+                        </a>
+                        <a href="/news/new" class="btn btn-primary">
+                            <span class="icon">🗞️</span>
+                            New News
                         </a>
                         <a href="/images" class="btn btn-secondary">
                             <span class="icon">⬆️</span>

@@ -14,9 +14,12 @@ const TEMPLATE_PATH = path.join(__dirname, '../templates/article-template.html')
 /**
  * Generate article filename from title
  */
-function generateFilename(title) {
+function generateFilename(title, contentType = 'article') {
     const slug = slugify(title, { lower: true, strict: true });
-    return `news/${slug}.html`;
+    if (contentType === 'news') {
+        return `news/${slug}.html`;
+    }
+    return `article-${slug}.html`;
 }
 
 function buildArticleUrl(config, filename) {
@@ -36,7 +39,9 @@ async function createArticle(data) {
     });
     const { updateAssetLinks } = require('./assetUtils');
 
-    const filename = data.filename || generateFilename(data.title);
+    const contentTypeRaw = (data.contentType || data.articleType || data.type || '').toString().toLowerCase();
+    const contentType = contentTypeRaw === 'news' ? 'news' : 'article';
+    const filename = data.filename || generateFilename(data.title, contentType);
     const publishDate = data.publishDate || new Date().toISOString();
     const modifiedDate = data.modifiedDate || publishDate;
     const articleUrl = buildArticleUrl(config, filename);
@@ -60,6 +65,7 @@ async function createArticle(data) {
     $('link[rel="canonical"]').attr('href', articleUrl);
     $('meta[name="news_keywords"]').attr('content', keywords);
     $('meta[property="article:section"]').attr('content', data.category || 'News');
+    $('meta[name="content_type"]').attr('content', contentType);
 
     // Open Graph
     $('meta[property="og:title"]').attr('content', data.title);
@@ -78,7 +84,7 @@ async function createArticle(data) {
     // Schema.org JSON-LD
     const schemaData = {
         "@context": "https://schema.org",
-        "@type": "NewsArticle",
+        "@type": contentType === 'news' ? "NewsArticle" : "Article",
         "headline": data.title,
         "image": [data.featuredImage || config.seo.defaultImage],
         "mainEntityOfPage": {
@@ -125,6 +131,19 @@ async function createArticle(data) {
     $('.breadcrumb .current').text(data.title.substring(0, 50) + (data.title.length > 50 ? '...' : ''));
     const categorySlug = slugify(data.category, { lower: true, strict: true });
     $('.breadcrumb a').eq(1).attr('href', `${categorySlug}.html`).text(data.category);
+
+    // Content type UI
+    $('body').attr('data-content-type', contentType);
+    if (contentType === 'news') {
+        $('body').addClass('news-article');
+        $('.news-badge').text('News');
+        $('.news-desk').text(`${data.category || 'News'} Desk`);
+    } else {
+        $('body').removeClass('news-article');
+        $('.news-kicker').remove();
+        $('.news-standards').remove();
+        $('.source-line').remove();
+    }
 
     // Update article content
     $('.post-cat-large').text(data.category);
@@ -205,7 +224,10 @@ async function updateArticle(filename, data) {
     });
 
     const config = await fileManager.getConfig();
+    const articleUrl = buildArticleUrl(config, filename);
     const modifiedDate = new Date().toISOString();
+    const contentTypeRaw = (data.contentType || $('meta[name="content_type"]').attr('content') || '').toString().toLowerCase();
+    const contentType = contentTypeRaw === 'news' ? 'news' : 'article';
 
     // Update meta tags
     $('title').text(`${data.title} — ${config.siteName}`);
@@ -232,6 +254,7 @@ async function updateArticle(filename, data) {
         schemaData.headline = data.title;
         schemaData.description = data.metaDescription;
         schemaData.dateModified = modifiedDate;
+        schemaData['@type'] = contentType === 'news' ? 'NewsArticle' : 'Article';
         schemaData.mainEntityOfPage = {
             "@type": "WebPage",
             "@id": articleUrl
@@ -260,6 +283,19 @@ async function updateArticle(filename, data) {
             schemaData.publisher.logo.height = schemaData.publisher.logo.height || 60;
         }
         $('script[type="application/ld+json"]').html(JSON.stringify(schemaData, null, 2));
+    }
+
+    $('meta[name="content_type"]').attr('content', contentType);
+    $('body').attr('data-content-type', contentType);
+    if (contentType === 'news') {
+        $('body').addClass('news-article');
+        $('.news-badge').text('News');
+        $('.news-desk').text(`${data.category || 'News'} Desk`);
+    } else {
+        $('body').removeClass('news-article');
+        $('.news-kicker').remove();
+        $('.news-standards').remove();
+        $('.source-line').remove();
     }
 
     // Update article content

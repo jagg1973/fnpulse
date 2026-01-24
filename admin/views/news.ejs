@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Articles - FNPulse Admin</title>
+    <title>News - FNPulse Admin</title>
     <link rel="stylesheet" href="/public/css/admin.css">
 </head>
 
@@ -21,11 +21,11 @@
                     <span class="icon">📊</span>
                     <span>Dashboard</span>
                 </a>
-                <a href="/articles" class="nav-item active">
+                <a href="/articles" class="nav-item">
                     <span class="icon">📝</span>
                     <span>Articles</span>
                 </a>
-                <a href="/news" class="nav-item">
+                <a href="/news" class="nav-item active">
                     <span class="icon">🗞️</span>
                     <span>News</span>
                 </a>
@@ -61,15 +61,15 @@
         <!-- Main Content -->
         <main class="main-content">
             <header class="content-header">
-                <h1>Articles</h1>
-                <a href="/articles/new" class="btn btn-primary">
+                <h1>News</h1>
+                <a href="/news/new" class="btn btn-primary">
                     <span class="icon">➕</span>
-                    New Article
+                    New News
                 </a>
             </header>
 
             <div class="search-filter">
-                <input type="text" id="searchArticles" placeholder="Search articles..." class="search-input">
+                <input type="text" id="searchArticles" placeholder="Search news..." class="search-input">
                 <select id="filterCategory" class="filter-select">
                     <option value="">All Categories</option>
                     <option value="markets">Markets</option>
@@ -120,7 +120,7 @@
                                             []).includes(article.filename) ? 'checked' : '' %>>
                                     </td>
                                     <td class="actions-cell">
-                                        <a href="/articles/edit/<%= article.filename %>" class="btn-icon" title="Edit">
+                                        <a href="/news/edit/<%= article.filename %>" class="btn-icon" title="Edit">
                                             ✏️
                                         </a>
                                         <a href="/site-assets/<%= article.filename %>" target="_blank" class="btn-icon"
@@ -138,10 +138,10 @@
                                         <tr>
                                             <td colspan="6" class="empty-state">
                                                 <div class="empty-content">
-                                                    <span class="empty-icon">📝</span>
-                                                    <h3>No articles yet</h3>
-                                                    <p>Create your first article to get started</p>
-                                                    <a href="/articles/new" class="btn btn-primary">Create Article</a>
+                                                    <span class="empty-icon">🗞️</span>
+                                                    <h3>No news yet</h3>
+                                                    <p>Create your first news item to get started</p>
+                                                    <a href="/news/new" class="btn btn-primary">Create News</a>
                                                 </div>
                                             </td>
                                         </tr>
@@ -211,7 +211,7 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    alert('✅ Article deleted successfully');
+                    alert('✅ News deleted successfully');
                     location.reload();
                 } else {
                     alert('❌ Error: ' + result.error);

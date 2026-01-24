@@ -25,9 +25,13 @@
                     <span class="icon">📊</span>
                     <span>Dashboard</span>
                 </a>
-                <a href="/articles" class="nav-item active">
+                <a href="/articles" class="nav-item <%= page==='articles' ? 'active' : '' %>">
                     <span class="icon">📝</span>
                     <span>Articles</span>
+                </a>
+                <a href="/news" class="nav-item <%= page==='news' ? 'active' : '' %>">
+                    <span class="icon">🗞️</span>
+                    <span>News</span>
                 </a>
                 <a href="/pages" class="nav-item">
                     <span class="icon">📄</span>
@@ -56,9 +60,11 @@
         <main class="main-content">
             <header class="content-header">
                 <div>
-                    <a href="/articles" class="back-link">← Back to Articles</a>
+                    <a href="<%= contentType === 'news' ? '/news' : '/articles' %>" class="back-link">← Back to <%=
+                            contentType==='news' ? 'News' : 'Articles' %></a>
                     <h1>
-                        <%= mode==='create' ? 'Create New' : 'Edit' %> Article
+                        <%= mode==='create' ? 'Create New' : 'Edit' %>
+                            <%= contentType==='news' ? 'News' : 'Article' %>
                     </h1>
                 </div>
                 <div class="header-actions">
@@ -79,6 +85,14 @@
                     </div>
 
                     <div class="form-row">
+                        <div class="form-group">
+                            <label for="contentType">Content Type *</label>
+                            <select id="contentType" name="contentType" class="form-control" required>
+                                <option value="news" <%=contentType==='news' ? 'selected' : '' %>>News</option>
+                                <option value="article" <%=contentType==='article' ? 'selected' : '' %>>Article</option>
+                            </select>
+                            <small>News items appear in the Latest News list.</small>
+                        </div>
                         <div class="form-group">
                             <label for="category">Category *</label>
                             <select id="category" name="category" class="form-control" required>
@@ -400,6 +414,7 @@
             data.includeInFooter = document.getElementById('includeInFooter').checked;
 
             const mode = '<%= mode %>';
+            const contentType = document.getElementById('contentType').value;
             const url = mode === 'create' ? '/api/articles' : `/api/articles/${data.filename}`;
             const method = mode === 'create' ? 'POST' : 'PUT';
 
@@ -414,7 +429,7 @@
 
                 if (result.success) {
                     alert('✅ Article saved successfully!');
-                    window.location.href = '/articles';
+                    window.location.href = contentType === 'news' ? '/news' : '/articles';
                 } else {
                     alert('❌ Error: ' + result.error);
                 }
@@ -468,6 +483,7 @@
             const author = document.getElementById('author').value;
             const excerpt = document.getElementById('excerpt').value;
             const featuredImage = document.getElementById('featuredImage').value;
+            const contentType = document.getElementById('contentType').value;
 
             // Get content from current editor mode
             let content;
@@ -505,7 +521,7 @@
                     </style>
                 </head>
                 <body>
-                    <div class="preview-banner">📝 PREVIEW MODE - This is how your article will look</div>
+                    <div class="preview-banner">📝 PREVIEW MODE - This is how your ${contentType === 'news' ? 'news item' : 'article'} will look</div>
                     <main class="container article-container" style="margin-top: 20px;">
                         <div class="breadcrumb">
                             <a href="#">Home</a> <span>/</span> <a href="#">${category}</a> <span>/</span> <span class="current">${title}</span>
@@ -513,6 +529,7 @@
                         <div class="article-layout">
                             <article class="article-main">
                                 <header class="article-header">
+                                    ${contentType === 'news' ? `<div class="news-kicker"><span class="news-badge">News</span> <span class="news-desk">${category} Desk</span></div>` : ''}
                                     <span class="post-cat-large">${category}</span>
                                     <h1 class="article-title">${title}</h1>
                                     <p class="article-lead">${excerpt}</p>

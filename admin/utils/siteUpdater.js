@@ -64,21 +64,30 @@ async function updateHomepage() {
         });
     }
 
-    // Update Latest News section
-    const latestArticles = articles.slice(0, 3);
-    $('.news-list .news-item').each((index, elem) => {
-        if (latestArticles[index]) {
-            const article = latestArticles[index];
-            const articleImage = (article.content && article.content.featuredImage) || article.featuredImage || `img/news-350x223-${index + 1}.jpg`;
-            $(elem).find('img').attr('src', articleImage);
-            $(elem).find('.eyebrow').text(article.category || 'News');
-            $(elem).find('h3').text(article.title);
-            $(elem).find('p').text(article.excerpt || article.metaDescription || '');
-
-            // Make the article clickable
-            $(elem).wrap(`<a href="${article.filename}" style="text-decoration: none; color: inherit;"></a>`);
-        }
-    });
+    // Update Latest News section (latest 10 news items)
+    const newsArticles = articles.filter(article => (article.contentType || 'article') === 'news');
+    const latestNews = (newsArticles.length ? newsArticles : articles).slice(0, 10);
+    const newsListHtml = latestNews.map((article, index) => {
+        const articleImage = (article.content && article.content.featuredImage)
+            || article.featuredImage
+            || `img/news-350x223-${(index % 5) + 1}.jpg`;
+        return `
+        <a href="${article.filename}" class="news-link" style="text-decoration:none;color:inherit;">
+            <article class="news-item">
+                <img src="${articleImage}" alt="${article.title}">
+                <div>
+                    <span class="eyebrow">${article.category || 'News'}</span>
+                    <h3>${article.title}</h3>
+                    <p>${article.excerpt || ''}</p>
+                    <div class="meta">${formatDate(article.publishDate)}</div>
+                </div>
+            </article>
+        </a>
+        `;
+    }).join('');
+    if ($('.news-list').length > 0) {
+        $('.news-list').html(newsListHtml);
+    }
 
     updateAssetLinks($);
     ensureHeadStructure($, { filename: 'index.html', config });
