@@ -153,6 +153,8 @@ app.put('/api/articles/:filename', async (req, res) => {
 app.delete('/api/articles/:filename', async (req, res) => {
     try {
         await fileManager.deleteArticle(req.params.filename);
+        await contentManager.setFooterPostSelection(req.params.filename, false);
+        await siteUpdater.updateEntireSite();
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: error.message });

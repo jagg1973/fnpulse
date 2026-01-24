@@ -38,7 +38,13 @@ async function getAllImages() {
  */
 async function deleteArticle(filename) {
     const filePath = path.join(NEWS_DIR, filename);
-    await fs.unlink(filePath);
+    try {
+        await fs.unlink(filePath);
+    } catch (error) {
+        if (error.code !== 'ENOENT') {
+            throw error;
+        }
+    }
 }
 
 /**
