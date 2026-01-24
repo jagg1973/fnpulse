@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Press Releases - FNPulse Admin</title>
+    <link rel="stylesheet" href="/public/css/admin.css">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>FNPulse</h2>
+                <p>Admin Dashboard</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-item">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/articles" class="nav-item">
+                    <span class="icon">📝</span>
+                    <span>Articles</span>
+                </a>
+                <a href="/news" class="nav-item">
+                    <span class="icon">🗞️</span>
+                    <span>News</span>
+                </a>
+                <a href="/press-releases" class="nav-item active">
+                    <span class="icon">📢</span>
+                    <span>Press Releases</span>
+                </a>
+                <a href="/pages" class="nav-item">
+                    <span class="icon">📄</span>
+                    <span>Pages</span>
+                </a>
+                <a href="/authors" class="nav-item">
+                    <span class="icon">👤</span>
+                    <span>Authors</span>
+                </a>
+                <a href="/ads" class="nav-item">
+                    <span class="icon">💰</span>
+                    <span>Ad Banners</span>
+                </a>
+                <a href="/images" class="nav-item">
+                    <span class="icon">🖼️</span>
+                    <span>Images</span>
+                </a>
+                <a href="/settings" class="nav-item">
+                    <span class="icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="/site-assets/index.html" target="_blank" class="btn-preview">
+                    <span class="icon">👁️</span>
+                    Preview Site
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Press Releases</h1>
+                <a href="/press-releases/new" class="btn btn-primary">
+                    <span class="icon">➕</span>
+                    New Press Release
+                </a>
+            </header>
+
+            <div class="alert alert-info" style="margin-bottom: 2rem;">
+                <strong>📢 Press Release Management</strong><br>
+                Manage official company press releases for journalists, investors, and media outlets. These follow
+                professional PR formatting standards.
+            </div>
+
+            <div class="search-filter">
+                <input type="text" id="searchPressReleases" placeholder="Search press releases..." class="search-input">
+                <select id="filterType" class="filter-select">
+                    <option value="">All Types</option>
+                    <option value="product">Product Launch</option>
+                    <option value="financial">Financial Results</option>
+                    <option value="partnership">Partnership</option>
+                    <option value="award">Award</option>
+                    <option value="executive">Executive Appointment</option>
+                    <option value="general">General</option>
+                </select>
+            </div>
+
+            <div class="articles-table-wrapper">
+                <table class="articles-table">
+                    <thead>
+                        <tr>
+                            <th>Headline</th>
+                            <th>Type</th>
+                            <th>Release Date</th>
+                            <th>Status</th>
+                            <th>Homepage</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (pressReleases && pressReleases.length> 0) { %>
+                            <% pressReleases.forEach(pr=> { %>
+                                <tr>
+                                    <td class="article-title-cell">
+                                        <strong>
+                                            <%= pr.headline %>
+                                        </strong>
+                                        <% if (pr.subheadline) { %>
+                                            <br><small style="color: #64748b;">
+                                                <%= pr.subheadline.substring(0, 80) %>...
+                                            </small>
+                                            <% } %>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-<%= pr.type || 'general' %>">
+                                            <%= pr.type ? pr.type.charAt(0).toUpperCase() + pr.type.slice(1) : 'General'
+                                                %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <%= new Date(pr.releaseDate).toLocaleDateString('en-US', { month: 'short' ,
+                                            day: 'numeric' , year: 'numeric' }) %>
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="badge <%= pr.status === 'published' ? 'badge-success' : 'badge-warning' %>">
+                                            <%= pr.status ? pr.status.charAt(0).toUpperCase() + pr.status.slice(1)
+                                                : 'Draft' %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <input type="checkbox" class="homepage-checkbox"
+                                            data-filename="<%= pr.filename %>" <%=pr.showOnHomepage ? 'checked' : '' %>>
+                                    </td>
+                                    <td class="actions-cell">
+                                        <a href="/press-releases/edit/<%= pr.filename %>"
+                                            class="btn btn-sm btn-secondary" title="Edit">
+                                            ✏️
+                                        </a>
+                                        <a href="/site-assets/<%= pr.filename %>" target="_blank"
+                                            class="btn btn-sm btn-info" title="Preview">
+                                            👁️
+                                        </a>
+                                        <button class="btn btn-sm btn-danger"
+                                            onclick="deletePressRelease('<%= pr.filename %>')" title="Delete">
+                                            🗑️
+                                        </button>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="6" class="empty-state">
+                                                <div style="text-align: center; padding: 3rem;">
+                                                    <span style="font-size: 3rem;">📢</span>
+                                                    <h3>No Press Releases Yet</h3>
+                                                    <p>Create your first press release to get started.</p>
+                                                    <a href="/press-releases/new" class="btn btn-primary"
+                                                        style="margin-top: 1rem;">
+                                                        Create Press Release
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Search functionality
+        document.getElementById('searchPressReleases').addEventListener('input', function (e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('.articles-table tbody tr');
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // Filter functionality
+        document.getElementById('filterType').addEventListener('change', function (e) {
+            const filterValue = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('.articles-table tbody tr');
+
+            rows.forEach(row => {
+                if (!filterValue) {
+                    row.style.display = '';
+                    return;
+                }
+                const badge = row.querySelector('.badge');
+                if (badge && badge.textContent.toLowerCase().includes(filterValue)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
+        // Homepage checkbox handler
+        document.querySelectorAll('.homepage-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', async function () {
+                const filename = this.dataset.filename;
+                const showOnHomepage = this.checked;
+
+                try {
+                    const response = await fetch(`/api/press-releases/${filename}/homepage`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ showOnHomepage })
+                    });
+
+                    if (!response.ok) throw new Error('Failed to update');
+
+                    // Show success feedback
+                    const originalColor = this.parentElement.style.backgroundColor;
+                    this.parentElement.style.backgroundColor = '#dcfce7';
+                    setTimeout(() => {
+                        this.parentElement.style.backgroundColor = originalColor;
+                    }, 500);
+                } catch (error) {
+                    alert('Failed to update homepage status: ' + error.message);
+                    this.checked = !this.checked; // Revert
+                }
+            });
+        });
+
+        // Delete functionality
+        async function deletePressRelease(filename) {
+            if (!confirm('Are you sure you want to delete this press release? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/press-releases/${filename}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const error = await response.json();
+                    alert('Failed to delete press release: ' + (error.error || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Failed to delete press release: ' + error.message);
+            }
+        }
+    </script>
+
+    <style>
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-product {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-financial {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-partnership {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-award {
+            background: #fce7f3;
+            color: #9f1239;
+        }
+
+        .badge-executive {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .badge-general {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .homepage-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            border: 1px solid #60a5fa;
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            color: #1e40af;
+        }
+    </style>
+</body>
+
+</html>

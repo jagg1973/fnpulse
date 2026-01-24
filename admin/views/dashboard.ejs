@@ -29,6 +29,10 @@
                     <span class="icon">🗞️</span>
                     <span>News</span>
                 </a>
+                <a href="/press-releases" class="nav-item <%= page === 'press-releases' ? 'active' : '' %>">
+                    <span class="icon">📢</span>
+                    <span>Press Releases</span>
+                </a>
                 <a href="/pages" class="nav-item <%= page === 'pages' ? 'active' : '' %>">
                     <span class="icon">📄</span>
                     <span>Pages</span>
@@ -77,6 +81,11 @@
                         <a href="/news/new" class="btn btn-primary">
                             <span class="icon">🗞️</span>
                             New News
+                        </a>
+                        <a href="/press-releases/new" class="btn btn-primary"
+                            style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);">
+                            <span class="icon">📢</span>
+                            New Press Release
                         </a>
                         <a href="/images" class="btn btn-secondary">
                             <span class="icon">⬆️</span>
@@ -131,6 +140,12 @@
                                 <%= typeof stats !=='undefined' ? stats.adBanners : 0 %>
                             </div>
                             <div class="stat-label">Ad Banners</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">
+                                <%= typeof stats !=='undefined' ? stats.pressReleases : 0 %>
+                            </div>
+                            <div class="stat-label">Press Releases</div>
                         </div>
                     </div>
                 </div>

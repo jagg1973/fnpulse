@@ -78,19 +78,21 @@ app.get('/', async (req, res) => {
         const config = await fileManager.getConfig();
         const authors = await contentManager.getAllAuthors();
         const ads = await contentManager.getAllAds();
+        const pressReleases = await contentManager.getAllPressReleases();
 
         const stats = {
             articles: articles.length,
             images: images.length,
             categories: config.categories ? config.categories.length : 0,
             authors: authors.length,
-            adBanners: ads.length
+            adBanners: ads.length,
+            pressReleases: pressReleases.length
         };
 
         res.render('dashboard', { page: 'dashboard', stats });
     } catch (error) {
         console.error('Dashboard stats error:', error);
-        res.render('dashboard', { page: 'dashboard', stats: { articles: 0, images: 0, categories: 0, authors: 0, adBanners: 0 } });
+        res.render('dashboard', { page: 'dashboard', stats: { articles: 0, images: 0, categories: 0, authors: 0, adBanners: 0, pressReleases: 0 } });
     }
 });
 
@@ -204,6 +206,70 @@ app.delete('/api/articles/*', async (req, res) => {
         await fileManager.deleteArticle(filename);
         await contentManager.setFooterPostSelection(filename, false);
         await siteUpdater.updateEntireSite();
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Press Release Routes
+app.get('/press-releases', async (req, res) => {
+    try {
+        const pressReleases = await contentManager.getAllPressReleases();
+        res.render('press-releases', { page: 'press-releases', pressReleases });
+    } catch (error) {
+        console.error('Press releases list error:', error);
+        res.render('press-releases', { page: 'press-releases', pressReleases: [] });
+    }
+});
+
+app.get('/press-releases/new', (req, res) => {
+    res.render('press-release-editor', { page: 'press-releases', pressRelease: null, mode: 'create' });
+});
+
+app.get('/press-releases/edit/:filename', async (req, res) => {
+    try {
+        const pressRelease = await contentManager.getPressRelease(req.params.filename);
+        res.render('press-release-editor', { page: 'press-releases', pressRelease, mode: 'edit' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/press-releases', async (req, res) => {
+    try {
+        const result = await contentManager.createPressRelease(req.body);
+        await siteUpdater.updateHomepage();
+        res.json({ success: true, filename: result.filename });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.put('/api/press-releases/:filename', async (req, res) => {
+    try {
+        await contentManager.updatePressRelease(req.params.filename, req.body);
+        await siteUpdater.updateHomepage();
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.put('/api/press-releases/:filename/homepage', async (req, res) => {
+    try {
+        await contentManager.setPressReleaseHomepageStatus(req.params.filename, req.body.showOnHomepage);
+        await siteUpdater.updateHomepage();
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.delete('/api/press-releases/:filename', async (req, res) => {
+    try {
+        await contentManager.deletePressRelease(req.params.filename);
+        await siteUpdater.updateHomepage();
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: error.message });

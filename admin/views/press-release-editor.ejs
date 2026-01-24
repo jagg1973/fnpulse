@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= mode==='create' ? 'New' : 'Edit' %> Press Release - FNPulse Admin
+    </title>
+    <link rel="stylesheet" href="/public/css/admin.css">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>FNPulse</h2>
+                <p>Admin Dashboard</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-item">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/articles" class="nav-item">
+                    <span class="icon">📝</span>
+                    <span>Articles</span>
+                </a>
+                <a href="/news" class="nav-item">
+                    <span class="icon">🗞️</span>
+                    <span>News</span>
+                </a>
+                <a href="/press-releases" class="nav-item active">
+                    <span class="icon">📢</span>
+                    <span>Press Releases</span>
+                </a>
+                <a href="/pages" class="nav-item">
+                    <span class="icon">📄</span>
+                    <span>Pages</span>
+                </a>
+                <a href="/authors" class="nav-item">
+                    <span class="icon">👤</span>
+                    <span>Authors</span>
+                </a>
+                <a href="/ads" class="nav-item">
+                    <span class="icon">💰</span>
+                    <span>Ad Banners</span>
+                </a>
+                <a href="/images" class="nav-item">
+                    <span class="icon">🖼️</span>
+                    <span>Images</span>
+                </a>
+                <a href="/settings" class="nav-item">
+                    <span class="icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <div>
+                    <h1>
+                        <%= mode==='create' ? 'New' : 'Edit' %> Press Release
+                    </h1>
+                    <p style="color: #64748b; margin-top: 0.5rem;">Create an official press release for media
+                        distribution</p>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <a href="/press-releases" class="btn btn-secondary">
+                        <span class="icon">←</span>
+                        Back to List
+                    </a>
+                    <button id="saveBtn" class="btn btn-primary">
+                        <span class="icon">💾</span>
+                        <%= mode==='create' ? 'Publish' : 'Update' %> Release
+                    </button>
+                </div>
+            </header>
+
+            <form id="pressReleaseForm" class="editor-form">
+                <div class="form-grid">
+                    <!-- Left Column -->
+                    <div class="form-main">
+                        <div class="form-section">
+                            <h3>Press Release Information</h3>
+
+                            <div class="form-group">
+                                <label for="headline" class="required">Headline</label>
+                                <input type="text" id="headline" name="headline" class="form-control"
+                                    placeholder="Company Announces Major Product Launch"
+                                    value="<%= pressRelease ? pressRelease.headline : '' %>" required>
+                                <small class="form-help">Main headline - keep it newsworthy and clear</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="subheadline">Subheadline</label>
+                                <textarea id="subheadline" name="subheadline" class="form-control" rows="2"
+                                    placeholder="Additional context or key details that support the headline"><%= pressRelease ? pressRelease.subheadline : '' %></textarea>
+                                <small class="form-help">Secondary headline providing more context</small>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="location" class="required">Location</label>
+                                    <input type="text" id="location" name="location" class="form-control"
+                                        placeholder="NEW YORK"
+                                        value="<%= pressRelease ? pressRelease.location : 'NEW YORK' %>" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="releaseDate" class="required">Release Date</label>
+                                    <input type="date" id="releaseDate" name="releaseDate" class="form-control"
+                                        value="<%= pressRelease ? pressRelease.releaseDate : new Date().toISOString().split('T')[0] %>"
+                                        required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="type" class="required">Release Type</label>
+                                    <select id="type" name="type" class="form-control" required>
+                                        <option value="">Select Type</option>
+                                        <option value="product" <%=pressRelease && pressRelease.type==='product'
+                                            ? 'selected' : '' %>>Product Launch</option>
+                                        <option value="financial" <%=pressRelease && pressRelease.type==='financial'
+                                            ? 'selected' : '' %>>Financial Results</option>
+                                        <option value="partnership" <%=pressRelease && pressRelease.type==='partnership'
+                                            ? 'selected' : '' %>>Partnership</option>
+                                        <option value="award" <%=pressRelease && pressRelease.type==='award'
+                                            ? 'selected' : '' %>>Award</option>
+                                        <option value="executive" <%=pressRelease && pressRelease.type==='executive'
+                                            ? 'selected' : '' %>>Executive Appointment</option>
+                                        <option value="general" <%=pressRelease && pressRelease.type==='general'
+                                            ? 'selected' : '' %>>General</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="status">Status</label>
+                                    <select id="status" name="status" class="form-control">
+                                        <option value="draft" <%=!pressRelease || pressRelease.status==='draft'
+                                            ? 'selected' : '' %>>Draft</option>
+                                        <option value="published" <%=pressRelease && pressRelease.status==='published'
+                                            ? 'selected' : '' %>>Published</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Featured Image</h3>
+                            <div class="form-group">
+                                <label for="image">Image URL</label>
+                                <div class="input-group">
+                                    <input type="text" id="image" name="image" class="form-control"
+                                        placeholder="/img/press-release-image.jpg"
+                                        value="<%= pressRelease ? pressRelease.image : '/img/news-1200x800-1.jpg' %>">
+                                    <button type="button" class="btn btn-secondary"
+                                        onclick="window.open('/images', 'images')">
+                                        Browse
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="imageCaption">Image Caption</label>
+                                <input type="text" id="imageCaption" name="imageCaption" class="form-control"
+                                    placeholder="Photo credit and description"
+                                    value="<%= pressRelease ? pressRelease.imageCaption : '' %>">
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Press Release Body</h3>
+                            <div class="form-group">
+                                <label for="lead" class="required">Lead Paragraph</label>
+                                <textarea id="lead" name="lead" class="form-control" rows="4" required
+                                    placeholder="NEW YORK, January 24, 2026 — [Opening paragraph with all key information: who, what, when, where, why]"><%= pressRelease ? pressRelease.lead : '' %></textarea>
+                                <small class="form-help">First paragraph - include location, date, and all essential
+                                    facts</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="body" class="required">Main Content</label>
+                                <div id="bodyEditor" style="height: 400px;">
+                                    <%= pressRelease ? pressRelease.body : '' %>
+                                </div>
+                                <small class="form-help">Full press release content - use formatting tools above</small>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>About Company (Boilerplate)</h3>
+                            <div class="form-group">
+                                <textarea id="about" name="about" class="form-control" rows="5"
+                                    placeholder="Standard company description and background..."><%= pressRelease ? pressRelease.about : 'FNPulse is a leading global provider of financial news, market data, and intelligence solutions. Founded in 2020, the company serves financial professionals, institutional investors, traders, and journalists across 45 countries.' %></textarea>
+                                <small class="form-help">Standard company description included in all releases</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Sidebar -->
+                    <div class="form-sidebar">
+                        <div class="form-section">
+                            <h3>Media Contacts</h3>
+
+                            <div class="form-group">
+                                <label for="contactName">Contact Name</label>
+                                <input type="text" id="contactName" name="contactName" class="form-control"
+                                    placeholder="Jennifer Williams"
+                                    value="<%= pressRelease ? pressRelease.contactName : 'Jennifer Williams' %>">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="contactTitle">Contact Title</label>
+                                <input type="text" id="contactTitle" name="contactTitle" class="form-control"
+                                    placeholder="Director of Communications"
+                                    value="<%= pressRelease ? pressRelease.contactTitle : 'Director of Communications' %>">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="contactEmail">Contact Email</label>
+                                <input type="email" id="contactEmail" name="contactEmail" class="form-control"
+                                    placeholder="press@fnpulse.com"
+                                    value="<%= pressRelease ? pressRelease.contactEmail : 'press@fnpulse.com' %>">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="contactPhone">Contact Phone</label>
+                                <input type="tel" id="contactPhone" name="contactPhone" class="form-control"
+                                    placeholder="+1 (212) 555-1234"
+                                    value="<%= pressRelease ? pressRelease.contactPhone : '+1 (212) 555-1234' %>">
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Display Settings</h3>
+
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="showOnHomepage" name="showOnHomepage" <%=pressRelease &&
+                                        pressRelease.showOnHomepage ? 'checked' : '' %>>
+                                    Show on Homepage
+                                </label>
+                                <small class="form-help">Display in press releases section on homepage</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="featured" name="featured" <%=pressRelease &&
+                                        pressRelease.featured ? 'checked' : '' %>>
+                                    Featured Release
+                                </label>
+                                <small class="form-help">Show as featured in large card format</small>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>SEO Settings</h3>
+
+                            <div class="form-group">
+                                <label for="metaDescription">Meta Description</label>
+                                <textarea id="metaDescription" name="metaDescription" class="form-control" rows="3"
+                                    placeholder="Brief description for search engines (150-160 characters)"><%= pressRelease ? pressRelease.metaDescription : '' %></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="keywords">Keywords</label>
+                                <input type="text" id="keywords" name="keywords" class="form-control"
+                                    placeholder="press release, company, industry"
+                                    value="<%= pressRelease ? pressRelease.keywords : '' %>">
+                                <small class="form-help">Comma-separated keywords</small>
+                            </div>
+                        </div>
+
+                        <% if (mode==='edit' ) { %>
+                            <div class="form-section">
+                                <h3>Preview</h3>
+                                <a href="/site-assets/<%= pressRelease.filename %>" target="_blank"
+                                    class="btn btn-secondary btn-block">
+                                    <span class="icon">👁️</span>
+                                    View Live Page
+                                </a>
+                            </div>
+                            <% } %>
+                    </div>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script>
+        // Initialize Quill editor
+        const quill = new Quill('#bodyEditor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [2, 3, false] }],
+                    ['bold', 'italic', 'underline'],
+                    ['blockquote', 'code-block'],
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    ['link'],
+                    ['clean']
+                ]
+            }
+        });
+
+        // Form submission
+        document.getElementById('saveBtn').addEventListener('click', async function () {
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="icon">⏳</span> Saving...';
+
+            const formData = {
+                headline: document.getElementById('headline').value,
+                subheadline: document.getElementById('subheadline').value,
+                location: document.getElementById('location').value,
+                releaseDate: document.getElementById('releaseDate').value,
+                type: document.getElementById('type').value,
+                status: document.getElementById('status').value,
+                image: document.getElementById('image').value,
+                imageCaption: document.getElementById('imageCaption').value,
+                lead: document.getElementById('lead').value,
+                body: quill.root.innerHTML,
+                about: document.getElementById('about').value,
+                contactName: document.getElementById('contactName').value,
+                contactTitle: document.getElementById('contactTitle').value,
+                contactEmail: document.getElementById('contactEmail').value,
+                contactPhone: document.getElementById('contactPhone').value,
+                showOnHomepage: document.getElementById('showOnHomepage').checked,
+                featured: document.getElementById('featured').checked,
+                metaDescription: document.getElementById('metaDescription').value,
+                keywords: document.getElementById('keywords').value
+            };
+
+            try {
+                const isEdit = '<%= mode %>' === 'edit';
+                const url = isEdit ? '/api/press-releases/<%= pressRelease ? pressRelease.filename : "" %>' : '/api/press-releases';
+                const method = isEdit ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert('Press release saved successfully!');
+                    window.location.href = '/press-releases';
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to save press release');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+                btn.disabled = false;
+                btn.innerHTML = '<span class="icon">💾</span> <%= mode === "create" ? "Publish" : "Update" %> Release';
+            }
+        });
+
+        // Auto-generate meta description from lead if empty
+        document.getElementById('lead').addEventListener('blur', function () {
+            const metaDesc = document.getElementById('metaDescription');
+            if (!metaDesc.value && this.value) {
+                const text = this.value.replace(/^[A-Z\s,]+—\s*/, ''); // Remove dateline
+                metaDesc.value = text.substring(0, 155) + '...';
+            }
+        });
+    </script>
+
+    <style>
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+        }
+
+        .form-main {
+            min-width: 0;
+        }
+
+        .form-sidebar {
+            position: sticky;
+            top: 2rem;
+            align-self: start;
+        }
+
+        .form-section {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-section h3 {
+            margin: 0 0 1rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #0f172a;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .input-group input {
+            flex: 1;
+        }
+
+        .btn-block {
+            width: 100%;
+            display: block;
+            text-align: center;
+        }
+
+        @media (max-width: 1200px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-sidebar {
+                position: static;
+            }
+        }
+    </style>
+</body>
+
+</html>
