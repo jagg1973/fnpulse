@@ -21,6 +21,13 @@ const gitDeployer = require('./utils/gitDeployer');
 // Middleware
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
+app.use((req, res, next) => {
+    res.setHeader(
+        'Content-Security-Policy',
+        "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self'; img-src 'self' https: data: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.quilljs.com; font-src 'self' https://fonts.gstatic.com data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.quilljs.com"
+    );
+    next();
+});
 app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use('/site-assets', express.static(path.join(__dirname, '../News')));
 app.use('/api', (req, res, next) => {
@@ -31,6 +38,10 @@ app.use('/api', (req, res, next) => {
         return res.sendStatus(204);
     }
     next();
+});
+
+app.get('/.well-known/appspecific/com.chrome.devtools.json', (req, res) => {
+    res.status(204).end();
 });
 
 // View engine setup

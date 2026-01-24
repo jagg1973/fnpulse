@@ -1,60 +1,60 @@
 {
-    "authors": [
-        {
-            "id": "jesus-guzman",
-            "name": "Jesus Guzman",
-            "email": "jesus@fnpulse.com",
-            "bio": "Jesus Guzman is an award-winning financial journalist with over 12 years of experience covering global markets, economic policy, and investment strategies.",
-            "avatar": "img/author-face.jpg",
-            "title": "Senior Financial Reporter",
-            "twitter": "@jguzman",
-            "linkedin": "jesus-guzman"
-        }
-    ],
-    "adBanners": [
-        {
-            "id": "header-leaderboard",
-            "name": "Header Leaderboard",
-            "location": "header",
-            "size": "728x90",
-            "type": "image",
-            "content": "",
-            "link": "",
-            "altText": "Advertisement",
-            "enabled": true,
-            "pages": [
-                "all"
-            ]
-        },
-        {
-            "id": "sidebar-banner",
-            "name": "Sidebar Banner",
-            "location": "sidebar",
-            "size": "300x250",
-            "type": "image",
-            "content": "",
-            "link": "",
-            "altText": "Advertisement",
-            "enabled": true,
-            "pages": [
-                "article",
-                "category"
-            ]
-        },
-        {
-            "id": "article-inline",
-            "name": "Article Inline Ad",
-            "location": "article-body",
-            "size": "336x280",
-            "type": "code",
-            "content": "<div class=\"ad-slot inline-ad\"><span>336x280 Ad</span></div>",
-            "link": "",
-            "altText": "",
-            "enabled": true,
-            "pages": [
-                "article"
-            ]
-        }
-    ],
-    "footerPosts": []
+  "authors": [
+    {
+      "id": "jesus-guzman",
+      "name": "Jesus Guzman",
+      "email": "jesus@fnpulse.com",
+      "bio": "Jesus Guzman is an award-winning financial journalist with over 12 years of experience covering global markets, economic policy, and investment strategies.",
+      "avatar": "img/author-face.jpg",
+      "title": "Senior Financial Reporter",
+      "twitter": "@jguzman",
+      "linkedin": "jesus-guzman"
+    }
+  ],
+  "adBanners": [
+    {
+      "id": "header-leaderboard",
+      "name": "Header Leaderboard",
+      "location": "header",
+      "size": "728x90",
+      "type": "image",
+      "content": "",
+      "link": "",
+      "altText": "Advertisement",
+      "enabled": true,
+      "pages": [
+        "all"
+      ]
+    },
+    {
+      "id": "sidebar-banner",
+      "name": "Sidebar Banner",
+      "location": "sidebar",
+      "size": "300x250",
+      "type": "image",
+      "content": "",
+      "link": "",
+      "altText": "Advertisement",
+      "enabled": true,
+      "pages": [
+        "article",
+        "category"
+      ]
+    },
+    {
+      "id": "article-inline",
+      "name": "Article Inline Ad",
+      "location": "article-body",
+      "size": "336x280",
+      "type": "code",
+      "content": "<div class=\"ad-slot inline-ad\"><span>336x280 Ad</span></div>",
+      "link": "",
+      "altText": "",
+      "enabled": true,
+      "pages": [
+        "article"
+      ]
+    }
+  ],
+  "footerPosts": []
 }
