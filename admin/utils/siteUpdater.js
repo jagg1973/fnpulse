@@ -321,8 +321,6 @@ async function updateAllAuthorPages() {
 async function regenerateAllArticles() {
     console.log('Regenerating all articles...');
     const articles = await fileManager.getAllArticles();
-    const cheerio = require('cheerio');
-    const { updateAssetLinks } = require('./assetUtils');
 
     for (const article of articles) {
         try {

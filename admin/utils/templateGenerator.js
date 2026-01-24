@@ -7,6 +7,7 @@ const fileManager = require('./fileManager');
 const { ensureHeadStructure } = require('./schemaUtils');
 const { minifyAssets } = require('./assetMinifier');
 const { minifyHtml } = require('./htmlMinifier');
+const { updateAssetLinks } = require('./assetUtils');
 
 const NEWS_DIR = path.join(__dirname, '../../News');
 const TEMPLATE_PATH = path.join(__dirname, '../templates/article-template.html');
@@ -37,7 +38,6 @@ async function createArticle(data) {
         xmlMode: false,
         decodeEntities: false
     });
-    const { updateAssetLinks } = require('./assetUtils');
 
     const contentTypeRaw = (data.contentType || data.articleType || data.type || '').toString().toLowerCase();
     const contentType = contentTypeRaw === 'news' ? 'news' : 'article';
