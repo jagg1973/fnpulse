@@ -318,11 +318,37 @@ async function updateAllAuthorPages() {
 /**
  * Update entire site (homepage, categories, authors)
  */
+async function regenerateAllArticles() {
+    console.log('Regenerating all articles...');
+    const articles = await fileManager.getAllArticles();
+    const cheerio = require('cheerio');
+    const { updateAssetLinks } = require('./assetUtils');
+    
+    for (const article of articles) {
+        try {
+            const articlePath = path.join(NEWS_DIR, article.filename);
+            const content = await fs.readFile(articlePath, 'utf-8');
+            const $ = cheerio.load(content, { xmlMode: false, decodeEntities: false });
+            
+            // Apply asset link updates
+            updateAssetLinks($);
+            
+            // Write back
+            await fs.writeFile(articlePath, $.html(), 'utf-8');
+            console.log(`  ✓ ${article.filename}`);
+        } catch (error) {
+            console.error(`  ✗ Error updating ${article.filename}:`, error.message);
+        }
+    }
+    console.log(`Regenerated ${articles.length} articles`);
+}
+
 async function updateEntireSite() {
     console.log('Updating entire site...\n');
 
     try {
         await minifyAssets();
+        await regenerateAllArticles();
         await updateHomepage();
         await updateAllCategoryPages();
         await updateAllAuthorPages();
@@ -380,5 +406,6 @@ module.exports = {
     updateAuthorPage,
     updateAllAuthorPages,
     updateEntireSite,
-    updateFooterRecentPosts
+    updateFooterRecentPosts,
+    regenerateAllArticles
 };
