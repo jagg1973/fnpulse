@@ -323,16 +323,16 @@ async function regenerateAllArticles() {
     const articles = await fileManager.getAllArticles();
     const cheerio = require('cheerio');
     const { updateAssetLinks } = require('./assetUtils');
-    
+
     for (const article of articles) {
         try {
             const articlePath = path.join(NEWS_DIR, article.filename);
             const content = await fs.readFile(articlePath, 'utf-8');
             const $ = cheerio.load(content, { xmlMode: false, decodeEntities: false });
-            
+
             // Apply asset link updates
             updateAssetLinks($);
-            
+
             // Write back
             await fs.writeFile(articlePath, $.html(), 'utf-8');
             console.log(`  ✓ ${article.filename}`);
