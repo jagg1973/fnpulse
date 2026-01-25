@@ -22,6 +22,20 @@
         node.nodeValue = node.nodeValue.replace(/&amp;/g, '&');
     });
 
+    const updateLogoSources = () => {
+        const logoSvgPath = '/img/logo.svg';
+        const logoSelectors = [
+            'img[src="/img/logo.png"]',
+            'img[src="img/logo.png"]',
+            'img[src$="/img/logo.png"]'
+        ];
+        document.querySelectorAll(logoSelectors.join(',')).forEach((img) => {
+            img.src = logoSvgPath;
+        });
+    };
+
+    updateLogoSources();
+
     const navToggle = document.querySelector(".mobile-toggle");
     const nav = document.querySelector(".nav-links");
 
@@ -328,20 +342,27 @@
 
     const loadLiveTicker = async () => {
         if (!tickerEl) return;
+        const decodeHtmlEntities = (value) => {
+            if (typeof value !== 'string' || !value) return value;
+            const textarea = document.createElement('textarea');
+            textarea.innerHTML = value;
+            return textarea.value;
+        };
+        const normalizeHeadline = (headline) => decodeHtmlEntities(headline).replace(/\s+/g, ' ').trim();
         try {
             const rssUrl = 'https://www.marketwatch.com/rss/topstories';
             const { response, source } = await fetchLocalFirst(apiUrl('/api/live-ticker'), proxied(rssUrl));
             if (source === 'local') {
                 const data = await response.json();
                 if (Array.isArray(data.headlines) && data.headlines.length) {
-                    tickerEl.textContent = data.headlines.join(' • ');
+                    tickerEl.textContent = data.headlines.map(normalizeHeadline).join(' • ');
                     return;
                 }
             }
             const text = await response.text();
             const xmlDoc = new DOMParser().parseFromString(text, 'text/xml');
             const titles = Array.from(xmlDoc.querySelectorAll('item > title'))
-                .map(node => node.textContent.trim())
+                .map(node => normalizeHeadline(node.textContent))
                 .filter(Boolean)
                 .slice(0, 6);
             if (titles.length) {

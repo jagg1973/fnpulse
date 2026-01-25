@@ -79,7 +79,7 @@ function ensureHeadStructure($, options = {}) {
     const hasJsonLd = $('script[type="application/ld+json"]').length > 0;
     if (!hasJsonLd && config?.siteUrl) {
         const canonical = canonicalUrl || `${config.siteUrl}/${filename || ''}`;
-        const logoUrl = config.logoPath ? `${config.siteUrl}/${config.logoPath}` : `${config.siteUrl}/img/logo.png`;
+        const logoUrl = config.logoPath ? `${config.siteUrl}/${config.logoPath}` : `${config.siteUrl}/img/logo.svg`;
 
         const schemaData = filename === 'index.html'
             ? {
@@ -128,7 +128,7 @@ function ensureHeadStructure($, options = {}) {
     const hasOrganizationSchema = existingJsonLd.some(script => script && script.includes('"@type": "Organization"'));
 
     if ((!hasWebSiteSchema || !hasOrganizationSchema) && config?.siteUrl) {
-        const logoUrl = config.logoPath ? `${config.siteUrl}/${config.logoPath}` : `${config.siteUrl}/img/logo.png`;
+        const logoUrl = config.logoPath ? `${config.siteUrl}/${config.logoPath}` : `${config.siteUrl}/img/logo.svg`;
         const siteSchema = {
             "@context": "https://schema.org",
             "@graph": [

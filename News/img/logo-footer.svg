@@ -1,0 +1,26 @@
+<svg width="400" height="100" viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg" style="shape-rendering:geometricPrecision">
+  <defs>
+    <linearGradient id="pulseGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="50%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#34D399" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(10, 22)">
+    <circle cx="28" cy="28" r="27" stroke="#CBD5E1" stroke-width="1.5" fill="#F8FAFC" />
+    <path d="M12 28 H20 L24 14 L32 42 L36 28 H44"
+          stroke="url(#pulseGradient)"
+          stroke-width="4.5"
+          fill="none"
+          stroke-linecap="round"
+          stroke-linejoin="round" />
+  </g>
+  <g transform="translate(75, 0)">
+    <text y="62" font-family="system-ui, -apple-system, Arial, sans-serif" font-weight="800" font-size="44" letter-spacing="-1.5">
+      <tspan fill="#FFFFFF">fn</tspan><tspan fill="#10B981">pulse</tspan>
+    </text>
+    <text x="2" y="82" font-family="system-ui, -apple-system, Arial, sans-serif" font-size="10" font-weight="600" letter-spacing="3.5" fill="#64748B">
+      REAL-TIME MARKET INSIGHTS
+    </text>
+  </g>
+</svg>

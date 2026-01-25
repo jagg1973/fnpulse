@@ -175,8 +175,8 @@ a:hover {
 }
 
 .logo-area img {
-    height: 40px;
-    /* Adjust based on asset */
+    height: 130px !important;
+    width: auto !important;
 }
 
 .header-ad-banner {
@@ -1716,19 +1716,25 @@ a:hover {
 .footer-branding .f-logo {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 0;
     margin-bottom: 1.5rem;
 }
 
 .logo-white-filter {
-    filter: brightness(0) invert(1);
-    width: 40px;
+    filter: none;
+    width: 338px;
+    height: auto;
+    opacity: 1;
+}
+
+@media (max-width: 480px) {
+    .logo-white-filter {
+        width: 286px;
+    }
 }
 
 .footer-branding .logo-text {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #fff;
+    display: none;
 }
 
 .f-desc {
