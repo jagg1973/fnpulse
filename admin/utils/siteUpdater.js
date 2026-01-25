@@ -30,38 +30,43 @@ async function updateHomepage() {
         $('meta[name="description"]').attr('content', config.siteDescription);
     }
 
-    // Update hero section articles (if we have at least 3)
+    // Update hero section articles (connected to new hero redesign)
     if (articles.length >= 3) {
-        // Left column - latest article
-        const leftArticle = articles[0];
-        const leftImage = (leftArticle.content && leftArticle.content.featuredImage) || leftArticle.featuredImage || 'img/news-350x223-1.jpg';
-        $('.hero-col-left .post-card').first().find('img').attr('src', leftImage);
-        $('.hero-col-left .post-card').first().find('.post-cat').text(leftArticle.category || 'News');
-        $('.hero-col-left .post-card').first().find('.post-title a')
-            .attr('href', leftArticle.filename)
-            .text(leftArticle.title);
-        $('.hero-col-left .post-card').first().find('.post-meta').text(formatDate(leftArticle.publishDate));
+        // Main Featured (Hero Main) -> Article 0
+        const mainArticle = articles[0];
+        const mainImage = (mainArticle.content && mainArticle.content.featuredImage) || mainArticle.featuredImage || 'img/news-825x525.jpg';
 
-        // Center column - featured article
-        const centerArticle = articles[1];
-        const centerImage = (centerArticle.content && centerArticle.content.featuredImage) || centerArticle.featuredImage || 'img/news-825x525.jpg';
-        $('.hero-col-center .featured-post img').attr('src', centerImage);
-        $('.hero-col-center .featured-post .post-cat').text(centerArticle.category || 'News');
-        $('.hero-col-center .featured-post h2 a')
-            .attr('href', centerArticle.filename)
-            .text(centerArticle.title);
+        // Ensure image exists or fallback
+        $('.hero-main img').attr('src', mainImage);
+        $('.hero-main .card-badge').text(mainArticle.category || 'News');
+        $('.hero-main .card-title a')
+            .attr('href', mainArticle.filename)
+            .text(mainArticle.title);
 
-        // Right column - next 3 articles
-        const rightArticles = articles.slice(2, 5);
-        $('.hero-col-right .post-card').each((index, elem) => {
-            if (rightArticles[index]) {
-                $(elem).find('.post-cat').text(rightArticles[index].category || 'News');
-                $(elem).find('.post-title a')
-                    .attr('href', rightArticles[index].filename)
-                    .text(rightArticles[index].title);
-                $(elem).find('.post-meta').text(formatDate(rightArticles[index].publishDate));
-            }
-        });
+        // Secondary Featured (Hero Secondary) -> Article 1
+        const secArticle = articles[1];
+        const secImage = (secArticle.content && secArticle.content.featuredImage) || secArticle.featuredImage || 'img/news-350x223-1.jpg';
+
+        $('.hero-secondary img').attr('src', secImage);
+        $('.hero-secondary .card-badge').text(secArticle.category || 'News');
+        $('.hero-secondary .card-title a')
+            .attr('href', secArticle.filename)
+            .text(secArticle.title);
+
+        // Tertiary (Hero Tertiary) -> Article 2
+        const tertArticle = articles[2];
+        
+        // If tertiary card title is inside an anchor in h3
+        $('.hero-tertiary h3 a')
+            .attr('href', tertArticle.filename)
+            .text(tertArticle.title);
+
+        // Fallback if h3 has no anchor (just text replacement)
+        if ($('.hero-tertiary h3 a').length === 0) {
+            $('.hero-tertiary h3').wrapInner(`<a href="${tertArticle.filename}" style="text-decoration:none;color:inherit"></a>`);
+            $('.hero-tertiary h3 a').text(tertArticle.title);
+        }
+        }
     }
 
     // Update Latest News section (latest 10 news items)
