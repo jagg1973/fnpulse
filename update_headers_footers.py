@@ -1,40 +1,12 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Subscribe to The Daily Open | FNPulse Newsletter</title><meta name="description" content="Start your trading day with the 5 charts that matter. Join 180,000+ investors reading The Daily Open by FNPulse."><link rel="canonical" href="https://www.FNPulse.com/newsletter"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Playfair+Display:wght@400;600;700&amp;display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/fnpulse.min.css">
-  <link rel="stylesheet" href="/css/hero-redesign.css"><link rel="stylesheet" href="/css/newsletter.css"><script type="application/ld+json">{
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      "name": "FNPulse Newsletter Subscription",
-      "url": "https://www.FNPulse.com/newsletter",
-      "publisher": {
-        "@type": "Organization",
-        "name": "FNPulse"
-      }
-    }</script><meta property="og:type" content="website"><meta property="og:title" content="Subscribe to The Daily Open | FNPulse Newsletter"><meta property="og:description" content="Start your trading day with the 5 charts that matter. Join 180,000+ investors reading The Daily Open by FNPulse."><meta property="og:url" content="https://www.FNPulse.com/newsletter"><meta property="og:image" content="https://www.FNPulse.com/img/news-1200x800-1.jpg"><meta property="twitter:card" content="summary_large_image"><meta property="twitter:title" content="Subscribe to The Daily Open | FNPulse Newsletter"><meta property="twitter:description" content="Start your trading day with the 5 charts that matter. Join 180,000+ investors reading The Daily Open by FNPulse."><meta property="twitter:url" content="https://www.FNPulse.com/newsletter"><meta property="twitter:image" content="https://www.FNPulse.com/img/news-1200x800-1.jpg"><meta property="twitter:site" content="@FNPulse"><meta property="og:site_name" content="FNPulse"><meta property="twitter:creator" content="@FNPulse"><script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": "https://www.FNPulse.com/#organization",
-      "name": "FNPulse",
-      "url": "https://www.FNPulse.com",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://www.FNPulse.com/img/logo.svg",
-        "width": 600,
-        "height": 60
-      }
-    },
-    {
-      "@type": "WebSite",
-      "@id": "https://www.FNPulse.com/#website",
-      "name": "FNPulse",
-      "url": "https://www.FNPulse.com",
-      "publisher": {
-        "@id": "https://www.FNPulse.com/#organization"
-      }
-    }
-  ]
-}</script></head><body>
-  <!-- TICKER ADDED BACK -->
+"""
+Update all HTML pages to use the consistent header and footer from index.html
+"""
+import os
+import re
+from pathlib import Path
+
+# Define the standardized header HTML from index.html
+STANDARD_HEADER = '''  <!-- TICKER ADDED BACK -->
   <div class="new-ticker-wrap">
     <span class="ticker-label-fixed">NEWS</span>
     <div class="new-ticker-content">
@@ -92,9 +64,9 @@
       <a href="forex.html">Forex</a>
       <a href="crypto.html">Crypto</a>
     </div>
-  </div>
+  </div>'''
 
-   id="main-content"><div class="newsletter-hero"><div class="container"><div class="newsletter-split"><div class="newsletter-content"><span style="color:var(--accent);font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:.85rem;display:block;margin-bottom:1rem">The Daily Open</span><h1>Smart Money Wakes Up With This Email.</h1><p class="subhead">Join 180,000+ investors who start their day with the 5 charts, data points, and insights that actually move markets. No fluff, just alpha.</p><div class="newsletter-form-large"><form action="#" method="POST"><div class="form-row"><input type="email" placeholder="Enter your email address..." required=""> <button type="submit">Join Free</button></div><p class="form-disclaimer">We respect your inbox. No spam, ever. Unsubscribe anytime.</p></form></div></div><div class="newsletter-visual"><div class="email-preview"><div style="border-bottom:1px solid #eee;padding-bottom:1rem;margin-bottom:1rem"><img src="/img/logo.svg" style="height:30px" alt="Logo"> <span style="float:right;color:#999;font-size:.8rem">Jan 23, 2026</span></div><h2 style="font-family:'Playfair Display';font-size:1.5rem;margin-bottom:.5rem">The Yen Awakens</h2><p style="font-size:.9rem;color:#555;line-height:1.6">Good morning, traders.<br><br><br><br><br><br><br><br>Everyone is looking at the US Dollar today, but the real story is happening in Tokyo. The Bank of Japan just hinted at a yield curve shift...</p><div style="background:#f1f5f9;height:150px;margin:1rem 0;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#cbd5e1">[Chart: USD/JPY Breakout]</div><h3 style="font-size:1.1rem">3 Things to Watch</h3><ul style="font-size:.85rem;color:#555;padding-left:1.2rem"><li><strong>Pre-Market:</strong> S&P 500 Futures are flat.</li><li><strong>Data Deck:</strong> US CPI prints at 8:30am EST.</li><li><strong>Crypto:</strong> Bitcoin retests $65k.</li></ul><div style="text-align:center;margin-top:2rem"><span style="background:var(--accent);color:#fff;padding:.5rem 1rem;border-radius:4px;font-size:.8rem">Read Full Analysis</span></div></div></div></div></div></div><div class="newsletter-features"><div class="container"><div class="features-grid"><div class="feature-item"><span class="icon">⚡</span><h3>5-Minute Read</h3><p>We value your time. Get the full picture of the global session before your coffee cools.</p></div><div class="feature-item"><span class="icon">📈</span><h3>Chart of the Day</h3><p>One high-conviction technical setup or macro correlation explained simply.</p></div><div class="feature-item"><span class="icon">🧠</span><h3>Expert Analysis</h3><p>Insights from former institutional traders, not AI-generated summaries.</p></div></div></div></div><div class="reader-love"><div class="container"><blockquote>"The only financial newsletter I actually open. It's concise, accurate, and often faster than the terminal."</blockquote><cite>— Sarah J., Portfolio Manager @ BlackRock</cite></div></div></main>    <footer class="site-footer dark-footer">
+STANDARD_FOOTER = '''  <footer class="site-footer dark-footer">
     <div class="container" style="padding-top:180px">
       <div class="footer-top-grid">
         <div class="footer-branding">
@@ -153,4 +125,76 @@
   </footer>
   <nav class="bottom-nav" aria-label="Mobile"><a href="index.html" class="bottom-link">Home</a> <a
       href="markets.html" class="bottom-link">Markets</a> <a href="economy.html" class="bottom-link">Economy</a> <a
-      href="about.html" class="bottom-link">About</a></nav></body></html>
+      href="about.html" class="bottom-link">About</a></nav>'''
+
+def update_html_file(filepath):
+    """Update a single HTML file with standard header and footer"""
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Check if file already uses the new design (has the new ticker)
+        if 'new-ticker-wrap' in content and 'site-header container' in content:
+            print(f"✓ {filepath.name} - Already using new design, skipping")
+            return False
+            
+        # Add hero-redesign.css to the head if not present
+        if '<link rel="stylesheet" href="/css/fnpulse.min.css">' in content and 'hero-redesign.css' not in content:
+            content = content.replace(
+                '<link rel="stylesheet" href="/css/fnpulse.min.css">',
+                '<link rel="stylesheet" href="/css/fnpulse.min.css">\n  <link rel="stylesheet" href="/css/hero-redesign.css">'
+            )
+        
+        # Replace old header - find everything between skip-link/body and main tag
+        # Pattern: from after skip-link (or body start) to before <main
+        body_start_pattern = r'(<body>.*?(?:<a class="skip-link"[^>]*>.*?</a>)?)(.*?)(<main)'
+        
+        match = re.search(body_start_pattern, content, re.DOTALL)
+        if match:
+            # Replace everything between skip-link and main with new header
+            content = re.sub(
+                body_start_pattern,
+                r'\1\n' + STANDARD_HEADER + '\n\n  \3',
+                content,
+                flags=re.DOTALL
+            )
+        
+        # Replace footer (from <footer to closing </nav> before scripts)
+        footer_pattern = r'<footer[^>]*>.*?</footer>(?:\s*<nav class="bottom-nav".*?</nav>)?'
+        
+        if re.search(footer_pattern, content, re.DOTALL):
+            content = re.sub(
+                footer_pattern,
+                STANDARD_FOOTER,
+                content,
+                flags=re.DOTALL
+            )
+        
+        # Write back
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(content)
+        
+        print(f"✓ {filepath.name} - Updated successfully")
+        return True
+        
+    except Exception as e:
+        print(f"✗ {filepath.name} - Error: {e}")
+        return False
+
+def main():
+    news_dir = Path('c:/FNPulse/News')
+    
+    # Get all HTML files except index.html (which is already correct)
+    html_files = [f for f in news_dir.glob('*.html') if f.name not in ['index.html', 'index-broken-backup.html']]
+    
+    print(f"Found {len(html_files)} HTML files to update\n")
+    
+    updated_count = 0
+    for filepath in sorted(html_files):
+        if update_html_file(filepath):
+            updated_count += 1
+    
+    print(f"\n✓ Updated {updated_count} files successfully")
+
+if __name__ == "__main__":
+    main()

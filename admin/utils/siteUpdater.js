@@ -55,7 +55,7 @@ async function updateHomepage() {
 
         // Tertiary (Hero Tertiary) -> Article 2
         const tertArticle = articles[2];
-        
+
         // If tertiary card title is inside an anchor in h3
         $('.hero-tertiary h3 a')
             .attr('href', tertArticle.filename)
@@ -66,17 +66,17 @@ async function updateHomepage() {
             $('.hero-tertiary h3').wrapInner(`<a href="${tertArticle.filename}" style="text-decoration:none;color:inherit"></a>`);
             $('.hero-tertiary h3 a').text(tertArticle.title);
         }
-        }
     }
+}
 
-    // Update Latest News section (latest 10 news items)
-    const newsArticles = articles.filter(article => (article.contentType || 'article') === 'news');
-    const latestNews = (newsArticles.length ? newsArticles : articles).slice(0, 10);
-    const newsListHtml = latestNews.map((article, index) => {
-        const articleImage = (article.content && article.content.featuredImage)
-            || article.featuredImage
-            || `img/news-350x223-${(index % 5) + 1}.jpg`;
-        return `
+// Update Latest News section (latest 10 news items)
+const newsArticles = articles.filter(article => (article.contentType || 'article') === 'news');
+const latestNews = (newsArticles.length ? newsArticles : articles).slice(0, 10);
+const newsListHtml = latestNews.map((article, index) => {
+    const articleImage = (article.content && article.content.featuredImage)
+        || article.featuredImage
+        || `img/news-350x223-${(index % 5) + 1}.jpg`;
+    return `
         <a href="${article.filename}" class="news-link" style="text-decoration:none;color:inherit;">
             <article class="news-item">
                 <img src="${articleImage}" alt="${article.title}">
@@ -89,53 +89,53 @@ async function updateHomepage() {
             </article>
         </a>
         `;
-    }).join('');
-    if ($('.news-list').length > 0) {
-        $('.news-list').html(newsListHtml);
+}).join('');
+if ($('.news-list').length > 0) {
+    $('.news-list').html(newsListHtml);
+}
+
+// Update Press Releases section
+const pressReleases = await contentManager.getAllPressReleases();
+const homepagePressReleases = pressReleases
+    .filter(pr => pr.showOnHomepage)
+    .sort((a, b) => new Date(b.releaseDate || b.date) - new Date(a.releaseDate || a.date));
+
+if (homepagePressReleases.length > 0) {
+    // Featured press release (first one with featured flag, or just first one)
+    const featuredPR = homepagePressReleases.find(pr => pr.featured) || homepagePressReleases[0];
+    const featuredImage = featuredPR.image || (featuredPR.mediaAssets && featuredPR.mediaAssets.length > 0
+        ? featuredPR.mediaAssets[0].url
+        : 'img/news-825x525.jpg');
+    const prDate = featuredPR.releaseDate || featuredPR.date;
+    const prType = featuredPR.type === 'general' ? 'Press Release' :
+        featuredPR.type === 'financial' ? 'Financial' :
+            featuredPR.type === 'product' ? 'Product Launch' :
+                featuredPR.type === 'partnership' ? 'Partnership' : 'Press Release';
+
+    if ($('.press-featured').length > 0) {
+        $('.press-featured img').attr('src', featuredImage).attr('alt', featuredPR.headline);
+        $('.press-featured .post-cat').text(prType);
+        $('.press-featured h3 a')
+            .attr('href', featuredPR.filename)
+            .text(featuredPR.headline);
+        $('.press-featured .meta-light').text(
+            `${featuredPR.contactName || 'FNPulse'} • ${formatDate(prDate)}`
+        );
     }
 
-    // Update Press Releases section
-    const pressReleases = await contentManager.getAllPressReleases();
-    const homepagePressReleases = pressReleases
-        .filter(pr => pr.showOnHomepage)
-        .sort((a, b) => new Date(b.releaseDate || b.date) - new Date(a.releaseDate || a.date));
+    // List of press releases (skip the featured one, get next 6)
+    const listPressReleases = homepagePressReleases.slice(1, 7);
+    const pressListHtml = listPressReleases.map((pr, index) => {
+        const prImage = pr.image || (pr.mediaAssets && pr.mediaAssets.length > 0
+            ? pr.mediaAssets[0].url
+            : `img/news-350x223-${(index % 5) + 1}.jpg`);
+        const prDate = pr.releaseDate || pr.date;
+        const prType = pr.type === 'general' ? 'Press Release' :
+            pr.type === 'financial' ? 'Financial' :
+                pr.type === 'product' ? 'Product Launch' :
+                    pr.type === 'partnership' ? 'Partnership' : 'Press Release';
 
-    if (homepagePressReleases.length > 0) {
-        // Featured press release (first one with featured flag, or just first one)
-        const featuredPR = homepagePressReleases.find(pr => pr.featured) || homepagePressReleases[0];
-        const featuredImage = featuredPR.image || (featuredPR.mediaAssets && featuredPR.mediaAssets.length > 0
-            ? featuredPR.mediaAssets[0].url
-            : 'img/news-825x525.jpg');
-        const prDate = featuredPR.releaseDate || featuredPR.date;
-        const prType = featuredPR.type === 'general' ? 'Press Release' :
-            featuredPR.type === 'financial' ? 'Financial' :
-                featuredPR.type === 'product' ? 'Product Launch' :
-                    featuredPR.type === 'partnership' ? 'Partnership' : 'Press Release';
-
-        if ($('.press-featured').length > 0) {
-            $('.press-featured img').attr('src', featuredImage).attr('alt', featuredPR.headline);
-            $('.press-featured .post-cat').text(prType);
-            $('.press-featured h3 a')
-                .attr('href', featuredPR.filename)
-                .text(featuredPR.headline);
-            $('.press-featured .meta-light').text(
-                `${featuredPR.contactName || 'FNPulse'} • ${formatDate(prDate)}`
-            );
-        }
-
-        // List of press releases (skip the featured one, get next 6)
-        const listPressReleases = homepagePressReleases.slice(1, 7);
-        const pressListHtml = listPressReleases.map((pr, index) => {
-            const prImage = pr.image || (pr.mediaAssets && pr.mediaAssets.length > 0
-                ? pr.mediaAssets[0].url
-                : `img/news-350x223-${(index % 5) + 1}.jpg`);
-            const prDate = pr.releaseDate || pr.date;
-            const prType = pr.type === 'general' ? 'Press Release' :
-                pr.type === 'financial' ? 'Financial' :
-                    pr.type === 'product' ? 'Product Launch' :
-                        pr.type === 'partnership' ? 'Partnership' : 'Press Release';
-
-            return `
+        return `
                 <article class="press-card-small">
                     <div class="press-thumb">
                         <img src="${prImage}" alt="${pr.headline}">
@@ -147,17 +147,17 @@ async function updateHomepage() {
                     </div>
                 </article>
             `;
-        }).join('');
+    }).join('');
 
-        if ($('.press-list-grid').length > 0) {
-            $('.press-list-grid').html(pressListHtml);
-        }
+    if ($('.press-list-grid').length > 0) {
+        $('.press-list-grid').html(pressListHtml);
     }
+}
 
-    updateAssetLinks($);
-    ensureHeadStructure($, { filename: 'index.html', config });
-    await fs.writeFile(homepagePath, await minifyHtml($.html()));
-    console.log('✓ Homepage updated');
+updateAssetLinks($);
+ensureHeadStructure($, { filename: 'index.html', config });
+await fs.writeFile(homepagePath, await minifyHtml($.html()));
+console.log('✓ Homepage updated');
 }
 
 /**
