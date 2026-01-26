@@ -451,5 +451,74 @@
     setInterval(loadLiveTicker, 300000);
     setInterval(loadEvents, 900000);
 
+    // Active Navigation Menu Highlighting
+    const setActiveNavItem = () => {
+        const navLinks = document.querySelectorAll('.nav-island .nav-link');
+        if (navLinks.length === 0) return;
+
+        // Get current pathname, normalize it
+        let currentPath = window.location.pathname;
+
+        // Remove trailing slash
+        if (currentPath.endsWith('/')) {
+            currentPath = currentPath.slice(0, -1);
+        }
+
+        // For subdirectory pages (like /news/article.html), extract parent directory
+        const pathParts = currentPath.split('/').filter(part => part);
+        let mainSection = '';
+
+        if (pathParts.length > 0) {
+            // If we're in a subdirectory (news/article.html), use the parent directory name
+            if (pathParts.length >= 2 && !pathParts[pathParts.length - 1].includes('index')) {
+                mainSection = pathParts[pathParts.length - 2];
+            } else {
+                mainSection = pathParts[pathParts.length - 1].replace('.html', '');
+            }
+        }
+
+        // Map of page patterns to menu items
+        const menuMap = {
+            'markets': ['markets', 'stocks', 'forex', 'crypto', 'commodities', 'bonds'],
+            'economy': ['economy', 'analysis'],
+            'technology': ['technology', 'tech'],
+            'trading': ['trading'],
+            'investing': ['investing'],
+            'news': ['news', 'press-release']
+        };
+
+        navLinks.forEach(link => {
+            let href = link.getAttribute('href');
+            if (!href) return;
+
+            // Remove leading ../  for subdirectory pages
+            href = href.replace(/^\.\.\//, '');
+
+            // Get the href section name
+            let hrefSection = href.replace('.html', '').replace(/^\//, '');
+
+            // Check if this is the active section
+            let isActive = false;
+
+            // Direct match
+            if (hrefSection === mainSection) {
+                isActive = true;
+            }
+            // Check for index/home special case
+            else if ((hrefSection === 'index' || hrefSection === '') && (mainSection === 'index' || mainSection === 'news')) {
+                isActive = true;
+            }
+            // Check menu map for category matches
+            else if (menuMap[hrefSection]) {
+                isActive = menuMap[hrefSection].some(pattern => mainSection.includes(pattern));
+            }
+
+            link.classList.toggle('active', isActive);
+        });
+    };
+
+    // Run on page load
+    setActiveNavItem();
+
 })();
 
