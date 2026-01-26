@@ -104,6 +104,11 @@
                             <span class="icon">🔄</span>
                             Regenerate All
                         </button>
+                        <button onclick="updateTicker()" class="btn btn-secondary"
+                            title="Update news ticker with latest articles">
+                            <span class="icon">📰</span>
+                            Update Ticker
+                        </button>
                     </div>
                 </div>
 
@@ -431,6 +436,29 @@
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<span class="icon">🔄</span> Regenerate All';
+            }
+        }
+
+        // Update ticker content across all pages
+        async function updateTicker() {
+            const btn = event.target.closest('button');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="icon">⏳</span> Updating...';
+
+            try {
+                const response = await fetch('/api/update-ticker', { method: 'POST' });
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ ' + result.message);
+                } else {
+                    alert('❌ Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span class="icon">📰</span> Update Ticker';
             }
         }
     </script>

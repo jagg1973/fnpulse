@@ -1,6 +1,7 @@
 const fs = require('fs').promises;
 const path = require('path');
 const cheerio = require('cheerio');
+const dayjs = require('dayjs');
 const htmlParser = require('./htmlParser');
 const contentManager = require('./contentManager');
 const fileManager = require('./fileManager');
@@ -11,6 +12,49 @@ const { minifyHtml } = require('./htmlMinifier');
 const paginationManager = require('./paginationManager');
 
 const NEWS_DIR = path.join(__dirname, '../../News');
+
+/**
+ * Generate dynamic ticker HTML from latest articles
+ */
+async function generateDynamicTicker(articles) {
+    // Use provided articles or fetch them
+    if (!articles) {
+        articles = await htmlParser.parseAllArticles();
+    }
+
+    // Get latest 4-6 articles, sorted by date
+    const latestArticles = articles
+        .sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate))
+        .slice(0, 6);
+
+    if (latestArticles.length === 0) {
+        // Return default static ticker if no articles
+        return `
+            <div class="ticker-item">
+                <span class="ticker-category">Markets</span>
+                <span class="ticker-date">${dayjs().format('MMM D, YYYY')}</span>
+                <span class="ticker-headline">FNPulse delivers breaking financial news and real-time market coverage</span>
+                <span class="ticker-dot">•</span>
+            </div>`;
+    }
+
+    // Generate ticker items from real articles
+    return latestArticles.map(article => {
+        const displayDate = dayjs(article.publishDate).format('MMM D, YYYY');
+        const category = article.category || 'News';
+        const headline = article.title.length > 80
+            ? article.title.substring(0, 77) + '...'
+            : article.title;
+
+        return `
+            <div class="ticker-item">
+                <span class="ticker-category">${category}</span>
+                <span class="ticker-date">${displayDate}</span>
+                <span class="ticker-headline">${headline}</span>
+                <span class="ticker-dot">•</span>
+            </div>`;
+    }).join('');
+}
 
 /**
  * Update homepage with latest articles
@@ -192,6 +236,13 @@ async function updateHomepage() {
     // Clear Multimedia section (hardcoded content)
     if ($('.video-grid').length > 0) {
         $('.video-grid').html('<p style="color:#94a3b8;padding:3rem;text-align:center;">Multimedia content coming soon.</p>');
+    }
+
+    // Update ticker with dynamic content
+    const tickerHtml = await generateDynamicTicker(articles);
+    const tickerContent = $('.new-ticker-content');
+    if (tickerContent.length > 0) {
+        tickerContent.html(tickerHtml);
     }
 
     updateAssetLinks($);
@@ -731,6 +782,7 @@ async function updateEntireSite() {
         await updateAllCategoryPages();
         await updateAllAuthorPages();
         await updateFooterRecentPosts();
+        await updateAllTickerContent(); // Update ticker across all pages
         console.log('\n✓ Site update complete!');
     } catch (error) {
         console.error('Error updating site:', error);
@@ -777,6 +829,39 @@ function normalizeHtmlTextAmpersands(html) {
         });
 }
 
+/**
+ * Update ticker content across all HTML pages
+ */
+async function updateAllTickerContent() {
+    const articles = await htmlParser.parseAllArticles();
+    const tickerHtml = await generateDynamicTicker(articles);
+
+    const files = await fs.readdir(NEWS_DIR);
+    const htmlFiles = files.filter(f => f.endsWith('.html'));
+
+    let updatedCount = 0;
+
+    for (const file of htmlFiles) {
+        try {
+            const filePath = path.join(NEWS_DIR, file);
+            const html = await fs.readFile(filePath, 'utf-8');
+            const $ = cheerio.load(html, { xmlMode: false, decodeEntities: false });
+
+            const tickerContent = $('.new-ticker-content');
+            if (tickerContent.length > 0) {
+                tickerContent.html(tickerHtml);
+                await fs.writeFile(filePath, $.html());
+                updatedCount++;
+            }
+        } catch (error) {
+            console.error(`Error updating ticker in ${file}:`, error.message);
+        }
+    }
+
+    console.log(`✓ Updated ticker content in ${updatedCount} files`);
+    return updatedCount;
+}
+
 module.exports = {
     updateHomepage,
     updatePressReleasesArchive,
@@ -788,5 +873,6 @@ module.exports = {
     updateAllAuthorPages,
     updateEntireSite,
     updateFooterRecentPosts,
-    regenerateAllArticles
+    regenerateAllArticles,
+    updateAllTickerContent
 };

@@ -13,6 +13,47 @@ const NEWS_DIR = path.join(__dirname, '../../News');
 const TEMPLATE_PATH = path.join(__dirname, '../templates/article-template.html');
 
 /**
+ * Generate dynamic ticker HTML from latest articles
+ */
+async function generateDynamicTicker() {
+    const htmlParser = require('./htmlParser');
+    const articles = await htmlParser.parseAllArticles();
+
+    // Get latest 4-6 articles, sorted by date
+    const latestArticles = articles
+        .sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate))
+        .slice(0, 6);
+
+    if (latestArticles.length === 0) {
+        // Return default static ticker if no articles
+        return `
+            <div class="ticker-item">
+                <span class="ticker-category">Markets</span>
+                <span class="ticker-date">${dayjs().format('MMM D, YYYY')}</span>
+                <span class="ticker-headline">FNPulse delivers breaking financial news and real-time market coverage</span>
+                <span class="ticker-dot">•</span>
+            </div>`;
+    }
+
+    // Generate ticker items from real articles
+    return latestArticles.map(article => {
+        const displayDate = dayjs(article.publishDate).format('MMM D, YYYY');
+        const category = article.category || 'News';
+        const headline = article.title.length > 80
+            ? article.title.substring(0, 77) + '...'
+            : article.title;
+
+        return `
+            <div class="ticker-item">
+                <span class="ticker-category">${category}</span>
+                <span class="ticker-date">${displayDate}</span>
+                <span class="ticker-headline">${headline}</span>
+                <span class="ticker-dot">•</span>
+            </div>`;
+    }).join('');
+}
+
+/**
  * Generate article filename from title
  */
 function generateFilename(title, contentType = 'article') {
@@ -118,8 +159,12 @@ async function createArticle(data) {
 
     $('script[type="application/ld+json"]').html(JSON.stringify(schemaData, null, 2));
 
-    // Update ticker
-    $('.ticker-content').text(data.tickerContent || config.tickerNews);
+    // Update ticker with dynamic content
+    const tickerHtml = await generateDynamicTicker();
+    const tickerContent = $('.new-ticker-content');
+    if (tickerContent.length > 0) {
+        tickerContent.html(tickerHtml);
+    }
 
     // Update footer description
     $('.f-desc').text(config.siteDescription || 'Latest financial news and market coverage from FNPulse.');
@@ -370,8 +415,12 @@ async function updatePageGlobals(filename, config) {
         });
     }
 
-    // Update ticker
-    $('.ticker-content').text(config.tickerNews);
+    // Update ticker with dynamic content
+    const tickerHtml = await generateDynamicTicker();
+    const tickerContent = $('.new-ticker-content');
+    if (tickerContent.length > 0) {
+        tickerContent.html(tickerHtml);
+    }
 
     // Update social links
     if (config.socialLinks) {

@@ -180,6 +180,7 @@ app.post('/api/articles', async (req, res) => {
             await siteUpdater.updateAuthorPage(req.body.author);
         }
         await siteUpdater.updateFooterRecentPosts();
+        await siteUpdater.updateAllTickerContent();
 
         res.json({ success: true, filename: result.filename });
     } catch (error) {
@@ -223,6 +224,7 @@ app.put('/api/articles/*', async (req, res) => {
             await siteUpdater.updateAuthorPage(req.body.author);
         }
         await siteUpdater.updateFooterRecentPosts();
+        await siteUpdater.updateAllTickerContent();
 
         res.json({ success: true });
     } catch (error) {
@@ -366,6 +368,16 @@ app.post('/api/update-site', async (req, res) => {
             await gitDeployer.pushToGitHub(config, commitMessage);
         }
         res.json({ success: true, message: 'Site updated successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update ticker content across all pages
+app.post('/api/update-ticker', async (req, res) => {
+    try {
+        const updatedCount = await siteUpdater.updateAllTickerContent();
+        res.json({ success: true, message: `Ticker updated in ${updatedCount} pages` });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
