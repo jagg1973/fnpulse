@@ -249,3 +249,148 @@
     background-color: #2563eb;
     /* Slightly darker blue */
 }
+
+/* ===== Media Kit Page Styles ===== */
+
+/* Hero Title - Remove italic, use Inter font */
+.media-kit-hero h1 {
+    font-family: 'Inter', sans-serif !important;
+    font-style: normal !important;
+    color: #fff !important;
+}
+
+/* Section Titles */
+.media-kit-section-title {
+    color: #1e293b;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+}
+
+.dark-mode .media-kit-section-title {
+    color: #f1f5f9;
+}
+
+/* Ad Format Cards */
+.ad-format-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.04);
+}
+
+.dark-mode .ad-format-card {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+/* Card Titles */
+.ad-format-card h3 {
+    font-size: 24px;
+    margin-bottom: 30px;
+    color: #1e293b;
+    font-weight: 700;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e2e8f0;
+    font-family: 'Inter', sans-serif;
+}
+
+.dark-mode .ad-format-card h3 {
+    color: #f1f5f9;
+    border-bottom-color: #475569;
+}
+
+/* Item Titles (h4) */
+.ad-format-card h4 {
+    margin-bottom: 8px;
+    color: #334155;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+}
+
+.dark-mode .ad-format-card h4 {
+    color: #e2e8f0;
+}
+
+/* Description Text */
+.ad-format-card .item-desc {
+    color: #64748b;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.dark-mode .ad-format-card .item-desc {
+    color: #94a3b8;
+}
+
+/* Price */
+.ad-format-card .item-price {
+    font-weight: 700;
+    color: #0066cc;
+    font-size: 18px;
+}
+
+.dark-mode .ad-format-card .item-price {
+    color: #60a5fa;
+}
+
+/* Audience Cards */
+.audience-card {
+    background: #f8fafc;
+    padding: 35px;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+}
+
+.dark-mode .audience-card {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+.audience-card h3 {
+    margin-bottom: 20px;
+    color: #0066cc;
+    font-size: 20px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+}
+
+.dark-mode .audience-card h3 {
+    color: #60a5fa;
+}
+
+.audience-card ul {
+    list-style: none;
+    padding: 0;
+    line-height: 2.2;
+    color: #475569;
+}
+
+.dark-mode .audience-card ul {
+    color: #cbd5e1;
+}
+
+/* Contact Section */
+.contact-section-title {
+    color: #1e293b;
+}
+
+.dark-mode .contact-section-title {
+    color: #f1f5f9;
+}
+
+.contact-label {
+    color: #1e293b;
+}
+
+.dark-mode .contact-label {
+    color: #f1f5f9;
+}
+
+.contact-muted {
+    color: #64748b;
+}
+
+.dark-mode .contact-muted {
+    color: #94a3b8;
+}
