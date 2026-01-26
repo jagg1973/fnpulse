@@ -103,14 +103,14 @@ async function parseArticle(filename) {
 async function parseAllArticles() {
     const files = await fs.readdir(NEWS_DIR);
     const articleFiles = files.filter(f =>
-        f.startsWith('article-') && f.endsWith('.html')
+        f.startsWith('article-') && f.endsWith('.html') && !f.startsWith('press-')
     );
 
     try {
         const newsDir = path.join(NEWS_DIR, 'news');
         const newsFiles = await fs.readdir(newsDir);
         newsFiles
-            .filter(f => f.endsWith('.html'))
+            .filter(f => f.endsWith('.html') && !f.startsWith('press-'))
             .forEach(f => articleFiles.push(`news/${f}`));
     } catch (error) {
         // news directory may not exist yet
@@ -132,6 +132,7 @@ async function parseAllArticles() {
             });
         } catch (error) {
             console.error(`Error parsing ${file}:`, error.message);
+            // Skip files that no longer exist or can't be parsed
         }
     }
 
