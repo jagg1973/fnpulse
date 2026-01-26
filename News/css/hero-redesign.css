@@ -581,6 +581,29 @@ body.dark-mode .mobile-nav-content a:hover {
     background-color: rgba(79, 70, 229, 0.15);
 }
 
+/* Dark Mode Typography - Make headings visible */
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6 {
+    color: #f1f5f9;
+}
+
+body.dark-mode .archive-title,
+body.dark-mode .widget-title,
+body.dark-mode .section-title,
+body.dark-mode .trending-title {
+    color: #f1f5f9;
+}
+
+body.dark-mode .archive-description,
+body.dark-mode .card-title,
+body.dark-mode .post-content h3 {
+    color: #e2e8f0;
+}
+
 /* Trending Section Precision Fixes */
 .trending-strip {
     display: flex;
