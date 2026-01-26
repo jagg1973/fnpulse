@@ -22,12 +22,8 @@ body {
     margin: 0;
 }
 
-.container {
-    max-width: 1400px;
-    /* Wider container for the dashboard feel */
-    margin: 0 auto;
-    padding: 0 24px;
-}
+/* Container inherits from fnpulse.min.css - don't override */
+/* Base CSS defines: width:min(var(--container-width),calc(100% - 2rem)) where --container-width is 1280px */
 
 /* --- HEADER REDESIGN --- */
 .site-header {
