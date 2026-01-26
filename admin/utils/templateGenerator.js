@@ -208,7 +208,7 @@ async function createArticle(data) {
 
     // Author info
     $('.author-info .byline a').text(data.author)
-        .attr('href', `author-${slugify(data.author, { lower: true, strict: true })}.html`);
+        .attr('href', `../author-${slugify(data.author, { lower: true, strict: true })}.html`);
     $('.author-info time').attr('datetime', publishDate)
         .text(`${displayDate} • ${data.publishTime || '09:00 AM EST'}`);
     $('.read-time').text(`${data.readTime || '5'} min read`);
@@ -240,7 +240,7 @@ async function createArticle(data) {
     // Author box
     $('.author-box h5').text(`About ${data.author}`);
     $('.author-box p').text(data.authorBio || `${data.author} is a financial journalist covering markets and economic policy.`);
-    $('.author-box a').attr('href', `author-${slugify(data.author, { lower: true, strict: true })}.html`)
+    $('.author-box a').attr('href', `../author-${slugify(data.author, { lower: true, strict: true })}.html`)
         .text(`View all posts by ${data.author.split(' ')[0]}`);
 
     // Save file
@@ -361,9 +361,10 @@ async function updateArticle(filename, data) {
     // Update author
     if (data.author) {
         $('.author-info .byline a').text(data.author)
-            .attr('href', `author-${slugify(data.author, { lower: true, strict: true })}.html`);
+            .attr('href', `../author-${slugify(data.author, { lower: true, strict: true })}.html`);
         $('.author-box h5').text(`About ${data.author}`);
-        $('.author-box a').text(`View all posts by ${data.author.split(' ')[0]}`);
+        $('.author-box a').text(`View all posts by ${data.author.split(' ')[0]}`)
+            .attr('href', `../author-${slugify(data.author, { lower: true, strict: true })}.html`);
     }
 
     // Save updated file
