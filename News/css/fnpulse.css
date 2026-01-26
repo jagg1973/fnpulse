@@ -2599,49 +2599,157 @@ a:hover {
     }
 }
 
-/* Pagination */
+/* ========================================
+   PAGINATION - Modern gradient design
+   ======================================== */
+
 .pagination {
     display: flex;
-    justify-content: center;
     align-items: center;
-    gap: 0.5rem;
-    margin-top: 3rem;
+    justify-content: center;
+    gap: 8px;
+    margin: 60px 0 40px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
 .page-link {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 36px;
-    height: 36px;
-    padding: 0 0.5rem;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    color: var(--ink);
+    min-width: 44px;
+    height: 44px;
+    padding: 0 16px;
+    font-size: 15px;
     font-weight: 600;
-    font-size: 0.9rem;
-    transition: all 0.2s;
+    color: #334155;
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.page-link:hover {
-    border-color: var(--accent);
-    color: var(--accent);
+.page-link:hover:not(.disabled):not(.active) {
+    color: #ffffff;
+    background: linear-gradient(135deg, var(--accent, #2563eb) 0%, #1d4ed8 100%);
+    border-color: var(--accent, #2563eb);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
 }
 
 .page-link.active {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--accent);
+    color: #ffffff;
+    background: linear-gradient(135deg, var(--accent, #2563eb) 0%, #1d4ed8 100%);
+    border-color: var(--accent, #2563eb);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.5);
+    cursor: default;
+    transform: scale(1.05);
 }
 
 .page-link.disabled {
-    opacity: 0.5;
-    pointer-events: none;
+    color: #94a3b8;
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    cursor: not-allowed;
+    opacity: 0.6;
+    box-shadow: none;
+}
+
+.page-prev,
+.page-next {
+    padding: 0 20px;
+    font-weight: 700;
+    gap: 8px;
 }
 
 .page-dots {
-    color: var(--muted);
-    padding: 0 0.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 44px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #94a3b8;
+    letter-spacing: 2px;
+    user-select: none;
+}
+
+/* Dark mode support */
+body.dark-mode .pagination {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+}
+
+body.dark-mode .page-link {
+    color: #cbd5e1;
+    background: #334155;
+    border-color: #475569;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .page-link:hover:not(.disabled):not(.active) {
+    color: #ffffff;
+    background: linear-gradient(135deg, var(--accent, #3b82f6) 0%, #2563eb 100%);
+    border-color: var(--accent, #3b82f6);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+}
+
+body.dark-mode .page-link.active {
+    background: linear-gradient(135deg, var(--accent, #3b82f6) 0%, #2563eb 100%);
+    border-color: var(--accent, #3b82f6);
+}
+
+body.dark-mode .page-link.disabled {
+    color: #64748b;
+    background: #1e293b;
+    border-color: #334155;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .pagination {
+        gap: 6px;
+        padding: 16px;
+        margin: 40px 0 30px;
+    }
+
+    .page-link {
+        min-width: 38px;
+        height: 38px;
+        padding: 0 12px;
+        font-size: 14px;
+    }
+
+    .page-prev,
+    .page-next {
+        padding: 0 14px;
+    }
+
+    .page-dots {
+        min-width: 24px;
+        height: 38px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    /* Hide page numbers on very small screens, keep only prev/next */
+    .page-link:not(.page-prev):not(.page-next):not(.active) {
+        display: none;
+    }
+
+    .page-link.active {
+        display: inline-flex;
+    }
+
+    .page-dots {
+        display: none;
+    }
 }
 
 /* Category List Widget */

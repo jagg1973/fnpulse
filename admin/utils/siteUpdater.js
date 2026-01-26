@@ -8,6 +8,7 @@ const { ensureHeadStructure } = require('./schemaUtils');
 const { updateAssetLinks } = require('./assetUtils');
 const { minifyAssets } = require('./assetMinifier');
 const { minifyHtml } = require('./htmlMinifier');
+const paginationManager = require('./paginationManager');
 
 const NEWS_DIR = path.join(__dirname, '../../News');
 
@@ -447,6 +448,8 @@ async function updateFooterRecentPosts() {
  */
 async function updateCategoryPage(categoryName, customFilename = null) {
     const articles = await htmlParser.parseAllArticles();
+    const config = await fileManager.getConfig();
+    const articlesPerPage = (config && config.pagination && config.pagination.articlesPerPage) || 12;
 
     // Filter articles by category
     const categoryArticles = articles.filter(a =>
@@ -456,6 +459,7 @@ async function updateCategoryPage(categoryName, customFilename = null) {
     // Handle special filename mappings
     const categoryFile = customFilename || `${categoryName.toLowerCase()}.html`;
     const categoryPath = path.join(NEWS_DIR, categoryFile);
+    const baseName = categoryFile.replace('.html', '');
 
     // Check if category page exists
     try {
@@ -467,6 +471,11 @@ async function updateCategoryPage(categoryName, customFilename = null) {
 
     const html = await fs.readFile(categoryPath, 'utf-8');
     const $ = cheerio.load(html, { xmlMode: false, decodeEntities: false });
+
+    // Calculate pagination
+    const firstPageArticleCount = Math.min(categoryArticles.length, 12); // 1 featured + up to 11 in list
+    const remainingArticles = Math.max(0, categoryArticles.length - firstPageArticleCount);
+    const totalPages = 1 + Math.ceil(remainingArticles / articlesPerPage);
 
     // Update featured article (.cat-featured-card)
     if ($('.cat-featured-card').length > 0) {
@@ -551,11 +560,28 @@ async function updateCategoryPage(categoryName, customFilename = null) {
         }
     }
 
-    const config = await fileManager.getConfig();
+    // Update or remove pagination based on article count
+    paginationManager.updatePaginationInDom($, 1, totalPages, baseName);
+
     updateAssetLinks($);
     ensureHeadStructure($, { filename: categoryFile, config });
     await fs.writeFile(categoryPath, await minifyHtml($.html()));
-    console.log(`✓ ${categoryName} page updated (${categoryArticles.length} articles)`);
+
+    // Create additional paginated pages if needed
+    if (totalPages > 1) {
+        await paginationManager.createPaginatedCategoryPages(
+            categoryName,
+            categoryArticles,
+            categoryFile,
+            config,
+            articlesPerPage
+        );
+    } else {
+        // Clean up any existing paginated files
+        await paginationManager.cleanupOldPaginatedFiles(baseName, 1);
+    }
+
+    console.log(`✓ ${categoryName} page updated (${categoryArticles.length} articles, ${totalPages} page${totalPages !== 1 ? 's' : ''})`);
 }
 
 /**
