@@ -29,6 +29,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
         rel="stylesheet" />
     <link rel="stylesheet" href="/css/fnpulse.min.css" />
+    <link rel="stylesheet" href="/css/hero-redesign.css" />
 
     <script type="application/ld+json">
     {
@@ -67,53 +68,75 @@
 <body class="news-article" data-content-type="news">
     <a class="skip-link" href="#main-article">Skip to content</a>
 
-    <header>
-        <div class="top-bar">
-            <div class="container">
-                <div class="news-ticker">
-                    <span class="badge-live">Live News</span>
-                    <span class="ticker-content">Markets rally as CPI falls to 2.8% • Gold hits record high • Tech
-                        stocks rebound...</span>
-                </div>
-                <div class="top-actions">
-                    <span class="date-display">Jan 22, 2026</span>
-                    <div class="social-links">
-                        <a href="#">Fb</a> <a href="#">In</a> <a href="#">X</a>
-                    </div>
-                </div>
+    <!-- Modern News Ticker -->
+    <div class="new-ticker-wrap">
+        <span class="ticker-label-fixed">NEWS</span>
+        <div class="new-ticker-content">
+            <div class="ticker-item">
+                <span class="ticker-category">Cryptocurrency</span>
+                <span class="ticker-date">June 8, 2026</span>
+                <span class="ticker-headline">Bitcoin Surges Past $125,000 as Institutions Double Down</span>
+                <span class="ticker-dot">•</span>
+            </div>
+            <div class="ticker-item">
+                <span class="ticker-category">Markets</span>
+                <span class="ticker-date">June 8, 2026</span>
+                <span class="ticker-headline">S&P 500 Closes at Record High on Tech Rally</span>
+                <span class="ticker-dot">•</span>
+            </div>
+            <div class="ticker-item">
+                <span class="ticker-category">Commodities</span>
+                <span class="ticker-date">June 8, 2026</span>
+                <span class="ticker-headline">Gold Hits All-Time High Amid Economic Uncertainty</span>
+                <span class="ticker-dot">•</span>
+            </div>
+            <div class="ticker-item">
+                <span class="ticker-category">Economy</span>
+                <span class="ticker-date">June 8, 2026</span>
+                <span class="ticker-headline">Federal Reserve Signals Potential Rate Cuts This Year</span>
+                <span class="ticker-dot">•</span>
             </div>
         </div>
+    </div>
 
-        <div class="brand-header">
-            <div class="container">
-                <div class="logo-area">
-                    <a href="index.html">
-                        <img src="img/logo.svg" alt="FNPulse Logo" style="height:50px;">
-                    </a>
-                </div>
-                <div class="header-ad-banner">
-                    <span>728x90 Leaderboard Ad Space</span>
-                </div>
-            </div>
+    <!-- Modern Header -->
+    <header class="site-header container">
+        <div class="header-logo">
+            <a href="index.html">
+                <img src="/img/logo.png" alt="FNPulse">
+            </a>
         </div>
-
-        <nav class="main-nav">
-            <div class="container nav-container">
-                <button class="mobile-toggle" aria-label="Menu">☰</button>
-                <div class="nav-links">
-                    <a href="index.html">Home</a>
-                    <a href="markets.html">Markets</a>
-                    <a href="economy.html">Economy</a>
-                    <a href="technology.html">Technology</a>
-                    <a href="about.html">About</a>
-                    <a href="contact.html">Contact</a>
-                </div>
-                <div class="nav-right-icons">
-                    <a href="search.html" aria-label="Search">🔍</a>
-                </div>
-            </div>
+        <nav class="nav-island">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="markets.html" class="nav-link">Markets</a>
+            <a href="economy.html" class="nav-link">Economy</a>
+            <a href="technology.html" class="nav-link">Technology</a>
+            <a href="stocks-indices.html" class="nav-link">Stocks</a>
+            <a href="commodities.html" class="nav-link">Commodities</a>
+            <a href="forex.html" class="nav-link">Forex</a>
+            <a href="crypto.html" class="nav-link">Crypto</a>
         </nav>
+        <div class="header-actions">
+            <div id="theme-toggle" class="toggle-switch" title="Dark Mode">
+                <div class="toggle-thumb"></div>
+            </div>
+            <button id="mobile-menu-btn" class="icon-btn primary" aria-label="Menu">☰</button>
+        </div>
     </header>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu-overlay" class="mobile-menu-overlay">
+        <div class="mobile-nav-content">
+            <a href="index.html">Home</a>
+            <a href="markets.html">Markets</a>
+            <a href="economy.html">Economy</a>
+            <a href="technology.html">Technology</a>
+            <a href="stocks-indices.html">Stocks</a>
+            <a href="commodities.html">Commodities</a>
+            <a href="forex.html">Forex</a>
+            <a href="crypto.html">Crypto</a>
+        </div>
+    </div>
 
     <main id="main-article" class="container article-container">
         <div class="breadcrumb">
@@ -124,12 +147,6 @@
         <div class="article-layout">
             <article class="article-main">
                 <header class="article-header">
-                    <div class="news-kicker">
-                        <span class="news-badge">News</span>
-                        <span class="news-desk">Category Desk</span>
-                        <span class="news-updated">Updated <time datetime="2026-01-22T09:20:00+08:00">Jan 22, 2026 •
-                                09:20 AM EST</time></span>
-                    </div>
                     <span class="post-cat-large">Category</span>
                     <h1 class="article-title">Article Title</h1>
                     <p class="article-lead">
@@ -137,18 +154,10 @@
                     </p>
                     <div class="article-meta-row">
                         <div class="author-info">
-                            <img src="img/author-face.jpg" alt="Author" class="author-avatar-small">
+                            <img src="/img/author-face.jpg" alt="Author" class="author-avatar-small">
                             <div class="author-text">
                                 <span class="byline">By <a href="author.html">Author Name</a></span>
-                                <span class="author-role">Staff Reporter</span>
-                                <span class="meta-line">
-                                    <span class="meta-label">Published</span>
-                                    <time class="meta-published" datetime="2026-01-22">Jan 22, 2026 • 09:00 AM
-                                        EST</time>
-                                    <span class="meta-sep">•</span>
-                                    <span class="meta-label">Dateline</span>
-                                    <span class="meta-dateline">New York</span>
-                                </span>
+                                <time datetime="2026-01-22">Jan 22, 2026 • 09:00 AM EST</time>
                             </div>
                         </div>
                         <div class="read-time">5 min read</div>

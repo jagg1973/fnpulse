@@ -122,30 +122,17 @@ async function updateHomepage() {
             );
         }
 
-        // List of press releases (skip the featured one, get next 6)
-        const listPressReleases = homepagePressReleases.slice(1, 7);
+        // List of press releases (skip the featured one, get next 3 for simple display)
+        const listPressReleases = homepagePressReleases.slice(1, 4);
         const pressListHtml = listPressReleases.map((pr, index) => {
-            const prImage = pr.image || (pr.mediaAssets && pr.mediaAssets.length > 0
-                ? pr.mediaAssets[0].url
-                : `img/news-350x223-${(index % 5) + 1}.jpg`);
             const prDate = pr.releaseDate || pr.date;
-            const prType = pr.type === 'general' ? 'Press Release' :
-                pr.type === 'financial' ? 'Financial' :
-                    pr.type === 'product' ? 'Product Launch' :
-                        pr.type === 'partnership' ? 'Partnership' : 'Press Release';
 
             return `
-                    <article class="press-card-small">
-                        <div class="press-thumb">
-                            <img src="${prImage}" alt="${pr.headline}">
-                        </div>
-                        <div class="press-content">
-                            <span class="post-cat">${prType}</span>
-                            <h4><a href="${pr.filename}">${pr.headline}</a></h4>
-                            <div class="meta">${pr.contactName || 'FNPulse'} • ${formatDate(prDate)}</div>
-                        </div>
-                    </article>
-                `;
+                <article class="press-small">
+                    <span class="press-date">${new Date(prDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                    <h4><a href="${pr.filename}">${pr.headline}</a></h4>
+                </article>
+            `;
         }).join('');
 
         if ($('.press-list-grid').length > 0) {
@@ -157,6 +144,105 @@ async function updateHomepage() {
     ensureHeadStructure($, { filename: 'index.html', config });
     await fs.writeFile(homepagePath, await minifyHtml($.html()));
     console.log('✓ Homepage updated');
+}
+
+/**
+ * Update press releases archive page
+ */
+async function updatePressReleasesArchive() {
+    const pressReleases = await contentManager.getAllPressReleases();
+    const config = await fileManager.getConfig();
+
+    // Sort by release date (newest first)
+    const sortedPR = pressReleases
+        .sort((a, b) => new Date(b.releaseDate || b.date) - new Date(a.releaseDate || a.date));
+
+    const archivePath = path.join(NEWS_DIR, 'press-releases.html');
+    const html = await fs.readFile(archivePath, 'utf-8');
+    const $ = cheerio.load(html, { xmlMode: false, decodeEntities: false });
+
+    // Update the grid with all press releases
+    const pressGridHtml = sortedPR.map((pr, index) => {
+        const prDate = pr.releaseDate || pr.date;
+        const prType = pr.type === 'general' ? 'Press Release' :
+            pr.type === 'financial' ? 'Financial Results' :
+                pr.type === 'product' ? 'Product Launch' :
+                    pr.type === 'partnership' ? 'Partnership' :
+                        pr.type === 'award' ? 'Award' :
+                            pr.type === 'expansion' ? 'Expansion' :
+                                pr.type === 'corporate' ? 'Corporate News' :
+                                    pr.type === 'technology' ? 'Technology' :
+                                        pr.type === 'community' ? 'Community' : 'Press Release';
+
+        return `
+            <article class="pr-recent-card">
+                <div class="pr-recent-meta">
+                    <span class="pr-recent-date">${formatDate(prDate)}</span>
+                    <span class="pr-recent-category">${prType}</span>
+                </div>
+                <h3><a href="${pr.filename}">${pr.headline}</a></h3>
+                <p>${pr.lead ? pr.lead.substring(0, 150) + '...' : pr.subheadline || ''}</p>
+                <a href="${pr.filename}" class="pr-recent-link">Read Full Release →</a>
+            </article>
+        `;
+    }).join('');
+
+    if ($('.pr-recent-grid').length > 0) {
+        $('.pr-recent-grid').html(pressGridHtml);
+    }
+
+    updateAssetLinks($);
+    ensureHeadStructure($, { filename: 'press-releases.html', config });
+    await fs.writeFile(archivePath, await minifyHtml($.html()));
+    console.log('✓ Press releases archive updated');
+}
+
+/**
+ * Update news archive page
+ */
+async function updateNewsArchive() {
+    const articles = await htmlParser.parseAllArticles();
+    const config = await fileManager.getConfig();
+
+    // Sort by publish date (newest first)
+    articles.sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate));
+
+    const archivePath = path.join(NEWS_DIR, 'news.html');
+    const html = await fs.readFile(archivePath, 'utf-8');
+    const $ = cheerio.load(html, { xmlMode: false, decodeEntities: false });
+
+    // Update the news list with all articles
+    const newsArticles = articles.filter(article => (article.contentType || 'article') === 'news');
+    const displayArticles = (newsArticles.length ? newsArticles : articles).slice(0, 20);
+
+    const newsListHtml = displayArticles.map((article, index) => {
+        const articleImage = (article.content && article.content.featuredImage)
+            || article.featuredImage
+            || `img/news-350x223-${(index % 5) + 1}.jpg`;
+
+        const readTime = article.readTime || '5 min read';
+
+        return `
+            <article class="news-item">
+                <img src="${articleImage}" alt="${article.title}">
+                <div>
+                    <span class="eyebrow">${article.category || 'News'}</span>
+                    <h3><a href="${article.filename}">${article.title}</a></h3>
+                    <p>${article.excerpt || ''}</p>
+                    <div class="meta">${formatDate(article.publishDate)} • ${readTime}</div>
+                </div>
+            </article>
+        `;
+    }).join('');
+
+    if ($('.news-list').length > 0) {
+        $('.news-list').html(newsListHtml);
+    }
+
+    updateAssetLinks($);
+    ensureHeadStructure($, { filename: 'news.html', config });
+    await fs.writeFile(archivePath, await minifyHtml($.html()));
+    console.log('✓ News archive updated');
 }
 
 /**
@@ -412,6 +498,8 @@ async function updateEntireSite() {
         await minifyAssets();
         await regenerateAllArticles();
         await updateHomepage();
+        await updatePressReleasesArchive();
+        await updateNewsArchive();
         await updateAllCategoryPages();
         await updateAllAuthorPages();
         await updateFooterRecentPosts();
@@ -463,6 +551,8 @@ function normalizeHtmlTextAmpersands(html) {
 
 module.exports = {
     updateHomepage,
+    updatePressReleasesArchive,
+    updateNewsArchive,
     updateCategoryPage,
     updateAllCategoryPages,
     updateAuthorPage,
