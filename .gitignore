@@ -21,3 +21,12 @@ Thumbs.db
 # Temp files
 *.tmp
 *.bak
+
+# Windows reserved device names
+nul
+NUL
+CON
+PRN
+AUX
+COM[0-9]
+LPT[0-9]

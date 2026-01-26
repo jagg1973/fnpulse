@@ -99,18 +99,46 @@ async function parseArticle(filename) {
 
 /**
  * Parse all article files to get list of articles
+ * Only includes files managed by the admin tool:
+ * - article-*.html in root (main articles)
+ * - *.html in news/ subdirectory (news articles)
+ * Excludes: static template files, press releases, and theme demo files
  */
 async function parseAllArticles() {
+    // Template/dummy files to always exclude
+    const EXCLUDED_FILES = [
+        'single-article.html',
+        'press-release.html',
+        'category.html',
+        'index.html',
+        'about.html',
+        'contact.html',
+        'search.html',
+        'newsletter.html',
+        'privacy.html',
+        'terms.html',
+        'editorial-standards.html',
+        'media-kit.html',
+        'advertisement.html'
+    ];
+
     const files = await fs.readdir(NEWS_DIR);
     const articleFiles = files.filter(f =>
-        f.startsWith('article-') && f.endsWith('.html') && !f.startsWith('press-')
+        f.startsWith('article-') &&
+        f.endsWith('.html') &&
+        !f.startsWith('press-') &&
+        !EXCLUDED_FILES.includes(f)
     );
 
     try {
         const newsDir = path.join(NEWS_DIR, 'news');
         const newsFiles = await fs.readdir(newsDir);
         newsFiles
-            .filter(f => f.endsWith('.html') && !f.startsWith('press-'))
+            .filter(f =>
+                f.endsWith('.html') &&
+                !f.startsWith('press-') &&
+                !EXCLUDED_FILES.includes(f)
+            )
             .forEach(f => articleFiles.push(`news/${f}`));
     } catch (error) {
         // news directory may not exist yet
@@ -119,6 +147,10 @@ async function parseAllArticles() {
     const articles = [];
     for (const file of articleFiles) {
         try {
+            // Verify file still exists before parsing
+            const filePath = path.join(NEWS_DIR, file);
+            await fs.access(filePath);
+
             const article = await parseArticle(file);
             articles.push({
                 filename: file,

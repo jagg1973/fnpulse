@@ -36,7 +36,7 @@ async function pushToGitHub(config, commitMessage = 'Update site content') {
         } else {
             // Check if remote exists, if not add it
             try {
-                execSync('git remote get-url origin', { stdio: 'pipe' });
+                execSync('git remote get-url origin 2>&1', { stdio: 'ignore' });
             } catch (error) {
                 execSync(`git remote add origin ${repository}`, { stdio: 'inherit' });
             }
@@ -48,19 +48,19 @@ async function pushToGitHub(config, commitMessage = 'Update site content') {
 
         // Ensure git user identity is set for commits
         try {
-            execSync('git config user.email', { stdio: 'pipe' });
+            execSync('git config user.email 2>&1', { stdio: 'ignore' });
         } catch (error) {
             execSync('git config user.email "admin@fnpulse.com"', { stdio: 'inherit' });
         }
         try {
-            execSync('git config user.name', { stdio: 'pipe' });
+            execSync('git config user.name 2>&1', { stdio: 'ignore' });
         } catch (error) {
             execSync('git config user.name "FNPulse Admin"', { stdio: 'inherit' });
         }
 
         // Check if there are changes to commit
         try {
-            execSync('git diff-index --quiet HEAD --', { stdio: 'pipe' });
+            execSync('git diff-index --quiet HEAD -- 2>&1', { stdio: 'ignore' });
             console.log('ℹ️  No changes to commit');
             return {
                 success: true,

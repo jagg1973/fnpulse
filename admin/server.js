@@ -203,11 +203,20 @@ app.put('/api/articles/*', async (req, res) => {
 app.delete('/api/articles/*', async (req, res) => {
     try {
         const filename = req.params[0] || req.params.filename;
+        console.log(`[DELETE] Attempting to delete article: ${filename}`);
+
         await fileManager.deleteArticle(filename);
+        console.log(`[DELETE] File deleted successfully: ${filename}`);
+
         await contentManager.setFooterPostSelection(filename, false);
+        console.log(`[DELETE] Updated footer post selection`);
+
         await siteUpdater.updateEntireSite();
+        console.log(`[DELETE] Site regeneration complete`);
+
         res.json({ success: true });
     } catch (error) {
+        console.error(`[DELETE] Error deleting article:`, error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -268,10 +277,21 @@ app.put('/api/press-releases/:filename/homepage', async (req, res) => {
 
 app.delete('/api/press-releases/:filename', async (req, res) => {
     try {
-        await contentManager.deletePressRelease(req.params.filename);
+        const filename = req.params.filename;
+        console.log(`[DELETE PR] Attempting to delete press release: ${filename}`);
+
+        await contentManager.deletePressRelease(filename);
+        console.log(`[DELETE PR] Press release deleted from content.json and file system`);
+
         await siteUpdater.updateHomepage();
+        console.log(`[DELETE PR] Homepage updated`);
+
+        await siteUpdater.updatePressReleasesArchive();
+        console.log(`[DELETE PR] Press releases archive updated`);
+
         res.json({ success: true });
     } catch (error) {
+        console.error(`[DELETE PR] Error:`, error);
         res.status(500).json({ error: error.message });
     }
 });
