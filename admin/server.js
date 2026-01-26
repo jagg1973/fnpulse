@@ -158,8 +158,23 @@ app.post('/api/articles', async (req, res) => {
 
         // Update site pages with new article
         await siteUpdater.updateHomepage();
+        await siteUpdater.updateNewsArchive();
+
+        // Update analysis archive if it's an analysis article
+        if (req.body.category && req.body.category.toLowerCase().includes('analysis')) {
+            await siteUpdater.updateAnalysisArchive();
+        }
+
         if (req.body.category) {
+            // Update category page with standard filename
             await siteUpdater.updateCategoryPage(req.body.category);
+
+            // Handle special category filename mappings
+            if (req.body.category.toLowerCase() === 'cryptocurrency') {
+                await siteUpdater.updateCategoryPage('Cryptocurrency', 'crypto.html');
+            } else if (req.body.category.toLowerCase() === 'stocks') {
+                await siteUpdater.updateCategoryPage('Stocks', 'stocks-indices.html');
+            }
         }
         if (req.body.author) {
             await siteUpdater.updateAuthorPage(req.body.author);
@@ -186,8 +201,23 @@ app.put('/api/articles/*', async (req, res) => {
 
         // Update site pages
         await siteUpdater.updateHomepage();
+        await siteUpdater.updateNewsArchive();
+
+        // Update analysis archive if it's an analysis article
+        if (req.body.category && req.body.category.toLowerCase().includes('analysis')) {
+            await siteUpdater.updateAnalysisArchive();
+        }
+
         if (req.body.category) {
+            // Update category page with standard filename
             await siteUpdater.updateCategoryPage(req.body.category);
+
+            // Handle special category filename mappings
+            if (req.body.category.toLowerCase() === 'cryptocurrency') {
+                await siteUpdater.updateCategoryPage('Cryptocurrency', 'crypto.html');
+            } else if (req.body.category.toLowerCase() === 'stocks') {
+                await siteUpdater.updateCategoryPage('Stocks', 'stocks-indices.html');
+            }
         }
         if (req.body.author) {
             await siteUpdater.updateAuthorPage(req.body.author);

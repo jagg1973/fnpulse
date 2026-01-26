@@ -66,31 +66,44 @@ async function updateHomepage() {
             $('.hero-tertiary h3').wrapInner(`<a href="${tertArticle.filename}" style="text-decoration:none;color:inherit"></a>`);
             $('.hero-tertiary h3 a').text(tertArticle.title);
         }
+    } else {
+        // Clear hero section if not enough articles
+        $('.hero-main').html('<div class="card-body"><p style="color:#94a3b8;padding:2rem;text-align:center;">No articles available. Create articles in the admin panel.</p></div>');
+        $('.hero-secondary').remove();
+        $('.hero-tertiary').remove();
     }
 
     // Update Latest News section (latest 10 news items)
     const newsArticles = articles.filter(article => (article.contentType || 'article') === 'news');
     const latestNews = (newsArticles.length ? newsArticles : articles).slice(0, 10);
-    const newsListHtml = latestNews.map((article, index) => {
-        const articleImage = (article.content && article.content.featuredImage)
-            || article.featuredImage
-            || `img/news-350x223-${(index % 5) + 1}.jpg`;
-        return `
-            <a href="${article.filename}" class="news-link" style="text-decoration:none;color:inherit;">
-                <article class="news-item">
-                    <img src="${articleImage}" alt="${article.title}">
-                    <div>
-                        <span class="eyebrow">${article.category || 'News'}</span>
-                        <h3>${article.title}</h3>
-                        <p>${article.excerpt || ''}</p>
-                        <div class="meta">${formatDate(article.publishDate)}</div>
-                    </div>
-                </article>
-            </a>
-            `;
-    }).join('');
-    if ($('.news-list').length > 0) {
-        $('.news-list').html(newsListHtml);
+
+    if (latestNews.length > 0) {
+        const newsListHtml = latestNews.map((article, index) => {
+            const articleImage = (article.content && article.content.featuredImage)
+                || article.featuredImage
+                || `img/news-350x223-${(index % 5) + 1}.jpg`;
+            return `
+                <a href="${article.filename}" class="news-link" style="text-decoration:none;color:inherit;">
+                    <article class="news-item">
+                        <img src="${articleImage}" alt="${article.title}">
+                        <div>
+                            <span class="eyebrow">${article.category || 'News'}</span>
+                            <h3>${article.title}</h3>
+                            <p>${article.excerpt || ''}</p>
+                            <div class="meta">${formatDate(article.publishDate)}</div>
+                        </div>
+                    </article>
+                </a>
+                `;
+        }).join('');
+        if ($('.news-list').length > 0) {
+            $('.news-list').html(newsListHtml);
+        }
+    } else {
+        // Clear news list if no articles
+        if ($('.news-list').length > 0) {
+            $('.news-list').html('<p style="color:#94a3b8;padding:2rem;text-align:center;">No news articles available yet.</p>');
+        }
     }
 
     // Update Press Releases section
@@ -138,6 +151,46 @@ async function updateHomepage() {
         if ($('.press-list-grid').length > 0) {
             $('.press-list-grid').html(pressListHtml);
         }
+    } else {
+        // Clear press releases section if none available
+        if ($('.press-featured').length > 0) {
+            $('.press-featured').html('<div style="padding:3rem;text-align:center;color:#94a3b8;"><p>No press releases available. Create press releases in the admin panel.</p></div>');
+        }
+        if ($('.press-list-grid').length > 0) {
+            $('.press-list-grid').html('');
+        }
+    }
+
+    // Clear Analysis & Research section (hardcoded content)
+    if ($('.card-grid').length > 0) {
+        const analysisArticles = articles.filter(a => a.category && a.category.toLowerCase().includes('analysis'));
+
+        // Update the "Explore" link to point to analysis.html
+        $('.card-grid').closest('.primary').find('a.section-link[href="#"]').attr('href', 'analysis.html');
+
+        if (analysisArticles.length > 0) {
+            const analysisHtml = analysisArticles.slice(0, 2).map(article => {
+                const articleImage = article.featuredImage || 'img/news-350x223-4.jpg';
+                return `
+                    <article class="card">
+                        <img src="${articleImage}" alt="${article.title}">
+                        <div class="card-body">
+                            <span class="eyebrow">${article.category}</span>
+                            <h3><a href="${article.filename}">${article.title}</a></h3>
+                            <p>${article.excerpt || ''}</p>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+            $('.card-grid').html(analysisHtml);
+        } else {
+            $('.card-grid').html('<p style="color:#94a3b8;padding:2rem;text-align:center;">No analysis articles available yet.</p>');
+        }
+    }
+
+    // Clear Multimedia section (hardcoded content)
+    if ($('.video-grid').length > 0) {
+        $('.video-grid').html('<p style="color:#94a3b8;padding:3rem;text-align:center;">Multimedia content coming soon.</p>');
     }
 
     updateAssetLinks($);
@@ -246,6 +299,86 @@ async function updateNewsArchive() {
 }
 
 /**
+ * Update analysis archive page
+ */
+async function updateAnalysisArchive() {
+    const articles = await htmlParser.parseAllArticles();
+    const config = await fileManager.getConfig();
+
+    // Filter for analysis articles and sort by publish date (newest first)
+    const analysisArticles = articles
+        .filter(article => article.category && article.category.toLowerCase().includes('analysis'))
+        .sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate));
+
+    const archivePath = path.join(NEWS_DIR, 'analysis.html');
+    const html = await fs.readFile(archivePath, 'utf-8');
+    const $ = cheerio.load(html, { xmlMode: false, decodeEntities: false });
+
+    // Update featured article (.cat-featured-card)
+    if ($('.cat-featured-card').length > 0) {
+        if (analysisArticles.length > 0) {
+            const featured = analysisArticles[0];
+            const featuredImage = (featured.content && featured.content.featuredImage) || featured.featuredImage || 'img/news-825x525.jpg';
+            const featuredHtml = `
+                <div class="cat-featured-img">
+                    <img src="${featuredImage}" alt="${featured.title}">
+                    <span class="post-cat-badge">Must Read</span>
+                </div>
+                <div class="cat-featured-content">
+                    <h2><a href="${featured.filename}">${featured.title}</a></h2>
+                    <div class="meta-row">
+                        <span class="author">By ${featured.author || 'Staff Writer'}</span>
+                        <span class="sep">•</span>
+                        <span class="date">${formatDate(featured.publishDate)}</span>
+                    </div>
+                    <p class="excerpt">${featured.excerpt || featured.metaDescription || ''}</p>
+                </div>
+            `;
+            $('.cat-featured-card').html(featuredHtml);
+        } else {
+            $('.cat-featured-card').html(`
+                <div class="cat-featured-content" style="padding:2rem;text-align:center;color:#94a3b8;">
+                    <p>No analysis articles available yet. Create articles in the admin panel.</p>
+                </div>
+            `);
+        }
+    }
+
+    // Update the articles list (.archive-list)
+    if ($('.archive-list').length > 0) {
+        if (analysisArticles.length > 1) {
+            // Skip first article (already featured) and show remaining
+            const articlesHtml = analysisArticles.slice(1).map(article => {
+                const articleImage = (article.content && article.content.featuredImage) || article.featuredImage || 'img/news-350x223-1.jpg';
+                return `
+                <article class="post-card-large">
+                    <div class="post-thumb">
+                        <a href="${article.filename}"><img src="${articleImage}" alt="${article.title}"></a>
+                    </div>
+                    <div class="post-content">
+                        <span class="post-cat">${article.category || 'Analysis'}</span>
+                        <h3><a href="${article.filename}">${article.title}</a></h3>
+                        <div class="meta">${formatDate(article.publishDate)} • ${article.readTime || '5'} min read</div>
+                        <p>${article.excerpt || article.metaDescription || ''}</p>
+                    </div>
+                </article>
+                `;
+            }).join('\n');
+            $('.archive-list').html(articlesHtml);
+        } else if (analysisArticles.length === 1) {
+            $('.archive-list').html('<p style="color:#94a3b8;padding:2rem;text-align:center">No more analysis articles available. Check back later for more content.</p>');
+        } else {
+            $('.archive-list').html('<p style="color:#94a3b8;padding:2rem;text-align:center">No articles available yet.</p>');
+        }
+    }
+
+    updateAssetLinks($);
+    ensureHeadStructure($, { filename: 'analysis.html', config });
+    await fs.writeFile(archivePath, await minifyHtml($.html()));
+    console.log('✓ Analysis archive updated');
+}
+
+/**
  * Update footer recent posts for all pages
  */
 async function updateFooterRecentPosts() {
@@ -312,20 +445,16 @@ async function updateFooterRecentPosts() {
 /**
  * Update a category page with articles from that category
  */
-async function updateCategoryPage(categoryName) {
+async function updateCategoryPage(categoryName, customFilename = null) {
     const articles = await htmlParser.parseAllArticles();
 
     // Filter articles by category
     const categoryArticles = articles.filter(a =>
-        a.category.toLowerCase() === categoryName.toLowerCase()
+        a.category && a.category.toLowerCase() === categoryName.toLowerCase()
     ).sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate));
 
-    if (categoryArticles.length === 0) {
-        console.log(`No articles found for category: ${categoryName}`);
-        return;
-    }
-
-    const categoryFile = `${categoryName.toLowerCase()}.html`;
+    // Handle special filename mappings
+    const categoryFile = customFilename || `${categoryName.toLowerCase()}.html`;
     const categoryPath = path.join(NEWS_DIR, categoryFile);
 
     // Check if category page exists
@@ -339,48 +468,120 @@ async function updateCategoryPage(categoryName) {
     const html = await fs.readFile(categoryPath, 'utf-8');
     const $ = cheerio.load(html, { xmlMode: false, decodeEntities: false });
 
-    // Update the articles list
-    const articlesHtml = categoryArticles.slice(0, 12).map(article => {
-        const articleImage = (article.content && article.content.featuredImage) || article.featuredImage || 'img/news-350x223-1.jpg';
-        return `
-        <article class="news-item">
-            <a href="${article.filename}">
-                <img src="${articleImage}" alt="${article.title}">
-            </a>
-            <div>
-                <span class="eyebrow">${article.category || 'News'}</span>
-                <h3><a href="${article.filename}">${article.title}</a></h3>
-                <p>${article.excerpt || article.metaDescription || ''}</p>
-                <div class="meta">${formatDate(article.publishDate)}</div>
-            </div>
-        </article>
-        `;
-    }).join('\n');
+    // Update featured article (.cat-featured-card)
+    if ($('.cat-featured-card').length > 0) {
+        if (categoryArticles.length > 0) {
+            const featured = categoryArticles[0];
+            const featuredImage = (featured.content && featured.content.featuredImage) || featured.featuredImage || 'img/news-825x525.jpg';
+            const featuredHtml = `
+                <div class="cat-featured-img">
+                    <img src="${featuredImage}" alt="${featured.title}">
+                    <span class="post-cat-badge">Must Read</span>
+                </div>
+                <div class="cat-featured-content">
+                    <h2><a href="${featured.filename}">${featured.title}</a></h2>
+                    <div class="meta-row">
+                        <span class="author">By ${featured.author || 'Staff Writer'}</span>
+                        <span class="sep">•</span>
+                        <span class="date">${formatDate(featured.publishDate)}</span>
+                    </div>
+                    <p class="excerpt">${featured.excerpt || featured.metaDescription || ''}</p>
+                </div>
+            `;
+            $('.cat-featured-card').html(featuredHtml);
+        } else {
+            $('.cat-featured-card').html(`
+                <div class="cat-featured-content" style="padding:2rem;text-align:center;color:#94a3b8;">
+                    <p>No ${categoryName.toLowerCase()} articles available yet. Create articles in the admin panel.</p>
+                </div>
+            `);
+        }
+    }
 
-    // Replace the news list content
+    // Update the articles list (.archive-list)
+    if ($('.archive-list').length > 0) {
+        if (categoryArticles.length > 1) {
+            // Skip first article (already featured) and show next 11
+            const articlesHtml = categoryArticles.slice(1, 12).map(article => {
+                const articleImage = (article.content && article.content.featuredImage) || article.featuredImage || 'img/news-350x223-1.jpg';
+                return `
+                <article class="post-card-large">
+                    <div class="post-thumb">
+                        <a href="${article.filename}"><img src="${articleImage}" alt="${article.title}"></a>
+                    </div>
+                    <div class="post-content">
+                        <span class="post-cat">${article.category || 'News'}</span>
+                        <h3><a href="${article.filename}">${article.title}</a></h3>
+                        <div class="meta">${formatDate(article.publishDate)} • ${article.readTime || '5'} min read</div>
+                        <p>${article.excerpt || article.metaDescription || ''}</p>
+                    </div>
+                </article>
+                `;
+            }).join('\n');
+            $('.archive-list').html(articlesHtml);
+        } else if (categoryArticles.length === 1) {
+            $('.archive-list').html('<p style="color:#94a3b8;padding:2rem;text-align:center">No more articles in this category. Check back later for more content.</p>');
+        } else {
+            $('.archive-list').html('<p style="color:#94a3b8;padding:2rem;text-align:center">No articles available yet.</p>');
+        }
+    }
+
+    // Update the news-list if it exists (alternative layout)
     if ($('.news-list').length > 0) {
-        $('.news-list').html(articlesHtml);
+        if (categoryArticles.length > 0) {
+            const articlesHtml = categoryArticles.slice(0, 12).map(article => {
+                const articleImage = (article.content && article.content.featuredImage) || article.featuredImage || 'img/news-350x223-1.jpg';
+                return `
+                <article class="news-item">
+                    <a href="${article.filename}">
+                        <img src="${articleImage}" alt="${article.title}">
+                    </a>
+                    <div>
+                        <span class="eyebrow">${article.category || 'News'}</span>
+                        <h3><a href="${article.filename}">${article.title}</a></h3>
+                        <p>${article.excerpt || article.metaDescription || ''}</p>
+                        <div class="meta">${formatDate(article.publishDate)}</div>
+                    </div>
+                </article>
+                `;
+            }).join('\n');
+            $('.news-list').html(articlesHtml);
+        } else {
+            $('.news-list').html('<p style="color:#94a3b8;padding:2rem;text-align:center">No articles available yet.</p>');
+        }
     }
 
     const config = await fileManager.getConfig();
     updateAssetLinks($);
     ensureHeadStructure($, { filename: categoryFile, config });
     await fs.writeFile(categoryPath, await minifyHtml($.html()));
-    console.log(`✓ ${categoryName} page updated`);
+    console.log(`✓ ${categoryName} page updated (${categoryArticles.length} articles)`);
 }
 
 /**
  * Update all category pages
  */
 async function updateAllCategoryPages() {
-    const categories = ['Markets', 'Economy', 'Technology', 'Cryptocurrency',
-        'Stocks', 'Forex', 'Commodities', 'Bonds', 'Analysis'];
+    // Define categories with their corresponding filenames
+    const categoryMappings = [
+        { name: 'Markets', file: 'markets.html' },
+        { name: 'Economy', file: 'economy.html' },
+        { name: 'Technology', file: 'technology.html' },
+        { name: 'Cryptocurrency', file: 'crypto.html' },  // Special: crypto.html instead of cryptocurrency.html
+        { name: 'Cryptocurrency', file: 'cryptocurrency.html' },  // Also update this if it exists
+        { name: 'Stocks', file: 'stocks.html' },
+        { name: 'Stocks', file: 'stocks-indices.html' },  // Special: stocks-indices.html
+        { name: 'Forex', file: 'forex.html' },
+        { name: 'Commodities', file: 'commodities.html' },
+        { name: 'Bonds', file: 'bonds.html' },
+        { name: 'Analysis', file: 'analysis.html' }
+    ];
 
-    for (const category of categories) {
+    for (const mapping of categoryMappings) {
         try {
-            await updateCategoryPage(category);
+            await updateCategoryPage(mapping.name, mapping.file);
         } catch (error) {
-            console.error(`Error updating ${category}:`, error.message);
+            console.error(`Error updating ${mapping.name} (${mapping.file}):`, error.message);
         }
     }
 }
@@ -500,6 +701,7 @@ async function updateEntireSite() {
         await updateHomepage();
         await updatePressReleasesArchive();
         await updateNewsArchive();
+        await updateAnalysisArchive();
         await updateAllCategoryPages();
         await updateAllAuthorPages();
         await updateFooterRecentPosts();
@@ -553,6 +755,7 @@ module.exports = {
     updateHomepage,
     updatePressReleasesArchive,
     updateNewsArchive,
+    updateAnalysisArchive,
     updateCategoryPage,
     updateAllCategoryPages,
     updateAuthorPage,
