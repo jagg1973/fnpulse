@@ -29,13 +29,6 @@ app.use((req, res, next) => {
     next();
 });
 app.use('/public', express.static(path.join(__dirname, 'public')));
-app.use('/site-assets/news', (req, res, next) => {
-    const firstSegment = req.path.split('/')[1];
-    if (['css', 'js', 'img'].includes(firstSegment)) {
-        return res.redirect(301, `/site-assets${req.path}`);
-    }
-    return next();
-});
 app.use('/site-assets', express.static(path.join(__dirname, '../News')));
 app.use('/css', express.static(path.join(__dirname, '../News/css')));
 app.use('/js', express.static(path.join(__dirname, '../News/js')));

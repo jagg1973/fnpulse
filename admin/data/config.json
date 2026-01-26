@@ -55,6 +55,14 @@
     {
       "label": "Analysis",
       "url": "analysis.html"
+    },
+    {
+      "label": "About",
+      "url": "about.html"
+    },
+    {
+      "label": "Contact",
+      "url": "contact.html"
     }
   ],
   "categories": [

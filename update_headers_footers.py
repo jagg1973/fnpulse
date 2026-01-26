@@ -44,7 +44,8 @@ STANDARD_HEADER = '''  <!-- TICKER ADDED BACK -->
         class="nav-link">Markets</a> <a href="economy.html" class="nav-link">Economy</a> <a href="technology.html"
         class="nav-link">Technology</a> <a href="stocks-indices.html" class="nav-link">Stocks</a> <a
         href="commodities.html" class="nav-link">Commodities</a> <a href="forex.html" class="nav-link">Forex</a> <a
-        href="crypto.html" class="nav-link">Crypto</a></nav>
+        href="crypto.html" class="nav-link">Crypto</a> <a href="about.html" class="nav-link">About</a> <a
+        href="editorial-standards.html" class="nav-link">Editorial</a> <a href="contact.html" class="nav-link">Contact</a></nav>
     <div class="header-actions">
       <div id="theme-toggle" class="toggle-switch" title="Dark Mode">
         <div class="toggle-thumb"></div>
@@ -63,6 +64,9 @@ STANDARD_HEADER = '''  <!-- TICKER ADDED BACK -->
       <a href="commodities.html">Commodities</a>
       <a href="forex.html">Forex</a>
       <a href="crypto.html">Crypto</a>
+      <a href="about.html">About</a>
+      <a href="editorial-standards.html">Editorial</a>
+      <a href="contact.html">Contact</a>
     </div>
   </div>'''
 
