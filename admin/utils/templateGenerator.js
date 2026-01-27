@@ -230,7 +230,7 @@ async function createArticle(data) {
             $('iframe').attr('src', data.videoUrl);
         }
         if (data.duration) {
-             $('.read-time').text(data.duration);
+            $('.read-time').text(data.duration);
         }
     } else {
         // Standard Read Time
