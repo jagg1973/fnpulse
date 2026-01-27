@@ -94,7 +94,8 @@
                             <select id="contentType" name="contentType" class="form-control" required>
                                 <option value="news" <%=contentType==='news' ? 'selected' : '' %>>News</option>
                                 <option value="article" <%=contentType==='article' ? 'selected' : '' %>>Article</option>
-                                <option value="multimedia" <%=contentType==='multimedia' ? 'selected' : '' %>>Multimedia</option>
+                                <option value="multimedia" <%=contentType==='multimedia' ? 'selected' : '' %>>Multimedia
+                                </option>
                             </select>
                             <small>News items appear in the Latest News list.</small>
                         </div>
@@ -151,6 +152,30 @@
                                 value="<%= article ? (article.publishTime || '09:00 AM EST') : '09:00 AM EST' %>">
                         </div>
                     </div>
+
+                    <!-- MULTIMEDIA SPECIFIC FIELDS -->
+                    <div id="multimediaFields" style="display: none; background: #fffbe6; padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid #ffe58f;">
+                        <h4 style="margin-top: 0; color: #b7791f; display: flex; align-items: center; gap: 8px;">
+                            <span>🎬</span> Multimedia Settings
+                        </h4>
+                        
+                        <div class="form-group">
+                            <label for="videoUrl">Video URL / Embed *</label>
+                            <input type="text" id="videoUrl" name="videoUrl" class="form-control"
+                                placeholder="https://www.youtube.com/embed/..."
+                                value="<%= article ? (article.videoUrl || '') : '' %>">
+                            <small>Full embed URL (e.g., https://www.youtube.com/embed/VIDEO_ID)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="duration">Video Duration *</label>
+                            <input type="text" id="duration" name="duration" class="form-control"
+                                placeholder="e.g. 5:24"
+                                value="<%= article ? (article.duration || '') : '' %>">
+                            <small>Displayed as the length of the video.</small>
+                        </div>
+                    </div>
+                    <!-- END MULTIMEDIA FIELDS -->
 
                     <div class="form-group" style="margin-top: 10px;">
                         <label style="display: flex; align-items: center; gap: 10px;">
@@ -353,6 +378,23 @@
                 console.error('Error loading footer selection:', error);
             }
         }
+
+        // Toggle Multimedia Fields
+        function toggleMultimediaFields() {
+            const type = document.getElementById('contentType').value;
+            const mpFields = document.getElementById('multimediaFields');
+            if (type === 'multimedia') {
+                mpFields.style.display = 'block';
+                document.getElementById('videoUrl').setAttribute('required', 'required');
+                document.getElementById('duration').setAttribute('required', 'required');
+            } else {
+                mpFields.style.display = 'none';
+                document.getElementById('videoUrl').removeAttribute('required');
+                document.getElementById('duration').removeAttribute('required');
+            }
+        }
+        document.getElementById('contentType').addEventListener('change', toggleMultimediaFields);
+        toggleMultimediaFields(); // Init on load
 
         // HTML mode toggle functions
         function switchToHTML() {

@@ -222,7 +222,20 @@ async function createArticle(data) {
         .attr('href', `../author-${slugify(data.author, { lower: true, strict: true })}.html`);
     $('.author-info time').attr('datetime', publishDate)
         .text(`${displayDate} • ${data.publishTime || '09:00 AM EST'}`);
-    $('.read-time').text(`${data.readTime || '5'} min read`);
+    // Multimedia Updates
+    if (contentType === 'multimedia') {
+        if (data.videoUrl) {
+            // Check if iframe exists in template, otherwise creating one might be tricky without reading specific template structure again
+            // But we know we used multimedia-single-template which has an iframe
+            $('iframe').attr('src', data.videoUrl);
+        }
+        if (data.duration) {
+             $('.read-time').text(data.duration);
+        }
+    } else {
+        // Standard Read Time
+        $('.read-time').text(`${data.readTime || '5'} min read`);
+    }
 
     // Featured image
     if (data.featuredImage) {

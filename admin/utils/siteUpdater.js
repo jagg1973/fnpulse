@@ -935,9 +935,9 @@ async function updateMultimediaArchive() {
 
     // Replace template placeholders
     html = html.replace(/{{pageTitle}}/g, 'Multimedia & Analysis')
-               .replace(/{{pageDescription}}/g, 'Watch the latest market analysis videos, interviews, and financial news reports.')
-               .replace(/{{currentDate}}/g, dayjs().format('MMM D, YYYY'))
-               .replace(/{{pagination}}/g, '');
+        .replace(/{{pageDescription}}/g, 'Watch the latest market analysis videos, interviews, and financial news reports.')
+        .replace(/{{currentDate}}/g, dayjs().format('MMM D, YYYY'))
+        .replace(/{{pagination}}/g, '');
 
     const $ = cheerio.load(html, { xmlMode: false, decodeEntities: false });
 
