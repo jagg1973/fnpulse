@@ -80,6 +80,8 @@ async function parseArticle(filename) {
             || '';
         if (metaContentType) {
             article.contentType = metaContentType.toLowerCase();
+        } else if (filename.startsWith('news/multimedia/') || filename.startsWith('multimedia/')) {
+            article.contentType = 'multimedia';
         } else if (filename.startsWith('news/')) {
             article.contentType = 'news';
         } else if (filename.startsWith('article-')) {
@@ -142,6 +144,19 @@ async function parseAllArticles() {
             .forEach(f => articleFiles.push(`news/${f}`));
     } catch (error) {
         // news directory may not exist yet
+    }
+
+    try {
+        const multimediaDir = path.join(NEWS_DIR, 'multimedia');
+        const multimediaFiles = await fs.readdir(multimediaDir);
+        multimediaFiles
+            .filter(f =>
+                f.endsWith('.html') &&
+                !EXCLUDED_FILES.includes(f)
+            )
+            .forEach(f => articleFiles.push(`multimedia/${f}`));
+    } catch (error) {
+        // multimedia directory may not exist yet
     }
 
     const articles = [];

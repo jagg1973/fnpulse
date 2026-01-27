@@ -158,6 +158,11 @@ app.post('/api/articles', async (req, res) => {
             await siteUpdater.updateAnalysisArchive();
         }
 
+        // Update multimedia archive if it's a multimedia article
+        if (req.body.contentType === 'multimedia' || req.body.type === 'multimedia') {
+            await siteUpdater.updateMultimediaArchive();
+        }
+
         if (req.body.category) {
             // Update category page with standard filename
             await siteUpdater.updateCategoryPage(req.body.category);
@@ -200,6 +205,11 @@ app.put('/api/articles/*', async (req, res) => {
         // Update analysis archive if it's an analysis article
         if (req.body.category && req.body.category.toLowerCase().includes('analysis')) {
             await siteUpdater.updateAnalysisArchive();
+        }
+
+        // Update multimedia archive if it's a multimedia article
+        if (req.body.contentType === 'multimedia' || req.body.type === 'multimedia') {
+            await siteUpdater.updateMultimediaArchive();
         }
 
         if (req.body.category) {

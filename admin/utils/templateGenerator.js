@@ -61,6 +61,9 @@ function generateFilename(title, contentType = 'article') {
     if (contentType === 'news') {
         return `news/${slug}.html`;
     }
+    if (contentType === 'multimedia') {
+        return `news/multimedia/${slug}.html`;
+    }
     return `article-${slug}.html`;
 }
 
@@ -74,14 +77,22 @@ function buildArticleUrl(config, filename) {
  */
 async function createArticle(data) {
     const config = await fileManager.getConfig();
-    const template = await fs.readFile(TEMPLATE_PATH, 'utf-8');
+    const contentTypeRaw = (data.contentType || data.articleType || data.type || '').toString().toLowerCase();
+    const contentType = contentTypeRaw === 'news' ? 'news'
+        : contentTypeRaw === 'multimedia' ? 'multimedia'
+            : 'article';
+
+    let templatePath = TEMPLATE_PATH;
+    if (contentType === 'multimedia') {
+        templatePath = path.join(__dirname, '../templates/multimedia-single-template.html');
+    }
+
+    const template = await fs.readFile(templatePath, 'utf-8');
     const $ = cheerio.load(template, {
         xmlMode: false,
         decodeEntities: false
     });
 
-    const contentTypeRaw = (data.contentType || data.articleType || data.type || '').toString().toLowerCase();
-    const contentType = contentTypeRaw === 'news' ? 'news' : 'article';
     const filename = data.filename || generateFilename(data.title, contentType);
     const publishDate = data.publishDate || new Date().toISOString();
     const modifiedDate = data.modifiedDate || publishDate;
@@ -348,6 +359,16 @@ async function updateArticle(filename, data) {
     if (data.title) $('.article-title').text(data.title);
     if (data.excerpt) $('.article-lead').text(data.excerpt);
     if (data.body) $('.article-body').html(data.body);
+
+    // Update multimedia specific content
+    if (contentType === 'multimedia') {
+        if (data.videoUrl) {
+            $('iframe').attr('src', data.videoUrl);
+        }
+        if (data.duration) {
+            $('.read-time').text(data.duration);
+        }
+    }
 
     // Update featured image
     if (data.featuredImage) {

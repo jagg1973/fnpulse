@@ -233,9 +233,46 @@ async function updateHomepage() {
         }
     }
 
-    // Clear Multimedia section (hardcoded content)
+    // Update Multimedia section
     if ($('.video-grid').length > 0) {
-        $('.video-grid').html('<p style="color:#94a3b8;padding:3rem;text-align:center;">Multimedia content coming soon.</p>');
+        // Filter for multimedia articles
+        const multimediaArticles = articles.filter(a => a.contentType === 'multimedia');
+
+        // Update the "Watch All" link to point to multimedia.html
+        // Try specific class first
+        if ($('.multimedia-section a.section-link').length > 0) {
+            $('.multimedia-section a.section-link').attr('href', 'multimedia.html');
+        } else {
+            // Fallback: look for header relative to grid (parent of video-grid is the section)
+            $('.video-grid').parent().find('.section-header a.section-link').attr('href', 'multimedia.html');
+        }
+
+        if (multimediaArticles.length > 0) {
+            // Display top 3 videos
+            const multimediaHtml = multimediaArticles.slice(0, 3).map(article => {
+                const articleImage = (article.content && article.content.featuredImage)
+                    || article.featuredImage
+                    || 'img/news-350x223-5.jpg';
+
+                return `
+                    <article class="video-card">
+                        <div class="video-thumb">
+                            <a href="${article.filename}">
+                                <img src="${articleImage}" alt="${article.title}">
+                                <div class="play-btn"></div>
+                            </a>
+                        </div>
+                        <div class="video-content">
+                            <h3><a href="${article.filename}">${article.title}</a></h3>
+                            <div class="meta-light">${formatDate(article.publishDate)}</div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+            $('.video-grid').html(multimediaHtml);
+        } else {
+            $('.video-grid').html('<p style="color:#94a3b8;padding:3rem;text-align:center;">No multimedia content available yet.</p>');
+        }
     }
 
     // Update ticker with dynamic content
@@ -651,7 +688,12 @@ async function updateAllCategoryPages() {
         { name: 'Forex', file: 'forex.html' },
         { name: 'Commodities', file: 'commodities.html' },
         { name: 'Bonds', file: 'bonds.html' },
-        { name: 'Analysis', file: 'analysis.html' }
+        { name: 'Analysis', file: 'analysis.html' },
+        { name: 'Trading', file: 'trading.html' },
+        { name: 'Finance', file: 'finance.html' },
+        { name: 'Investing', file: 'investing.html' },
+        { name: 'Economic Policy', file: 'economic-policy.html' },
+        { name: 'Global Business', file: 'global-business.html' }
     ];
 
     for (const mapping of categoryMappings) {
@@ -779,6 +821,7 @@ async function updateEntireSite() {
         await updatePressReleasesArchive();
         await updateNewsArchive();
         await updateAnalysisArchive();
+        await updateMultimediaArchive();
         await updateAllCategoryPages();
         await updateAllAuthorPages();
         await updateFooterRecentPosts();
@@ -862,11 +905,123 @@ async function updateAllTickerContent() {
     return updatedCount;
 }
 
+/**
+ * Update multimedia archive page
+ */
+async function updateMultimediaArchive() {
+    const articles = await htmlParser.parseAllArticles();
+    const config = await fileManager.getConfig();
+
+    // Filter for multimedia articles and sort by publish date (newest first)
+    const multimediaArticles = articles
+        .filter(article => article.contentType === 'multimedia')
+        .sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate));
+
+    const archivePath = path.join(NEWS_DIR, 'multimedia.html');
+    let html;
+
+    try {
+        html = await fs.readFile(archivePath, 'utf-8');
+    } catch (error) {
+        // If file doesn't exist, try to load from template
+        try {
+            const templatePath = path.join(__dirname, '../templates/multimedia-archive-template.html');
+            html = await fs.readFile(templatePath, 'utf-8');
+        } catch (templateError) {
+            console.error('Error loading multimedia archive template:', templateError.message);
+            return;
+        }
+    }
+
+    const $ = cheerio.load(html, { xmlMode: false, decodeEntities: false });
+
+    // Update Featured Video (.featured-video-multimedia)
+    if ($('.featured-video-multimedia').length > 0) {
+        if (multimediaArticles.length > 0) {
+            const featured = multimediaArticles[0];
+            const featuredImage = (featured.content && featured.content.featuredImage)
+                || featured.featuredImage
+                || 'img/news-825x525.jpg';
+
+            const featuredHtml = `
+                <div class="featured-video-card">
+                    <div class="video-thumb-large">
+                        <a href="${featured.filename}">
+                            <img src="${featuredImage}" alt="${featured.title}">
+                            <div class="play-btn-large"></div>
+                        </a>
+                    </div>
+                    <div class="featured-video-info">
+                        <span class="post-cat">${featured.category || 'Multimedia'}</span>
+                        <h2><a href="${featured.filename}">${featured.title}</a></h2>
+                        <div class="meta-row">
+                            <span class="author">By ${featured.author || 'Staff'}</span>
+                            <span class="sep">•</span>
+                            <span class="date">${formatDate(featured.publishDate)}</span>
+                        </div>
+                        <p>${featured.excerpt || featured.metaDescription || ''}</p>
+                    </div>
+                </div>
+            `;
+            $('.featured-video-multimedia').html(featuredHtml);
+        } else {
+            $('.featured-video-multimedia').html(`
+                <div style="padding:4rem;text-align:center;color:#94a3b8;background:#1e293b;border-radius:8px;">
+                    <h3>No multimedia content yet</h3>
+                    <p>Check back soon for market analysis videos and interviews.</p>
+                </div>
+            `);
+        }
+    }
+
+    // Update Video Grid (.video-grid-archive)
+    if ($('.video-grid-archive').length > 0) {
+        if (multimediaArticles.length > 1) {
+            // Skip first article (featured)
+            const gridArticles = multimediaArticles.slice(1);
+
+            const gridHtml = gridArticles.map(article => {
+                const articleImage = (article.content && article.content.featuredImage)
+                    || article.featuredImage
+                    || 'img/news-350x223-1.jpg';
+
+                return `
+                    <article class="video-card">
+                        <div class="video-thumb">
+                            <a href="${article.filename}">
+                                <img src="${articleImage}" alt="${article.title}">
+                                <div class="play-btn"></div>
+                            </a>
+                        </div>
+                        <div class="video-content">
+                            <span class="post-cat-small">${article.category || 'Video'}</span>
+                            <h3><a href="${article.filename}">${article.title}</a></h3>
+                            <div class="meta-light">${formatDate(article.publishDate)}</div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+
+            $('.video-grid-archive').html(gridHtml);
+        } else if (multimediaArticles.length === 1) {
+            $('.video-grid-archive').html('<p style="color:#94a3b8;padding:2rem;text-align:center;width:100%;">More videos coming soon.</p>');
+        } else {
+            $('.video-grid-archive').html('');
+        }
+    }
+
+    updateAssetLinks($);
+    ensureHeadStructure($, { filename: 'multimedia.html', config });
+    await fs.writeFile(archivePath, await minifyHtml($.html()));
+    console.log('✓ Multimedia archive updated');
+}
+
 module.exports = {
     updateHomepage,
     updatePressReleasesArchive,
     updateNewsArchive,
     updateAnalysisArchive,
+    updateMultimediaArchive,
     updateCategoryPage,
     updateAllCategoryPages,
     updateAuthorPage,
