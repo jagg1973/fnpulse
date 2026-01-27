@@ -13,6 +13,106 @@ const paginationManager = require('./paginationManager');
 
 const NEWS_DIR = path.join(__dirname, '../../News');
 
+function normalizeAuthorName(value) {
+    return String(value || '').trim().toLowerCase();
+}
+
+async function getAuthorProfileByName(authorName) {
+    const authors = await contentManager.getAllAuthors();
+    const normalizedName = normalizeAuthorName(authorName);
+
+    return authors.find(author =>
+        normalizeAuthorName(author.name) === normalizedName ||
+        normalizeAuthorName(author.id) === normalizedName
+    ) || null;
+}
+
+function applyAuthorProfileToAuthorPage($, authorProfile, authorName, config) {
+    if (!authorProfile) return;
+
+    const displayName = authorProfile.name || authorName;
+    const authorTitle = authorProfile.title || 'Financial Journalist';
+    const authorBio = authorProfile.bio || `${displayName} is a financial journalist covering markets and economic policy.`;
+    const authorAvatar = authorProfile.avatar || 'img/author-face.jpg';
+
+    $('.author-bio-card .author-avatar img').attr('src', authorAvatar).attr('alt', displayName);
+    $('.author-bio-card .author-info h1').text(displayName);
+    $('.author-bio-card .author-title').text(authorTitle);
+    $('.author-bio-card .author-bio').text(authorBio);
+
+    $('.breadcrumb .current').text(displayName);
+    $('.archive-header .archive-title').text(`Latest Articles by ${displayName}`);
+
+    const twitterLink = $('.author-social-links a.twitter');
+    if (authorProfile.twitter) {
+        twitterLink.attr('href', authorProfile.twitter);
+    } else {
+        twitterLink.remove();
+    }
+
+    const linkedinLink = $('.author-social-links a.linkedin');
+    if (authorProfile.linkedin) {
+        linkedinLink.attr('href', authorProfile.linkedin);
+    } else {
+        linkedinLink.remove();
+    }
+
+    const emailLink = $('.author-social-links a.email');
+    if (authorProfile.email) {
+        emailLink.attr('href', `mailto:${authorProfile.email}`);
+    } else {
+        emailLink.remove();
+    }
+
+    $('title').text(`${displayName} - ${authorTitle} — ${config.siteName || 'FNPulse'}`);
+    $('meta[name="description"]').attr('content', authorBio);
+    $('meta[property="og:title"]').attr('content', `${displayName} - ${authorTitle}`);
+    $('meta[property="og:description"]').attr('content', authorBio);
+    $('meta[property="twitter:title"]').attr('content', `${displayName} - ${authorTitle} — ${config.siteName || 'FNPulse'}`);
+    $('meta[property="twitter:description"]').attr('content', authorBio);
+    if (authorAvatar) {
+        $('meta[property="og:image"]').attr('content', authorAvatar);
+        $('meta[property="twitter:image"]').attr('content', authorAvatar);
+    }
+
+    $('script[type="application/ld+json"]').each((i, el) => {
+        const scriptContent = $(el).html();
+        if (!scriptContent) return;
+        try {
+            const schemaData = JSON.parse(scriptContent);
+            if (schemaData['@type'] === 'Person') {
+                schemaData.name = displayName;
+                schemaData.jobTitle = authorTitle;
+                schemaData.url = `${config.siteUrl || 'https://www.fnpulse.com'}/author/${displayName.toLowerCase().replace(/\s+/g, '-')}`;
+                const sameAs = [];
+                if (authorProfile.twitter) sameAs.push(authorProfile.twitter);
+                if (authorProfile.linkedin) sameAs.push(authorProfile.linkedin);
+                if (sameAs.length) schemaData.sameAs = sameAs;
+                $(el).html(JSON.stringify(schemaData, null, 2));
+            }
+        } catch (error) {
+            // Ignore malformed schema blocks
+        }
+    });
+}
+
+function applyAuthorProfileToArticle($, authorProfile, authorName) {
+    if (!authorProfile) return;
+
+    const displayName = authorProfile.name || authorName;
+    const authorBio = authorProfile.bio || `${displayName} is a financial journalist covering markets and economic policy.`;
+    const authorAvatar = authorProfile.avatar || 'img/author-face.jpg';
+
+    $('.author-info img').attr('src', authorAvatar).attr('alt', displayName);
+    if (authorProfile.title) {
+        $('.author-info .author-role').text(authorProfile.title);
+    }
+
+    $('.author-box img').attr('src', authorAvatar).attr('alt', displayName);
+    $('.author-box h5').text(`About ${displayName}`);
+    $('.author-box p').text(authorBio);
+}
+
 /**
  * Generate dynamic ticker HTML from latest articles
  */
@@ -710,6 +810,7 @@ async function updateAllCategoryPages() {
  */
 async function updateAuthorPage(authorName) {
     const articles = await htmlParser.parseAllArticles();
+    const authorProfile = await getAuthorProfileByName(authorName);
 
     // Filter articles by author
     const authorArticles = articles.filter(a =>
@@ -763,6 +864,7 @@ async function updateAuthorPage(authorName) {
     }
 
     const config = await fileManager.getConfig();
+    applyAuthorProfileToAuthorPage($, authorProfile, authorName, config);
     updateAssetLinks($);
     ensureHeadStructure($, { filename: authorFile, config });
     await fs.writeFile(authorPath, await minifyHtml($.html()));
@@ -791,6 +893,10 @@ async function updateAllAuthorPages() {
 async function regenerateAllArticles() {
     console.log('Regenerating all articles...');
     const articles = await fileManager.getAllArticles();
+    const authorProfiles = await contentManager.getAllAuthors();
+    const authorProfileMap = new Map(
+        authorProfiles.map(author => [normalizeAuthorName(author.name), author])
+    );
 
     for (const article of articles) {
         try {
@@ -800,6 +906,12 @@ async function regenerateAllArticles() {
 
             // Apply asset link updates
             updateAssetLinks($);
+
+            const authorName = normalizeAuthorName(article.author)
+                ? article.author
+                : $('.author-info .byline a').first().text();
+            const authorProfile = authorProfileMap.get(normalizeAuthorName(authorName)) || null;
+            applyAuthorProfileToArticle($, authorProfile, authorName);
 
             // Write back
             await fs.writeFile(articlePath, $.html(), 'utf-8');
