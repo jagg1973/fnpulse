@@ -195,6 +195,9 @@
                             <input type="text" id="featuredImage" name="featuredImage" class="form-control"
                                 value="<%= article ? article.featuredImage : '' %>" required>
                             <button type="button" onclick="openImagePicker()" class="btn btn-secondary">Browse</button>
+                            <input type="file" id="articleImageUpload" accept="image/*" style="display: none;">
+                            <button type="button" class="btn btn-secondary"
+                                onclick="document.getElementById('articleImageUpload').click()">Upload</button>
                         </div>
                         <% if (article && article.featuredImage) { %>
                             <div class="image-preview">
@@ -486,15 +489,14 @@
         }
 
         // Image picker
-        async function openImagePicker() {
-            const modal = document.getElementById('imagePickerModal');
-            modal.style.display = 'flex';
+        async function loadImageGrid() {
+            const grid = document.getElementById('imageGrid');
+            if (!grid) return;
 
             try {
                 const response = await fetch('/api/images/list');
                 const images = await response.json();
 
-                const grid = document.getElementById('imageGrid');
                 grid.innerHTML = images.map(img => `
                     <div class="image-item" onclick="selectImage('${img.path}')">
                         <img src="/site-assets/${img.path}" alt="${img.filename}">
@@ -502,8 +504,15 @@
                     </div>
                 `).join('');
             } catch (error) {
-                document.getElementById('imageGrid').innerHTML = 'Error loading images';
+                grid.innerHTML = 'Error loading images';
             }
+        }
+
+        async function openImagePicker() {
+            const modal = document.getElementById('imagePickerModal');
+            modal.style.display = 'flex';
+
+            loadImageGrid();
         }
 
         function closeImagePicker() {
@@ -513,6 +522,44 @@
         function selectImage(path) {
             document.getElementById('featuredImage').value = path;
             closeImagePicker();
+        }
+
+        async function uploadArticleImage(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            let lastPath = '';
+            for (const file of files) {
+                const formData = new FormData();
+                formData.append('image', file);
+
+                try {
+                    const response = await fetch('/api/images/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        lastPath = result.path;
+                    } else {
+                        alert(`Failed to upload ${file.name}: ${result.error}`);
+                    }
+                } catch (error) {
+                    alert(`Error uploading ${file.name}: ${error.message}`);
+                }
+            }
+
+            if (lastPath) {
+                document.getElementById('featuredImage').value = lastPath;
+                loadImageGrid();
+            }
+
+            event.target.value = '';
+        }
+
+        const articleImageUpload = document.getElementById('articleImageUpload');
+        if (articleImageUpload) {
+            articleImageUpload.addEventListener('change', uploadArticleImage);
         }
 
         // Close modal on outside click

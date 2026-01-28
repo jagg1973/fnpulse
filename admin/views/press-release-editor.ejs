@@ -155,7 +155,7 @@
                             <h3>Featured Image</h3>
                             <div class="form-group">
                                 <label for="image">Image URL</label>
-                                <div class="input-group">
+                                <div class="image-input-group">
                                     <input type="text" id="image" name="image" class="form-control"
                                         placeholder="/img/press-release-image.jpg"
                                         value="<%= pressRelease ? pressRelease.image : '/img/news-1200x800-1.jpg' %>">
@@ -163,6 +163,18 @@
                                         onclick="window.open('/images', 'images')">
                                         Browse
                                     </button>
+                                    <input type="file" id="pressReleaseImageUpload" accept="image/*"
+                                        style="display: none;">
+                                    <button type="button" class="btn btn-secondary"
+                                        onclick="document.getElementById('pressReleaseImageUpload').click()">
+                                        Upload
+                                    </button>
+                                </div>
+                                <div class="upload-progress" id="pressReleaseUploadProgress" style="display: none;">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="pressReleaseProgressFill"></div>
+                                    </div>
+                                    <p id="pressReleaseProgressText">Uploading...</p>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -308,6 +320,60 @@
                 ]
             }
         });
+
+        async function uploadPressReleaseImage(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            const progress = document.getElementById('pressReleaseUploadProgress');
+            const progressFill = document.getElementById('pressReleaseProgressFill');
+            const progressText = document.getElementById('pressReleaseProgressText');
+
+            if (progress) progress.style.display = 'block';
+            if (progressFill) progressFill.style.width = '0%';
+            if (progressText) progressText.textContent = 'Uploading...';
+
+            let completed = 0;
+            const total = files.length;
+            let lastPath = '';
+
+            for (const file of files) {
+                const formData = new FormData();
+                formData.append('image', file);
+
+                try {
+                    const response = await fetch('/api/images/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        lastPath = `/${result.path}`;
+                    } else {
+                        alert(`Failed to upload ${file.name}: ${result.error}`);
+                    }
+                } catch (error) {
+                    alert(`Error uploading ${file.name}: ${error.message}`);
+                }
+
+                completed++;
+                const percent = Math.round((completed / total) * 100);
+                if (progressFill) progressFill.style.width = `${percent}%`;
+                if (progressText) progressText.textContent = `Uploading... ${percent}%`;
+            }
+
+            if (lastPath) {
+                document.getElementById('image').value = lastPath;
+            }
+
+            if (progressText) progressText.textContent = 'Upload complete';
+            event.target.value = '';
+        }
+
+        const pressReleaseImageUpload = document.getElementById('pressReleaseImageUpload');
+        if (pressReleaseImageUpload) {
+            pressReleaseImageUpload.addEventListener('change', uploadPressReleaseImage);
+        }
 
         // Form submission
         document.getElementById('saveBtn').addEventListener('click', async function () {

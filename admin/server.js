@@ -17,6 +17,7 @@ const siteUpdater = require('./utils/siteUpdater');
 const pageManager = require('./utils/pageManager');
 const deployer = require('./utils/deployer');
 const gitDeployer = require('./utils/gitDeployer');
+const fsSync = require('fs');
 
 // Middleware
 app.use(bodyParser.json({ limit: '50mb' }));
@@ -57,8 +58,24 @@ const storage = multer.diskStorage({
         cb(null, path.join(__dirname, '../News/img'));
     },
     filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
+        const imgDir = path.join(__dirname, '../News/img');
+        const originalName = file.originalname || 'image';
+        const decodedName = Buffer.from(originalName, 'latin1').toString('utf8');
+        const normalizedName = decodedName.normalize('NFC');
+        const parsed = path.parse(normalizedName);
+        const baseNameRaw = parsed.name || 'image';
+        const safeBaseName = baseNameRaw
+            .replace(/[\\/]/g, '-')
+            .replace(/[:*?"<>|]/g, '-')
+            .trim();
+        const safeExt = (parsed.ext || '').toLowerCase();
+        let filename = `${safeBaseName}${safeExt}`;
+        let counter = 2;
+        while (fsSync.existsSync(path.join(imgDir, filename))) {
+            filename = `${safeBaseName}-${counter}${safeExt}`;
+            counter += 1;
+        }
+        cb(null, filename);
     }
 });
 const upload = multer({ storage: storage });

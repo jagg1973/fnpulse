@@ -92,6 +92,30 @@
                 </div>
 
                 <div class="form-section">
+                    <h3>Images</h3>
+
+                    <div class="form-group">
+                        <label>Upload Images</label>
+                        <div class="image-input-group">
+                            <input type="file" id="pageImageUpload" accept="image/*" multiple style="display: none;">
+                            <button type="button" class="btn btn-secondary"
+                                onclick="document.getElementById('pageImageUpload').click()">Upload</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadPageImages()">Refresh</button>
+                        </div>
+                        <small>Upload images here and click an image below to insert it into the HTML editor.</small>
+                    </div>
+
+                    <div class="upload-progress" id="pageUploadProgress" style="display: none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="pageProgressFill"></div>
+                        </div>
+                        <p id="pageProgressText">Uploading...</p>
+                    </div>
+
+                    <div id="pageImageGrid" class="image-grid"></div>
+                </div>
+
+                <div class="form-section">
                     <div class="editor-header">
                         <div>
                             <h3>Page Content</h3>
@@ -135,6 +159,11 @@
         const htmlInput = document.getElementById('html');
         const previewFrame = document.getElementById('pagePreview');
         const refreshBtn = document.getElementById('refreshPreview');
+        const pageImageUploadInput = document.getElementById('pageImageUpload');
+        const pageImageGrid = document.getElementById('pageImageGrid');
+        const pageUploadProgress = document.getElementById('pageUploadProgress');
+        const pageProgressFill = document.getElementById('pageProgressFill');
+        const pageProgressText = document.getElementById('pageProgressText');
 
         function setEditorView(view) {
             if (!editorContainer) return;
@@ -183,6 +212,128 @@
         }
 
         setEditorView('code');
+
+        async function loadPageImages() {
+            if (!pageImageGrid) return;
+            pageImageGrid.innerHTML = 'Loading images...';
+            try {
+                const response = await fetch('/api/images/list');
+                const images = await response.json();
+                if (!Array.isArray(images) || images.length === 0) {
+                    pageImageGrid.innerHTML = '<p>No images uploaded yet.</p>';
+                    return;
+                }
+
+                pageImageGrid.innerHTML = images.map(image => `
+                    <div class="image-card">
+                        <div class="image-wrapper">
+                            <img src="${image.url}" alt="${image.filename}">
+                        </div>
+                        <div class="image-info">
+                            <p class="image-name" title="${image.filename}">${image.filename}</p>
+                            <div class="image-actions">
+                                <button type="button" class="btn-icon" title="Insert"
+                                    onclick="insertImageIntoEditor('${image.path}')">➕</button>
+                                <button type="button" class="btn-icon" title="Copy path"
+                                    onclick="copyImagePath('${image.path}')">📋</button>
+                                <button type="button" class="btn-icon btn-danger" title="Delete"
+                                    onclick="deletePageImage('${image.filename}')">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                pageImageGrid.innerHTML = '<p>Failed to load images.</p>';
+            }
+        }
+
+        function insertImageIntoEditor(path) {
+            if (!htmlInput) return;
+            const snippet = `<img src="${path}" alt="">`;
+            const start = htmlInput.selectionStart || 0;
+            const end = htmlInput.selectionEnd || 0;
+            const current = htmlInput.value || '';
+            htmlInput.value = current.slice(0, start) + snippet + current.slice(end);
+            htmlInput.selectionStart = htmlInput.selectionEnd = start + snippet.length;
+            htmlInput.focus();
+            updatePreview();
+        }
+
+        async function uploadPageImages(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            if (pageUploadProgress) pageUploadProgress.style.display = 'block';
+            if (pageProgressFill) pageProgressFill.style.width = '0%';
+            if (pageProgressText) pageProgressText.textContent = 'Uploading...';
+
+            let completed = 0;
+            const total = files.length;
+
+            for (const file of files) {
+                const formData = new FormData();
+                formData.append('image', file);
+
+                try {
+                    const response = await fetch('/api/images/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+                    if (!result.success) {
+                        alert(`Failed to upload ${file.name}: ${result.error}`);
+                    }
+                } catch (error) {
+                    alert(`Error uploading ${file.name}: ${error.message}`);
+                }
+
+                completed++;
+                const percent = Math.round((completed / total) * 100);
+                if (pageProgressFill) pageProgressFill.style.width = `${percent}%`;
+                if (pageProgressText) pageProgressText.textContent = `Uploading... ${percent}%`;
+            }
+
+            if (pageProgressText) pageProgressText.textContent = 'Upload complete';
+            if (pageImageUploadInput) pageImageUploadInput.value = '';
+            loadPageImages();
+        }
+
+        function copyImagePath(path) {
+            if (!navigator?.clipboard) {
+                alert('Clipboard access not available.');
+                return;
+            }
+            navigator.clipboard.writeText(path).then(() => {
+                alert('✅ Image path copied');
+            }).catch(() => {
+                alert('❌ Failed to copy image path');
+            });
+        }
+
+        async function deletePageImage(filename) {
+            if (!filename) return;
+            if (!confirm('Delete this image? This cannot be undone.')) return;
+
+            try {
+                const response = await fetch(`/api/images/${encodeURIComponent(filename)}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                if (!result.success) {
+                    alert('❌ Failed to delete image');
+                    return;
+                }
+                loadPageImages();
+            } catch (error) {
+                alert('❌ Error deleting image: ' + error.message);
+            }
+        }
+
+        if (pageImageUploadInput) {
+            pageImageUploadInput.addEventListener('change', uploadPageImages);
+        }
+
+        loadPageImages();
 
         async function savePage() {
             const form = document.getElementById('pageForm');
