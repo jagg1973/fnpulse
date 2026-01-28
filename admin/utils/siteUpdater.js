@@ -175,59 +175,38 @@ async function updateHomepage() {
         $('meta[name="description"]').attr('content', config.siteDescription);
     }
 
-    // Update hero section articles (connected to new hero redesign)
-    if (articles.length >= 3) {
-        // Main Featured (Hero Main) -> Article 0
-        const mainArticle = articles[0];
-        const mainImage = (mainArticle.content && mainArticle.content.featuredImage) || mainArticle.featuredImage || 'img/news-825x525.jpg';
-
-        // Ensure image exists or fallback
-        $('.hero-main img').attr('src', mainImage);
-        $('.hero-main .card-badge').text(mainArticle.category || 'News');
-        $('.hero-main .card-title a')
-            .attr('href', mainArticle.filename)
-            .text(mainArticle.title);
-
-        // Secondary Featured (Hero Secondary) -> Article 1
-        const secArticle = articles[1];
-        const secImage = (secArticle.content && secArticle.content.featuredImage) || secArticle.featuredImage || 'img/news-350x223-1.jpg';
-
-        $('.hero-secondary img').attr('src', secImage);
-        $('.hero-secondary .card-badge').text(secArticle.category || 'News');
-        $('.hero-secondary .card-title a')
-            .attr('href', secArticle.filename)
-            .text(secArticle.title);
-
-        // Tertiary (Hero Tertiary) -> Article 2
-        const tertArticle = articles[2];
-
-        // If tertiary card title is inside an anchor in h3
-        $('.hero-tertiary h3 a')
-            .attr('href', tertArticle.filename)
-            .text(tertArticle.title);
-
-        // Fallback if h3 has no anchor (just text replacement)
-        if ($('.hero-tertiary h3 a').length === 0) {
-            $('.hero-tertiary h3').wrapInner(`<a href="${tertArticle.filename}" style="text-decoration:none;color:inherit"></a>`);
-            $('.hero-tertiary h3 a').text(tertArticle.title);
-        }
-    } else {
-        // Clear hero section if not enough articles
-        $('.hero-main').html('<div class="card-body"><p style="color:#94a3b8;padding:2rem;text-align:center;">No articles available. Create articles in the admin panel.</p></div>');
-        $('.hero-secondary').remove();
-        $('.hero-tertiary').remove();
+    // Restore trending categories
+    if (config?.categories && $('.trending-tags').length > 0) {
+        const trendingHtml = config.categories
+            .slice(0, 6)
+            .map(cat => `<a href="${cat.slug}.html">${cat.name}</a>`)
+            .join(' ');
+        $('.trending-tags').html(trendingHtml);
     }
 
-    // Update Trending Topics section with latest articles
+    // Update hero section with latest articles (cards)
     const latestArticles = articles
         .filter(article => (article.contentType || 'article') === 'article')
-        .slice(0, 6);
+        .slice(0, 3);
 
-    if ($('.trending-tags').length > 0 && latestArticles.length > 0) {
-        const trendingHtml = latestArticles.map(article => {
-            return `<a href="${article.filename}">${article.title}</a>`;
-        }).join(' ');
-        $('.trending-tags').html(trendingHtml);
+    if (latestArticles.length > 0 && $('.hero-grid-layout').length > 0) {
+        const heroHtml = latestArticles.map((article, index) => {
+            const articleImage = (article.content && article.content.featuredImage)
+                || article.featuredImage
+                || `img/news-825x525-${(index % 3) + 1}.jpg`;
+            return `
+                <article class="card">
+                    <div class="card-image-wrap">
+                        <img src="${articleImage}" alt="${article.title}">
+                        <span class="card-badge">${article.category || 'News'}</span>
+                    </div>
+                    <h3 class="card-title"><a href="${article.filename}">${article.title}</a></h3>
+                </article>
+            `;
+        }).join('');
+        $('.hero-grid-layout').html(heroHtml);
+    } else if ($('.hero-grid-layout').length > 0) {
+        $('.hero-grid-layout').html('<article class="card hero-main"><div class="card-body"><p style="color:#94a3b8;padding:2rem;text-align:center;">No articles available. Create articles in the admin panel.</p></div></article>');
     }
 
     // Update Latest News section (latest 10 news items)
