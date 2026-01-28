@@ -36,7 +36,7 @@ async function getPageTemplate() {
     return templateHtml;
 }
 
-async function createPage(filename, html) {
+async function createPage(filename, html, metadata = {}) {
     if (!filename || !filename.endsWith('.html')) {
         throw new Error('Filename must end with .html');
     }
@@ -45,26 +45,60 @@ async function createPage(filename, html) {
     }
     const filePath = path.join(NEWS_DIR, filename);
     const config = await fileManager.getConfig();
-    const normalized = normalizeHtmlDocument(html || '', { filename, config });
+
+    // Include slug metadata if provided
+    const pageConfig = { filename, config };
+    if (metadata.slug) {
+        pageConfig.slug = metadata.slug;
+    }
+
+    const normalized = normalizeHtmlDocument(html || '', pageConfig);
     const $ = require('cheerio').load(normalized, { xmlMode: false, decodeEntities: false });
+
+    // Add slug as meta tag for SEO
+    if (metadata.slug) {
+        if ($('meta[name="slug"]').length === 0) {
+            $('head').append(`<meta name="slug" content="${metadata.slug}">`);
+        } else {
+            $('meta[name="slug"]').attr('content', metadata.slug);
+        }
+    }
+
     updateAssetLinks($);
     await minifyAssets();
     await fs.writeFile(filePath, await minifyHtml($.html()));
-    return { filename, path: filePath };
+    return { filename, path: filePath, slug: metadata.slug };
 }
 
-async function updatePage(filename, html) {
+async function updatePage(filename, html, metadata = {}) {
     if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
         throw new Error('Invalid filename');
     }
     const filePath = path.join(NEWS_DIR, filename);
     const config = await fileManager.getConfig();
-    const normalized = normalizeHtmlDocument(html || '', { filename, config });
+
+    // Include slug metadata if provided
+    const pageConfig = { filename, config };
+    if (metadata.slug) {
+        pageConfig.slug = metadata.slug;
+    }
+
+    const normalized = normalizeHtmlDocument(html || '', pageConfig);
     const $ = require('cheerio').load(normalized, { xmlMode: false, decodeEntities: false });
+
+    // Add or update slug as meta tag for SEO
+    if (metadata.slug) {
+        if ($('meta[name="slug"]').length === 0) {
+            $('head').append(`<meta name="slug" content="${metadata.slug}">`);
+        } else {
+            $('meta[name="slug"]').attr('content', metadata.slug);
+        }
+    }
+
     updateAssetLinks($);
     await minifyAssets();
     await fs.writeFile(filePath, await minifyHtml($.html()));
-    return { filename, path: filePath };
+    return { filename, path: filePath, slug: metadata.slug };
 }
 
 module.exports = {

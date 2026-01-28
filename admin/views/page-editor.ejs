@@ -89,6 +89,25 @@
                             ? 'readonly' : '' %> required>
                         <small>Use lowercase and end with .html</small>
                     </div>
+
+                    <div class="form-group">
+                        <label for="slug">URL Slug (SEO-friendly)</label>
+                        <div class="slug-input-group">
+                            <input type="text" id="slug" name="slug" class="form-control"
+                                value="<%= pageData && pageData.slug ? pageData.slug : '' %>"
+                                placeholder="auto-generated-from-filename" pattern="[a-z0-9-]+"
+                                title="Only lowercase letters, numbers, and hyphens allowed">
+                            <button type="button" onclick="generateSlug()" class="btn btn-secondary">🔄
+                                Generate</button>
+                        </div>
+                        <small class="slug-help">
+                            <span class="slug-icon">🔍</span>
+                            <span id="slugPreview">Friendly URL slug for SEO</span>
+                        </small>
+                        <small class="slug-tips">
+                            💡 SEO Tips: Use descriptive words, hyphens instead of spaces, avoid special characters
+                        </small>
+                    </div>
                 </div>
 
                 <div class="form-section">
@@ -335,11 +354,81 @@
 
         loadPageImages();
 
+        // Slug Management Functions
+        function slugify(text) {
+            return text
+                .toString()
+                .toLowerCase()
+                .trim()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/\.html$/i, '') // Remove .html extension
+                .replace(/\s+/g, '-')
+                .replace(/[^a-z0-9-]/g, '')
+                .replace(/-+/g, '-')
+                .replace(/^-+|-+$/g, '')
+                .substring(0, 60);
+        }
+
+        function generateSlug() {
+            const filenameInput = document.getElementById('filename');
+            const slugInput = document.getElementById('slug');
+
+            if (!filenameInput.value) {
+                alert('Please enter a filename first');
+                return;
+            }
+
+            slugInput.value = slugify(filenameInput.value);
+            updateSlugPreview();
+        }
+
+        function updateSlugPreview() {
+            const slugInput = document.getElementById('slug');
+            const slugPreview = document.getElementById('slugPreview');
+
+            let slug = slugInput.value || 'your-slug-here';
+            slugPreview.innerHTML = `SEO Slug: <strong>${slug}</strong>`;
+        }
+
+        function validateSlug() {
+            const slugInput = document.getElementById('slug');
+            const value = slugInput.value;
+
+            if (value !== slugify(value)) {
+                slugInput.value = slugify(value);
+            }
+
+            updateSlugPreview();
+        }
+
+        // Filename change auto-generates slug for new pages only
+        const filenameInput = document.getElementById('filename');
+        filenameInput.addEventListener('input', function () {
+            const mode = '<%= mode %>';
+            const slugInput = document.getElementById('slug');
+
+            if (mode === 'create' || !slugInput.value) {
+                generateSlug();
+            }
+        });
+
+        // Slug input validation
+        const slugInput = document.getElementById('slug');
+        slugInput.addEventListener('input', validateSlug);
+        slugInput.addEventListener('blur', validateSlug);
+
+        // Initialize slug preview
+        updateSlugPreview();
+
         async function savePage() {
             const form = document.getElementById('pageForm');
             const formData = new FormData(form);
             const data = {};
             formData.forEach((value, key) => data[key] = value);
+
+            // Include slug in data
+            data.slug = document.getElementById('slug').value;
 
             if (!data.filename) {
                 alert('Please provide a filename.');

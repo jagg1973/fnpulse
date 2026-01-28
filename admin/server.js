@@ -206,13 +206,28 @@ app.post('/api/articles', async (req, res) => {
 app.put('/api/articles/*', async (req, res) => {
     try {
         const filename = req.params[0] || req.params.filename;
-        await templateGenerator.updateArticle(filename, req.body);
+        const result = await templateGenerator.updateArticle(filename, req.body);
 
-        if (typeof req.body.includeInFooter !== 'undefined') {
-            await contentManager.setFooterPostSelection(
-                filename,
-                req.body.includeInFooter === 'true' || req.body.includeInFooter === true
-            );
+        // If file was renamed due to slug change, update footer references
+        if (result.renamed) {
+            // Remove old filename from footer posts
+            await contentManager.setFooterPostSelection(result.oldFilename, false);
+
+            // If should be in footer, add new filename
+            if (typeof req.body.includeInFooter !== 'undefined') {
+                await contentManager.setFooterPostSelection(
+                    result.filename,
+                    req.body.includeInFooter === 'true' || req.body.includeInFooter === true
+                );
+            }
+        } else {
+            // Normal footer update
+            if (typeof req.body.includeInFooter !== 'undefined') {
+                await contentManager.setFooterPostSelection(
+                    filename,
+                    req.body.includeInFooter === 'true' || req.body.includeInFooter === true
+                );
+            }
         }
 
         // Update site pages
@@ -246,7 +261,11 @@ app.put('/api/articles/*', async (req, res) => {
         await siteUpdater.updateFooterRecentPosts();
         await siteUpdater.updateAllTickerContent();
 
-        res.json({ success: true });
+        res.json({
+            success: true,
+            renamed: result.renamed || false,
+            newFilename: result.renamed ? result.filename : undefined
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -759,7 +778,8 @@ app.get('/pages/edit/:filename', async (req, res) => {
 
 app.post('/api/pages', async (req, res) => {
     try {
-        const result = await pageManager.createPage(req.body.filename, req.body.html);
+        const metadata = { slug: req.body.slug };
+        const result = await pageManager.createPage(req.body.filename, req.body.html, metadata);
         res.json({ success: true, filename: result.filename });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -768,7 +788,8 @@ app.post('/api/pages', async (req, res) => {
 
 app.put('/api/pages/:filename', async (req, res) => {
     try {
-        await pageManager.updatePage(req.params.filename, req.body.html);
+        const metadata = { slug: req.body.slug };
+        await pageManager.updatePage(req.params.filename, req.body.html, metadata);
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: error.message });

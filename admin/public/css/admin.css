@@ -591,6 +591,42 @@ body {
     flex: 1;
 }
 
+.slug-input-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.slug-input-group input {
+    flex: 1;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+
+.slug-help {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #059669;
+    font-weight: 500;
+    margin-top: 0.5rem !important;
+}
+
+.slug-icon {
+    font-size: 1rem;
+}
+
+.slug-tips {
+    display: block;
+    margin-top: 0.5rem !important;
+    padding: 0.75rem;
+    background: #f0f9ff;
+    border-left: 3px solid #0ea5e9;
+    border-radius: 0.375rem;
+    font-size: 0.85rem;
+    color: #0c4a6e;
+}
+
 .image-preview {
     margin-top: 1rem;
     max-width: 400px;

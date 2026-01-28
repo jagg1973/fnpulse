@@ -223,10 +223,16 @@ async function createPressRelease(prData) {
     const data = await getContent();
     if (!data.pressReleases) data.pressReleases = [];
 
-    const filename = 'press-' + generateId(prData.headline) + '.html';
+    // Use custom slug if provided, otherwise generate from headline
+    const slug = prData.slug
+        ? prData.slug.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-')
+        : generateId(prData.headline);
+
+    const filename = 'press-release-' + slug + '.html';
 
     const newPR = {
         filename,
+        slug: prData.slug || slug,
         headline: prData.headline,
         subheadline: prData.subheadline || '',
         location: prData.location || 'NEW YORK',
@@ -270,17 +276,44 @@ async function updatePressRelease(filename, prData) {
         throw new Error('Press release not found');
     }
 
+    const oldFilename = data.pressReleases[index].filename;
+    let newFilename = oldFilename;
+
+    // Check if slug has changed
+    if (prData.slug) {
+        const slug = prData.slug.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
+        const potentialNewFilename = 'press-release-' + slug + '.html';
+
+        // If slug changed, update filename
+        if (potentialNewFilename !== oldFilename) {
+            newFilename = potentialNewFilename;
+        }
+    }
+
     data.pressReleases[index] = {
         ...data.pressReleases[index],
         ...prData,
-        filename: data.pressReleases[index].filename, // Preserve filename
+        slug: prData.slug || data.pressReleases[index].slug,
+        filename: newFilename,
         updatedAt: new Date().toISOString()
     };
 
     await saveContent(data);
 
-    // Regenerate HTML file
+    // Regenerate HTML file with new filename
     await generatePressReleaseHTML(data.pressReleases[index]);
+
+    // If filename changed, delete the old file
+    if (newFilename !== oldFilename) {
+        const NEWS_DIR = path.join(__dirname, '../../News');
+        const oldFilePath = path.join(NEWS_DIR, oldFilename);
+        try {
+            await fs.unlink(oldFilePath);
+            console.log(`Renamed press release from ${oldFilename} to ${newFilename}`);
+        } catch (error) {
+            console.error('Failed to delete old press release file:', error);
+        }
+    }
 
     return data.pressReleases[index];
 }

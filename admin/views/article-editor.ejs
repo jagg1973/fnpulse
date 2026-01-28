@@ -247,6 +247,26 @@
                     <h3>SEO & Meta Tags</h3>
 
                     <div class="form-group">
+                        <label for="slug">URL Slug *</label>
+                        <div class="slug-input-group">
+                            <input type="text" id="slug" name="slug" class="form-control"
+                                value="<%= article ? (article.slug || '') : '' %>"
+                                placeholder="auto-generated-from-title" pattern="[a-z0-9-]+"
+                                title="Only lowercase letters, numbers, and hyphens allowed">
+                            <button type="button" onclick="generateSlug()" class="btn btn-secondary">🔄
+                                Auto-Generate</button>
+                        </div>
+                        <small class="slug-help">
+                            <span class="slug-icon">🔍</span>
+                            <span id="slugPreview">URL: /article-your-slug-here.html</span>
+                        </small>
+                        <small class="slug-tips">
+                            💡 SEO Tips: Keep it short (3-5 words), use hyphens, include primary keyword, avoid stop
+                            words
+                        </small>
+                    </div>
+
+                    <div class="form-group">
                         <label for="metaTitle">Meta Title</label>
                         <input type="text" id="metaTitle" name="metaTitle" class="form-control"
                             value="<%= article ? (article.title || '') : '' %>" maxlength="60">
@@ -426,6 +446,106 @@
         loadAuthors();
         loadFooterSelection();
 
+        // Slug Management Functions
+        function slugify(text) {
+            return text
+                .toString()
+                .toLowerCase()
+                .trim()
+                // Remove accents
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                // Replace spaces with hyphens
+                .replace(/\s+/g, '-')
+                // Remove invalid chars
+                .replace(/[^a-z0-9-]/g, '')
+                // Replace multiple hyphens with single hyphen
+                .replace(/-+/g, '-')
+                // Remove leading/trailing hyphens
+                .replace(/^-+|-+$/g, '')
+                // Limit length for SEO
+                .substring(0, 60);
+        }
+
+        function generateSlug() {
+            const titleInput = document.getElementById('title');
+            const slugInput = document.getElementById('slug');
+
+            if (!titleInput.value) {
+                alert('Please enter a title first');
+                return;
+            }
+
+            // Remove common stop words for better SEO
+            const stopWords = ['a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'he',
+                'in', 'is', 'it', 'its', 'of', 'on', 'that', 'the', 'to', 'was', 'will', 'with'];
+
+            const words = titleInput.value.toLowerCase().split(/\s+/);
+            const filteredWords = words.filter((word, index) => {
+                // Keep first and last word always
+                if (index === 0 || index === words.length - 1) return true;
+                // Remove stop words from middle
+                return !stopWords.includes(word);
+            });
+
+            slugInput.value = slugify(filteredWords.join(' '));
+            updateSlugPreview();
+        }
+
+        function updateSlugPreview() {
+            const slugInput = document.getElementById('slug');
+            const contentType = document.getElementById('contentType').value;
+            const slugPreview = document.getElementById('slugPreview');
+
+            let slug = slugInput.value || 'your-slug-here';
+            let url = '';
+
+            if (contentType === 'news') {
+                url = `/news/${slug}.html`;
+            } else if (contentType === 'multimedia') {
+                url = `/news/multimedia/${slug}.html`;
+            } else {
+                url = `/article-${slug}.html`;
+            }
+
+            slugPreview.innerHTML = `URL: <strong>${url}</strong>`;
+        }
+
+        function validateSlug() {
+            const slugInput = document.getElementById('slug');
+            const value = slugInput.value;
+
+            // Auto-clean as user types
+            if (value !== slugify(value)) {
+                slugInput.value = slugify(value);
+            }
+
+            updateSlugPreview();
+        }
+
+        // Title change auto-generates slug for new articles only
+        const titleInput = document.getElementById('title');
+        titleInput.addEventListener('input', function () {
+            const mode = '<%= mode %>';
+            const slugInput = document.getElementById('slug');
+
+            // Auto-generate slug only for new articles or if slug is empty
+            if (mode === 'create' || !slugInput.value) {
+                generateSlug();
+            }
+        });
+
+        // Slug input validation
+        const slugInput = document.getElementById('slug');
+        slugInput.addEventListener('input', validateSlug);
+        slugInput.addEventListener('blur', validateSlug);
+
+        // Content type change updates preview
+        document.getElementById('contentType').addEventListener('change', updateSlugPreview);
+
+        // Initialize slug preview
+        updateSlugPreview();
+
         // Meta title character count
         const metaTitle = document.getElementById('metaTitle');
         const metaTitleCount = document.getElementById('metaTitleCount');
@@ -478,7 +598,11 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    alert('✅ Article saved successfully!');
+                    if (result.renamed) {
+                        alert('✅ Article saved successfully! The URL has been updated to reflect your new slug.');
+                    } else {
+                        alert('✅ Article saved successfully!');
+                    }
                     window.location.href = contentType === 'news' ? '/news' : '/articles';
                 } else {
                     alert('❌ Error: ' + result.error);

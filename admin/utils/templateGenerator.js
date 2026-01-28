@@ -54,10 +54,18 @@ async function generateDynamicTicker() {
 }
 
 /**
- * Generate article filename from title
+ * Generate article filename from title or slug
+ * @param {string} title - Article title
+ * @param {string} contentType - Type of content (article, news, multimedia)
+ * @param {string} customSlug - Custom slug provided by user (optional)
+ * @returns {string} Generated filename
  */
-function generateFilename(title, contentType = 'article') {
-    const slug = slugify(title, { lower: true, strict: true });
+function generateFilename(title, contentType = 'article', customSlug = '') {
+    // Use custom slug if provided, otherwise generate from title
+    const slug = customSlug
+        ? slugify(customSlug, { lower: true, strict: true })
+        : slugify(title, { lower: true, strict: true });
+
     if (contentType === 'news') {
         return `news/${slug}.html`;
     }
@@ -93,7 +101,8 @@ async function createArticle(data) {
         decodeEntities: false
     });
 
-    const filename = data.filename || generateFilename(data.title, contentType);
+    // Use custom slug if provided, otherwise generate from title
+    const filename = data.filename || generateFilename(data.title, contentType, data.slug);
     const publishDate = data.publishDate || new Date().toISOString();
     const modifiedDate = data.modifiedDate || publishDate;
     const articleUrl = buildArticleUrl(config, filename);
@@ -293,10 +302,26 @@ async function updateArticle(filename, data) {
     });
 
     const config = await fileManager.getConfig();
-    const articleUrl = buildArticleUrl(config, filename);
     const modifiedDate = new Date().toISOString();
     const contentTypeRaw = (data.contentType || $('meta[name="content_type"]').attr('content') || '').toString().toLowerCase();
-    const contentType = contentTypeRaw === 'news' ? 'news' : 'article';
+    const contentType = contentTypeRaw === 'news' ? 'news' : contentTypeRaw === 'multimedia' ? 'multimedia' : 'article';
+
+    // Check if slug has changed and generate new filename if needed
+    let newFilename = filename;
+    let shouldRename = false;
+
+    if (data.slug) {
+        // Generate what the new filename should be based on the slug
+        const potentialNewFilename = generateFilename(data.title, contentType, data.slug);
+
+        // If the new filename is different from current, we need to rename
+        if (potentialNewFilename !== filename) {
+            newFilename = potentialNewFilename;
+            shouldRename = true;
+        }
+    }
+
+    const articleUrl = buildArticleUrl(config, newFilename);
 
     // Update meta tags
     $('title').text(`${data.title} — ${config.siteName}`);
@@ -405,12 +430,29 @@ async function updateArticle(filename, data) {
     // Update footer description
     $('.f-desc').text(config.siteDescription || 'Latest financial news and market coverage from FNPulse.');
 
-    ensureHeadStructure($, { filename, config });
+    ensureHeadStructure($, { filename: newFilename, config });
     updateAssetLinks($);
     await minifyAssets();
-    await fs.writeFile(filePath, await minifyHtml($.html()));
 
-    return { filename, path: filePath };
+    // If slug changed, rename the file
+    if (shouldRename) {
+        const newFilePath = path.join(NEWS_DIR, newFilename);
+        await fs.mkdir(path.dirname(newFilePath), { recursive: true });
+        await fs.writeFile(newFilePath, await minifyHtml($.html()));
+
+        // Delete old file
+        try {
+            await fs.unlink(filePath);
+            console.log(`Renamed article from ${filename} to ${newFilename}`);
+        } catch (error) {
+            console.error(`Error deleting old file ${filename}:`, error);
+        }
+
+        return { filename: newFilename, oldFilename: filename, path: newFilePath, renamed: true };
+    } else {
+        await fs.writeFile(filePath, await minifyHtml($.html()));
+        return { filename, path: filePath, renamed: false };
+    }
 }
 
 /**
