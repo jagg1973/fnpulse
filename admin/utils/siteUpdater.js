@@ -218,11 +218,24 @@ async function updateHomepage() {
         $('.hero-tertiary').remove();
     }
 
-    // Update Latest News section (latest 10 non-multimedia items)
-    const latestContent = articles.filter(article => (article.contentType || 'article') !== 'multimedia').slice(0, 10);
+    // Update Trending Topics section with latest articles
+    const latestArticles = articles
+        .filter(article => (article.contentType || 'article') === 'article')
+        .slice(0, 6);
 
-    if (latestContent.length > 0) {
-        const newsListHtml = latestContent.map((article, index) => {
+    if ($('.trending-tags').length > 0 && latestArticles.length > 0) {
+        const trendingHtml = latestArticles.map(article => {
+            return `<a href="${article.filename}">${article.title}</a>`;
+        }).join(' ');
+        $('.trending-tags').html(trendingHtml);
+    }
+
+    // Update Latest News section (latest 10 news items)
+    const newsArticles = articles.filter(article => (article.contentType || 'article') === 'news');
+    const latestNews = (newsArticles.length ? newsArticles : []).slice(0, 10);
+
+    if (latestNews.length > 0) {
+        const newsListHtml = latestNews.map((article, index) => {
             const articleImage = (article.content && article.content.featuredImage)
                 || article.featuredImage
                 || `img/news-350x223-${(index % 5) + 1}.jpg`;
@@ -246,7 +259,7 @@ async function updateHomepage() {
     } else {
         // Clear news list if no articles
         if ($('.news-list').length > 0) {
-            $('.news-list').html('<p style="color:#94a3b8;padding:2rem;text-align:center;">No articles available yet.</p>');
+            $('.news-list').html('<p style="color:#94a3b8;padding:2rem;text-align:center;">No news articles available yet.</p>');
         }
     }
 
