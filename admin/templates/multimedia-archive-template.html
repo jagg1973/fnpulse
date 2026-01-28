@@ -4,9 +4,23 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
     <title>{{pageTitle}} — FNPulse</title>
     <meta name="description" content="{{pageDescription}}">
-    <link rel="canonical" href="https://www.FNPulse.com/multimedia.html">
+    <link rel="canonical" href="{{canonicalUrl}}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="FNPulse">
+    <meta property="og:title" content="{{pageTitle}} — FNPulse">
+    <meta property="og:description" content="{{pageDescription}}">
+    <meta property="og:url" content="{{canonicalUrl}}">
+    <meta property="og:image" content="{{ogImage}}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{pageTitle}} — FNPulse">
+    <meta name="twitter:description" content="{{pageDescription}}">
+    <meta name="twitter:image" content="{{ogImage}}">
+    <meta name="twitter:url" content="{{canonicalUrl}}">
+    <meta name="twitter:site" content="@FNPulse">
+    <meta name="twitter:creator" content="@FNPulse">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -15,6 +29,29 @@
     <link rel="stylesheet" href="/css/fnpulse.min.css">
     <link rel="stylesheet" href="/css/hero-redesign.css">
     <link rel="stylesheet" href="/css/dropdown-nav.css">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            "name": "{{pageTitle}} — FNPulse",
+            "description": "{{pageDescription}}",
+            "url": "{{canonicalUrl}}",
+            "isPartOf": {
+                "@type": "WebSite",
+                "name": "FNPulse",
+                "url": "https://www.FNPulse.com"
+            },
+            "publisher": {
+                "@type": "Organization",
+                "name": "FNPulse",
+                "url": "https://www.FNPulse.com",
+                "logo": {
+                    "@type": "ImageObject",
+                    "url": "https://www.FNPulse.com/img/logo.svg"
+                }
+            }
+        }
+        </script>
 </head>
 
 <body>

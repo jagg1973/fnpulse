@@ -4,21 +4,26 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
     <title>{{title}} — Multimedia FNPulse</title>
     <meta name="description" content="{{excerpt}}">
     <meta name="content_type" content="multimedia">
-    <link rel="canonical" href="https://www.FNPulse.com/{{filename}}">
+    <link rel="canonical" href="{{canonicalUrl}}">
 
     <meta property="og:type" content="article">
+    <meta property="og:site_name" content="FNPulse">
     <meta property="og:title" content="{{title}}">
     <meta property="og:description" content="{{excerpt}}">
     <meta property="og:image" content="{{featuredImage}}">
-    <meta property="og:url" content="https://www.FNPulse.com/{{filename}}">
+    <meta property="og:url" content="{{canonicalUrl}}">
 
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:title" content="{{title}}">
     <meta property="twitter:description" content="{{excerpt}}">
     <meta property="twitter:image" content="{{featuredImage}}">
+    <meta property="twitter:url" content="{{canonicalUrl}}">
+    <meta name="twitter:site" content="@FNPulse">
+    <meta name="twitter:creator" content="@FNPulse">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,6 +33,26 @@
     <link rel="stylesheet" href="/css/fnpulse.min.css">
     <link rel="stylesheet" href="/css/hero-redesign.css">
     <link rel="stylesheet" href="/css/dropdown-nav.css">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "VideoObject",
+            "name": "{{title}}",
+            "description": "{{excerpt}}",
+            "thumbnailUrl": ["{{featuredImage}}"],
+            "uploadDate": "{{publishDate}}",
+            "url": "{{canonicalUrl}}",
+            "publisher": {
+                "@type": "Organization",
+                "name": "FNPulse",
+                "url": "https://www.FNPulse.com",
+                "logo": {
+                    "@type": "ImageObject",
+                    "url": "https://www.FNPulse.com/img/logo.svg"
+                }
+            }
+        }
+        </script>
 </head>
 
 <body>
@@ -59,7 +84,8 @@
                             <div class="mega-menu-title">Asset Classes</div>
                             <div class="mega-menu-links"><a href="/forex.html">Foreign Exchange</a> <a
                                     href="/crypto.html">Cryptocurrency</a> <a href="/commodities.html">Commodities</a>
-                                <a href="/bonds.html">Bonds & Fixed Income</a></div>
+                                <a href="/bonds.html">Bonds & Fixed Income</a>
+                            </div>
                         </div>
                         <div class="mega-menu-column">
                             <div class="mega-menu-title">Market Data</div>
@@ -97,7 +123,8 @@
             <div class="nav-dropdown"><a href="/about.html" class="nav-link">About</a>
                 <div class="dropdown-menu"><a href="/about.html">About FNPulse</a> <a
                         href="/editorial-standards.html">Editorial Standards</a> <a href="/contact.html">Contact Us</a>
-                    <a href="/advertisement.html">Advertise</a> <a href="/media-kit.html">Media Kit</a></div>
+                    <a href="/advertisement.html">Advertise</a> <a href="/media-kit.html">Media Kit</a>
+                </div>
             </div>
         </nav>
         <div class="header-actions">
@@ -216,7 +243,8 @@
                     <div class="tag-cloud dark-tags"><a href="/forex.html">Forex</a> <a href="/crypto.html">Crypto</a>
                         <a href="/stocks-indices.html">Stocks</a> <a href="/economy.html">Economy</a> <a
                             href="/markets.html">Trading</a> <a href="/markets.html">Investing</a> <a
-                            href="/markets.html">Finance</a> <a href="/markets.html">Analysis</a></div>
+                            href="/markets.html">Finance</a> <a href="/markets.html">Analysis</a>
+                    </div>
                 </div>
             </div>
             <div class="footer-bar"><span><a href="/terms.html">Terms & Agreements</a></span> <span>Copyright © 2026
