@@ -95,14 +95,22 @@ async function createArticle(data) {
         templatePath = path.join(__dirname, '../templates/multimedia-single-template.html');
     }
 
-    const template = await fs.readFile(templatePath, 'utf-8');
+    let template = await fs.readFile(templatePath, 'utf-8');
+
+    // Use custom slug if provided, otherwise generate from title
+    const filename = data.filename || generateFilename(data.title, contentType, data.slug);
+
+    // Calculate basePath based on article location (folder depth)
+    // news/article.html needs ../ prefix, article-*.html at root level needs no prefix
+    const basePath = filename.includes('/') ? '../' : '';
+
+    // Replace all basePath placeholders in template
+    template = template.replace(/\{\{basePath\}\}/g, basePath);
+
     const $ = cheerio.load(template, {
         xmlMode: false,
         decodeEntities: false
     });
-
-    // Use custom slug if provided, otherwise generate from title
-    const filename = data.filename || generateFilename(data.title, contentType, data.slug);
     const publishDate = data.publishDate || new Date().toISOString();
     const modifiedDate = data.modifiedDate || publishDate;
     const articleUrl = buildArticleUrl(config, filename);
@@ -226,11 +234,21 @@ async function createArticle(data) {
     $('.meta-dateline').text(data.dateline || 'New York');
     $('.author-role').text(data.authorRole || 'Staff Reporter');
 
-    // Author info
-    $('.author-info .byline a').text(data.author)
-        .attr('href', `../author-${slugify(data.author, { lower: true, strict: true })}.html`);
+    // Author info with proper path handling
+    const authorSlug = slugify(data.author, { lower: true, strict: true });
+    const authorUrl = `${basePath}author-${authorSlug}.html`;
+    $('.author-info .byline a').text(data.author).attr('href', authorUrl);
     $('.author-info time').attr('datetime', publishDate)
         .text(`${displayDate} • ${data.publishTime || '09:00 AM EST'}`);
+
+    // Set author avatar image with root-relative path
+    if (data.authorAvatar) {
+        // Ensure avatar path is root-relative (starts with /)
+        const avatarPath = data.authorAvatar.startsWith('/') ? data.authorAvatar : `/${data.authorAvatar.replace(/^\//, '')}`;
+        $('.author-info .author-avatar-small').attr('src', avatarPath).attr('alt', data.author);
+        $('.author-box img').attr('src', avatarPath).attr('alt', data.author);
+    }
+
     // Multimedia Updates
     if (contentType === 'multimedia') {
         if (data.videoUrl) {
@@ -270,10 +288,10 @@ async function createArticle(data) {
     // Source line
     $('.source-line').text(data.sourceLine || `Source: ${config.siteName} Newsroom`);
 
-    // Author box
+    // Author box with proper path handling
     $('.author-box h5').text(`About ${data.author}`);
     $('.author-box p').text(data.authorBio || `${data.author} is a financial journalist covering markets and economic policy.`);
-    $('.author-box a').attr('href', `../author-${slugify(data.author, { lower: true, strict: true })}.html`)
+    $('.author-box a').attr('href', authorUrl)
         .text(`View all posts by ${data.author.split(' ')[0]}`);
 
     // Save file
@@ -417,13 +435,24 @@ async function updateArticle(filename, data) {
         }
     }
 
-    // Update author
+    // Calculate basePath for the current/new filename
+    const basePath = newFilename.includes('/') ? '../' : '';
+
+    // Update author with proper path handling
     if (data.author) {
-        $('.author-info .byline a').text(data.author)
-            .attr('href', `../author-${slugify(data.author, { lower: true, strict: true })}.html`);
+        const authorSlug = slugify(data.author, { lower: true, strict: true });
+        const authorUrl = `${basePath}author-${authorSlug}.html`;
+        $('.author-info .byline a').text(data.author).attr('href', authorUrl);
         $('.author-box h5').text(`About ${data.author}`);
         $('.author-box a').text(`View all posts by ${data.author.split(' ')[0]}`)
-            .attr('href', `../author-${slugify(data.author, { lower: true, strict: true })}.html`);
+            .attr('href', authorUrl);
+    }
+
+    // Update author avatar with root-relative path
+    if (data.authorAvatar) {
+        const avatarPath = data.authorAvatar.startsWith('/') ? data.authorAvatar : `/${data.authorAvatar.replace(/^\//, '')}`;
+        $('.author-info .author-avatar-small').attr('src', avatarPath);
+        $('.author-box img').attr('src', avatarPath);
     }
 
     // Save updated file

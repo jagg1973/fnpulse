@@ -37,6 +37,7 @@
         rel="stylesheet" />
     <link rel="stylesheet" href="/css/fnpulse.min.css" />
     <link rel="stylesheet" href="/css/hero-redesign.css" />
+    <link rel="stylesheet" href="/css/dropdown-nav.css" />
 
     <script type="application/ld+json">
     {
@@ -109,22 +110,87 @@
     <!-- Modern Header -->
     <header class="site-header container">
         <div class="header-logo">
-            <a href="../index.html">
+            <a href="{{basePath}}index.html">
                 <img src="/img/logo.png" alt="FNPulse">
             </a>
         </div>
         <nav class="nav-island">
-            <a href="../index.html" class="nav-link">Home</a>
-            <a href="../markets.html" class="nav-link">Markets</a>
-            <a href="../economy.html" class="nav-link">Economy</a>
-            <a href="../technology.html" class="nav-link">Technology</a>
-            <a href="../stocks-indices.html" class="nav-link">Stocks</a>
-            <a href="../commodities.html" class="nav-link">Commodities</a>
-            <a href="../forex.html" class="nav-link">Forex</a>
-            <a href="../crypto.html" class="nav-link">Crypto</a>
-            <a href="../about.html" class="nav-link">About</a>
-            <a href="../editorial-standards.html" class="nav-link">Editorial</a>
-            <a href="../contact.html" class="nav-link">Contact</a>
+            <a href="{{basePath}}index.html" class="nav-link">Home</a>
+            <div class="nav-dropdown">
+                <a href="{{basePath}}markets.html" class="nav-link">Markets</a>
+                <div class="mega-menu">
+                    <div class="mega-menu-content">
+                        <div class="mega-menu-column">
+                            <div class="mega-menu-title">Equity Markets</div>
+                            <div class="mega-menu-links">
+                                <a href="{{basePath}}stocks-indices.html">Stocks & Indices</a>
+                                <a href="{{basePath}}stocks.html">Stock Analysis</a>
+                                <a href="{{basePath}}investing.html">Investing</a>
+                                <a href="{{basePath}}trading.html">Trading</a>
+                            </div>
+                        </div>
+                        <div class="mega-menu-column">
+                            <div class="mega-menu-title">Asset Classes</div>
+                            <div class="mega-menu-links">
+                                <a href="{{basePath}}forex.html">Foreign Exchange</a>
+                                <a href="{{basePath}}crypto.html">Cryptocurrency</a>
+                                <a href="{{basePath}}commodities.html">Commodities</a>
+                                <a href="{{basePath}}bonds.html">Bonds & Fixed Income</a>
+                            </div>
+                        </div>
+                        <div class="mega-menu-column">
+                            <div class="mega-menu-title">Market Data</div>
+                            <div class="mega-menu-links">
+                                <a href="{{basePath}}markets.html">Live Markets</a>
+                                <a href="{{basePath}}analysis.html">Market Analysis</a>
+                                <a href="{{basePath}}finance.html">Financial Data</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-dropdown">
+                <a href="{{basePath}}news.html" class="nav-link">News & Analysis</a>
+                <div class="mega-menu">
+                    <div class="mega-menu-content">
+                        <div class="mega-menu-column">
+                            <div class="mega-menu-title">Business News</div>
+                            <div class="mega-menu-links">
+                                <a href="{{basePath}}economy.html">Economy</a>
+                                <a href="{{basePath}}global-business.html">Global Business</a>
+                                <a href="{{basePath}}technology.html">Technology</a>
+                                <a href="{{basePath}}economic-policy.html">Economic Policy</a>
+                            </div>
+                        </div>
+                        <div class="mega-menu-column">
+                            <div class="mega-menu-title">Analysis & Research</div>
+                            <div class="mega-menu-links">
+                                <a href="{{basePath}}analysis.html">Market Analysis</a>
+                                <a href="{{basePath}}news.html">Breaking News</a>
+                                <a href="{{basePath}}press-releases.html">Press Releases</a>
+                            </div>
+                        </div>
+                        <div class="mega-menu-column">
+                            <div class="mega-menu-title">Sectors</div>
+                            <div class="mega-menu-links">
+                                <a href="{{basePath}}finance.html">Finance</a>
+                                <a href="{{basePath}}technology.html">Tech</a>
+                                <a href="{{basePath}}category.html">All Categories</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-dropdown">
+                <a href="{{basePath}}about.html" class="nav-link">About</a>
+                <div class="dropdown-menu">
+                    <a href="{{basePath}}about.html">About FNPulse</a>
+                    <a href="{{basePath}}editorial-standards.html">Editorial Standards</a>
+                    <a href="{{basePath}}contact.html">Contact Us</a>
+                    <a href="{{basePath}}advertisement.html">Advertise</a>
+                    <a href="{{basePath}}media-kit.html">Media Kit</a>
+                </div>
+            </div>
         </nav>
         <div class="header-actions">
             <div id="theme-toggle" class="toggle-switch" title="Dark Mode">
@@ -137,24 +203,71 @@
     <!-- Mobile Menu Overlay -->
     <div id="mobile-menu-overlay" class="mobile-menu-overlay">
         <div class="mobile-nav-content">
-            <a href="../index.html">Home</a>
-            <a href="../markets.html">Markets</a>
-            <a href="../economy.html">Economy</a>
-            <a href="../technology.html">Technology</a>
-            <a href="../stocks-indices.html">Stocks</a>
-            <a href="../commodities.html">Commodities</a>
-            <a href="../forex.html">Forex</a>
-            <a href="../crypto.html">Crypto</a>
-            <a href="../about.html">About</a>
-            <a href="../editorial-standards.html">Editorial</a>
-            <a href="../contact.html">Contact</a>
+            <a href="{{basePath}}index.html">Home</a>
+            <div class="nav-dropdown">
+                <a href="{{basePath}}markets.html">Markets</a>
+                <div class="mega-menu">
+                    <div class="mega-menu-content">
+                        <div class="mega-menu-column">
+                            <div class="mega-menu-title">Equity Markets</div>
+                            <div class="mega-menu-links">
+                                <a href="{{basePath}}stocks-indices.html">Stocks & Indices</a>
+                                <a href="{{basePath}}stocks.html">Stock Analysis</a>
+                                <a href="{{basePath}}investing.html">Investing</a>
+                                <a href="{{basePath}}trading.html">Trading</a>
+                            </div>
+                        </div>
+                        <div class="mega-menu-column">
+                            <div class="mega-menu-title">Asset Classes</div>
+                            <div class="mega-menu-links">
+                                <a href="{{basePath}}forex.html">Foreign Exchange</a>
+                                <a href="{{basePath}}crypto.html">Cryptocurrency</a>
+                                <a href="{{basePath}}commodities.html">Commodities</a>
+                                <a href="{{basePath}}bonds.html">Bonds & Fixed Income</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-dropdown">
+                <a href="{{basePath}}news.html">News & Analysis</a>
+                <div class="mega-menu">
+                    <div class="mega-menu-content">
+                        <div class="mega-menu-column">
+                            <div class="mega-menu-title">Business News</div>
+                            <div class="mega-menu-links">
+                                <a href="{{basePath}}economy.html">Economy</a>
+                                <a href="{{basePath}}global-business.html">Global Business</a>
+                                <a href="{{basePath}}technology.html">Technology</a>
+                                <a href="{{basePath}}economic-policy.html">Economic Policy</a>
+                            </div>
+                        </div>
+                        <div class="mega-menu-column">
+                            <div class="mega-menu-title">Analysis</div>
+                            <div class="mega-menu-links">
+                                <a href="{{basePath}}analysis.html">Market Analysis</a>
+                                <a href="{{basePath}}news.html">Breaking News</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-dropdown">
+                <a href="{{basePath}}about.html">About</a>
+                <div class="dropdown-menu">
+                    <a href="{{basePath}}about.html">About FNPulse</a>
+                    <a href="{{basePath}}editorial-standards.html">Editorial Standards</a>
+                    <a href="{{basePath}}contact.html">Contact Us</a>
+                    <a href="{{basePath}}advertisement.html">Advertise</a>
+                </div>
+            </div>
         </div>
     </div>
 
     <main id="main-article" class="container article-container">
         <div class="breadcrumb">
-            <a href="../index.html">Home</a> <span>/</span> <a href="../news.html">News</a> <span>/</span> <span
-                class="current">Article Title</span>
+            <a href="{{basePath}}index.html">Home</a> <span>/</span> <a href="{{basePath}}news.html">News</a>
+            <span>/</span> <span class="current">Article Title</span>
         </div>
 
         <div class="article-layout">
@@ -169,7 +282,7 @@
                         <div class="author-info">
                             <img src="/img/author-face.jpg" alt="Author" class="author-avatar-small">
                             <div class="author-text">
-                                <span class="byline">By <a href="author.html">Author Name</a></span>
+                                <span class="byline">By <a href="{{basePath}}author.html">Author Name</a></span>
                                 <time datetime="2026-01-22">Jan 22, 2026 • 09:00 AM EST</time>
                             </div>
                         </div>
@@ -178,7 +291,7 @@
                 </header>
 
                 <figure class="article-featured-image">
-                    <img src="img/news-1200x800-1.jpg" alt="Article image" width="1200" height="800">
+                    <img src="/img/news-1200x800-1.jpg" alt="Article image" width="1200" height="800">
                     <figcaption>Image caption goes here</figcaption>
                 </figure>
 
@@ -198,9 +311,9 @@
                 <div class="article-footer">
                     <div class="news-standards">
                         <span class="standards-label">FNPulse Newsroom</span>
-                        <a href="editorial-standards.html">Editorial standards</a>
-                        <a href="contact.html">Report an error</a>
-                        <a href="privacy.html">Privacy</a>
+                        <a href="{{basePath}}editorial-standards.html">Editorial standards</a>
+                        <a href="{{basePath}}contact.html">Report an error</a>
+                        <a href="{{basePath}}privacy.html">Privacy</a>
                     </div>
                     <div class="source-line">Source: FNPulse Newsroom</div>
                     <div class="share-buttons">
@@ -211,11 +324,11 @@
                     </div>
 
                     <div class="author-box">
-                        <img src="img/author-face.jpg" alt="Author">
+                        <img src="/img/author-face.jpg" alt="Author">
                         <div class="author-details">
                             <h5>About Author Name</h5>
                             <p>Author bio goes here</p>
-                            <a href="author.html">View all posts by Author</a>
+                            <a href="{{basePath}}author.html">View all posts by Author</a>
                         </div>
                     </div>
                 </div>
@@ -240,12 +353,12 @@
                 <div class="widget">
                     <h3 class="widget-title">Popular Topics</h3>
                     <div class="tag-cloud">
-                        <a href="../markets.html">Markets</a>
-                        <a href="../economy.html">Economy</a>
-                        <a href="../trading.html">Trading</a>
-                        <a href="../investing.html">Investing</a>
-                        <a href="../analysis.html">Analysis</a>
-                        <a href="../technology.html">Technology</a>
+                        <a href="{{basePath}}markets.html">Markets</a>
+                        <a href="{{basePath}}economy.html">Economy</a>
+                        <a href="{{basePath}}trading.html">Trading</a>
+                        <a href="{{basePath}}investing.html">Investing</a>
+                        <a href="{{basePath}}analysis.html">Analysis</a>
+                        <a href="{{basePath}}technology.html">Technology</a>
                     </div>
                 </div>
 
@@ -254,19 +367,20 @@
                     <div class="post-list-small">
                         <div class="side-post">
                             <div class="info">
-                                <a href="../index.html">Bitcoin Surges Past $125,000 as Institutions Double Down</a>
+                                <a href="{{basePath}}index.html">Bitcoin Surges Past $125,000 as Institutions Double
+                                    Down</a>
                                 <div class="meta-small">June 8, 2026</div>
                             </div>
                         </div>
                         <div class="side-post">
                             <div class="info">
-                                <a href="../index.html">S&P 500 Closes at Record High on Tech Rally</a>
+                                <a href="{{basePath}}index.html">S&P 500 Closes at Record High on Tech Rally</a>
                                 <div class="meta-small">June 8, 2026</div>
                             </div>
                         </div>
                         <div class="side-post">
                             <div class="info">
-                                <a href="../index.html">Gold Hits All-Time High Amid Economic Uncertainty</a>
+                                <a href="{{basePath}}index.html">Gold Hits All-Time High Amid Economic Uncertainty</a>
                                 <div class="meta-small">June 8, 2026</div>
                             </div>
                         </div>
@@ -281,11 +395,11 @@
             <div class="footer-top-grid">
                 <div class="footer-branding">
                     <div class="f-logo">
-                        <img src="/img/logo.svg" alt="FNPulse" class="logo-white-filter">
+                        <img src="/img/logo-footer.svg" alt="FNPulse" class="logo-white-filter">
                         <span class="logo-text">FNPulse</span>
                     </div>
-                    <p class="f-desc">FNPulse provides real-time financial news, market analysis, and economic data to
-                        help you make informed investment decisions anytime, anywhere.</p>
+                    <p class="f-desc">FNPulse delivers breaking financial news and real-time market coverage—fast,
+                        verified, and actionable.</p>
                     <div class="f-socials">
                         <a href="#">Fb</a><a href="#">In</a><a href="#">X</a><a href="#">Ln</a>
                     </div>
@@ -298,16 +412,16 @@
                 <div class="footer-widget">
                     <h4>Top Categories</h4>
                     <ul class="f-links">
-                        <li><a href="../markets.html">Markets</a></li>
-                        <li><a href="../economy.html">Economy</a></li>
-                        <li><a href="../technology.html">Technology</a></li>
-                        <li><a href="../stocks-indices.html">Stocks & Indices</a></li>
-                        <li><a href="../commodities.html">Commodities</a></li>
-                        <li><a href="../economic-policy.html">Economic Policy</a></li>
-                        <li><a href="../global-business.html">Global Business</a></li>
-                        <li><a href="../about.html">About Us</a></li>
-                        <li><a href="../advertisement.html">Advertise</a></li>
-                        <li><a href="../contact.html">Contact</a></li>
+                        <li><a href="{{basePath}}markets.html">Markets</a></li>
+                        <li><a href="{{basePath}}economy.html">Economy</a></li>
+                        <li><a href="{{basePath}}technology.html">Technology</a></li>
+                        <li><a href="{{basePath}}stocks-indices.html">Stocks & Indices</a></li>
+                        <li><a href="{{basePath}}commodities.html">Commodities</a></li>
+                        <li><a href="{{basePath}}economic-policy.html">Economic Policy</a></li>
+                        <li><a href="{{basePath}}global-business.html">Global Business</a></li>
+                        <li><a href="{{basePath}}about.html">About Us</a></li>
+                        <li><a href="{{basePath}}advertisement.html">Advertise</a></li>
+                        <li><a href="{{basePath}}contact.html">Contact</a></li>
                     </ul>
                 </div>
 
@@ -327,31 +441,31 @@
                 <div class="footer-widget">
                     <h4>Tags</h4>
                     <div class="tag-cloud dark-tags">
-                        <a href="../forex.html">Forex</a>
-                        <a href="../crypto.html">Crypto</a>
-                        <a href="../stocks.html">Stocks</a>
-                        <a href="../economy.html">Economy</a>
-                        <a href="../trading.html">Trading</a>
-                        <a href="../investing.html">Investing</a>
-                        <a href="finance.html">Finance</a>
-                        <a href="analysis.html">Analysis</a>
+                        <a href="{{basePath}}forex.html">Forex</a>
+                        <a href="{{basePath}}crypto.html">Crypto</a>
+                        <a href="{{basePath}}stocks-indices.html">Stocks</a>
+                        <a href="{{basePath}}economy.html">Economy</a>
+                        <a href="{{basePath}}markets.html">Trading</a>
+                        <a href="{{basePath}}markets.html">Investing</a>
+                        <a href="{{basePath}}markets.html">Finance</a>
+                        <a href="{{basePath}}markets.html">Analysis</a>
                     </div>
                 </div>
             </div>
 
             <div class="footer-bar">
-                <span><a href="terms.html">Terms & Agreements</a></span>
+                <span><a href="{{basePath}}terms.html">Terms & Agreements</a></span>
                 <span>Copyright © 2026 FNPulse. Designed by RSTheme.</span>
-                <span><a href="privacy.html">Privacy policy</a></span>
+                <span><a href="{{basePath}}privacy.html">Privacy policy</a></span>
             </div>
         </div>
     </footer>
 
     <nav class="bottom-nav" aria-label="Mobile">
-        <a href="index.html" class="bottom-link">Home</a>
-        <a href="markets.html" class="bottom-link">Markets</a>
-        <a href="economy.html" class="bottom-link">Economy</a>
-        <a href="about.html" class="bottom-link">About</a>
+        <a href="{{basePath}}index.html" class="bottom-link">Home</a>
+        <a href="{{basePath}}markets.html" class="bottom-link">Markets</a>
+        <a href="{{basePath}}economy.html" class="bottom-link">Economy</a>
+        <a href="{{basePath}}about.html" class="bottom-link">About</a>
     </nav>
 
     <script src="/js/main.min.js"></script>

@@ -37,12 +37,18 @@ function updateAssetLinks($) {
         const src = $(el).attr('src');
         if (!src) return;
         if (src.startsWith('data:') || src.startsWith('http')) return;
-        const normalized = src.startsWith('/') ? src.slice(1) : src;
+
+        // Normalize all image paths to root-relative
+        let normalized = src.startsWith('/') ? src.slice(1) : src;
+
+        // Handle news/ prefix
         if (normalized.startsWith('news/img/')) {
             $(el).attr('src', `/${normalized.replace(/^news\//, '')}`);
-        } else if (normalized.startsWith('img/')) {
+        } else if (normalized.startsWith('img/') && !src.startsWith('/')) {
+            // Convert relative img/ to root-relative /img/
             $(el).attr('src', `/${normalized}`);
         }
+        // If already starts with /, leave it as is
     });
 }
 
