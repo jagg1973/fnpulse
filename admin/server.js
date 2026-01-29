@@ -196,6 +196,7 @@ app.post('/api/articles', async (req, res) => {
         }
         await siteUpdater.updateFooterRecentPosts();
         await siteUpdater.updateAllTickerContent();
+        await siteUpdater.updateAllArticleSidebars();
 
         res.json({ success: true, filename: result.filename });
     } catch (error) {
@@ -260,6 +261,7 @@ app.put('/api/articles/*', async (req, res) => {
         }
         await siteUpdater.updateFooterRecentPosts();
         await siteUpdater.updateAllTickerContent();
+        await siteUpdater.updateAllArticleSidebars();
 
         res.json({
             success: true,

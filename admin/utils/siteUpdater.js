@@ -577,13 +577,29 @@ async function updateFooterRecentPosts() {
 
     const footerArticles = (selectedArticles.length > 0 ? selectedArticles : fallbackArticles).slice(0, 3);
 
-    const files = await fs.readdir(NEWS_DIR);
-    const htmlFiles = files.filter(f => f.endsWith('.html'));
+    // Get all HTML files from root directory
+    const rootFiles = await fs.readdir(NEWS_DIR);
+    const rootHtmlFiles = rootFiles.filter(f => f.endsWith('.html'));
 
-    for (const file of htmlFiles) {
+    // Also get HTML files from news subfolder
+    let newsSubfolderFiles = [];
+    const newsSubDir = path.join(NEWS_DIR, 'news');
+    try {
+        const newsFiles = await fs.readdir(newsSubDir);
+        newsSubfolderFiles = newsFiles.filter(f => f.endsWith('.html')).map(f => `news/${f}`);
+    } catch (e) {
+        // news subfolder may not exist
+    }
+
+    const allHtmlFiles = [...rootHtmlFiles, ...newsSubfolderFiles];
+
+    for (const file of allHtmlFiles) {
         const filePath = path.join(NEWS_DIR, file);
         const html = await fs.readFile(filePath, 'utf-8');
         const $ = cheerio.load(html, { xmlMode: false, decodeEntities: false });
+
+        // Calculate basePath for files in subfolders
+        const basePath = file.includes('/') ? '../' : '';
 
         const footerPostsContainer = $('.footer-widget').filter((i, el) => {
             const title = $(el).find('h4').first().text().trim().toLowerCase();
@@ -594,11 +610,13 @@ async function updateFooterRecentPosts() {
             const postsHtml = footerArticles.map(article => {
                 const image = article.featuredImage || 'img/news-350x223-1.jpg';
                 const dateLabel = formatFooterDate(article.publishDate);
+                // Adjust article path based on current file location
+                const articlePath = `${basePath}${article.filename}`;
                 return `
                     <article class="f-post-item">
                         <img src="${image}" alt="thumb">
                         <div>
-                            <a href="${article.filename}">${article.title}</a>
+                            <a href="${articlePath}">${article.title}</a>
                             <span class="f-date">${dateLabel}</span>
                         </div>
                     </article>
@@ -1125,6 +1143,84 @@ async function updateMultimediaArchive() {
     console.log('✓ Multimedia archive updated');
 }
 
+/**
+ * Update Latest News sidebar in all article pages with real article data
+ */
+async function updateAllArticleSidebars() {
+    const config = await fileManager.getConfig();
+    const articles = await htmlParser.parseAllArticles();
+
+    // Sort articles by date for sidebar display
+    const sortedArticles = articles
+        .sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate));
+
+    // Get all article HTML files
+    const rootFiles = await fs.readdir(NEWS_DIR);
+    const rootArticles = rootFiles.filter(f => f.startsWith('article-') && f.endsWith('.html'));
+
+    // Also check news subfolder
+    let newsArticles = [];
+    const newsDir = path.join(NEWS_DIR, 'news');
+    try {
+        const newsFiles = await fs.readdir(newsDir);
+        newsArticles = newsFiles.filter(f => f.endsWith('.html')).map(f => `news/${f}`);
+    } catch (e) {
+        // news folder may not exist
+    }
+
+    const allArticleFiles = [...rootArticles, ...newsArticles];
+
+    for (const articleFile of allArticleFiles) {
+        try {
+            const filePath = path.join(NEWS_DIR, articleFile);
+            const html = await fs.readFile(filePath, 'utf-8');
+            const $ = cheerio.load(html, { xmlMode: false, decodeEntities: false });
+
+            // Check if this page has the sidebar widget
+            const latestNewsWidget = $('.widget .post-list-small');
+            if (latestNewsWidget.length === 0) continue;
+
+            // Calculate basePath for this article
+            const basePath = articleFile.includes('/') ? '../' : '';
+
+            // Get latest 3 articles excluding current one
+            const latestForSidebar = sortedArticles
+                .filter(a => a.filename !== articleFile)
+                .slice(0, 3);
+
+            if (latestForSidebar.length === 0) {
+                latestNewsWidget.html(`
+                    <div class="side-post">
+                        <div class="info">
+                            <span style="color:#64748b;">No other articles available yet.</span>
+                        </div>
+                    </div>`);
+            } else {
+                const sidebarHtml = latestForSidebar.map(article => {
+                    const displayDate = dayjs(article.publishDate).format('MMMM D, YYYY');
+                    const articlePath = `${basePath}${article.filename}`;
+                    return `
+                        <div class="side-post">
+                            <div class="info">
+                                <a href="${articlePath}">${article.title}</a>
+                                <div class="meta-small">${displayDate}</div>
+                            </div>
+                        </div>`;
+                }).join('');
+
+                latestNewsWidget.html(sidebarHtml);
+            }
+
+            await fs.writeFile(filePath, await minifyHtml($.html()));
+            console.log(`✓ Updated sidebar in ${articleFile}`);
+        } catch (error) {
+            console.error(`Error updating sidebar in ${articleFile}:`, error.message);
+        }
+    }
+
+    console.log('✓ All article sidebars updated');
+}
+
 module.exports = {
     updateHomepage,
     updatePressReleasesArchive,
@@ -1138,5 +1234,6 @@ module.exports = {
     updateEntireSite,
     updateFooterRecentPosts,
     regenerateAllArticles,
-    updateAllTickerContent
+    updateAllTickerContent,
+    updateAllArticleSidebars
 };

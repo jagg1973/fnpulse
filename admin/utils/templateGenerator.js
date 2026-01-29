@@ -54,6 +54,91 @@ async function generateDynamicTicker() {
 }
 
 /**
+ * Generate latest news sidebar HTML from actual articles
+ * @param {string} basePath - Base path prefix for links ('' or '../')
+ * @param {string} excludeFilename - Filename of current article to exclude from list
+ * @returns {string} HTML for latest news sidebar widget
+ */
+async function generateLatestNewsSidebar(basePath = '', excludeFilename = '') {
+    const htmlParser = require('./htmlParser');
+    const articles = await htmlParser.parseAllArticles();
+
+    // Get latest 3 articles, sorted by date, excluding current article
+    const latestArticles = articles
+        .filter(article => article.filename !== excludeFilename)
+        .sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate))
+        .slice(0, 3);
+
+    if (latestArticles.length === 0) {
+        return `
+            <div class="side-post">
+                <div class="info">
+                    <span style="color:#64748b;">No other articles available yet.</span>
+                </div>
+            </div>`;
+    }
+
+    return latestArticles.map(article => {
+        const displayDate = dayjs(article.publishDate).format('MMMM D, YYYY');
+        const articlePath = article.filename.startsWith('news/')
+            ? `${basePath}${article.filename}`
+            : `${basePath}${article.filename}`;
+
+        return `
+                        <div class="side-post">
+                            <div class="info">
+                                <a href="${articlePath}">${article.title}</a>
+                                <div class="meta-small">${displayDate}</div>
+                            </div>
+                        </div>`;
+    }).join('');
+}
+
+/**
+ * Generate footer recent posts HTML from actual articles
+ * @param {string} basePath - Base path prefix for links ('' or '../')
+ * @returns {string} HTML for footer recent posts
+ */
+async function generateFooterRecentPosts(basePath = '') {
+    const htmlParser = require('./htmlParser');
+    const contentManager = require('./contentManager');
+    const articles = await htmlParser.parseAllArticles();
+    const footerSelections = await contentManager.getFooterPosts();
+
+    const articleByFilename = new Map(articles.map(article => [article.filename, article]));
+    const selectedArticles = footerSelections
+        .map(filename => articleByFilename.get(filename))
+        .filter(Boolean);
+
+    const fallbackArticles = articles
+        .sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate))
+        .slice(0, 3);
+
+    const footerArticles = (selectedArticles.length > 0 ? selectedArticles : fallbackArticles).slice(0, 3);
+
+    if (footerArticles.length === 0) {
+        return `
+                        <article class="f-post-item">
+                            <div><span style="color:#64748b;">No articles available yet.</span></div>
+                        </article>`;
+    }
+
+    return footerArticles.map(article => {
+        const image = article.featuredImage || '/img/news-350x223-1.jpg';
+        const displayDate = dayjs(article.publishDate).format('MMM D, YYYY');
+        const articlePath = `${basePath}${article.filename}`;
+        return `
+                        <article class="f-post-item">
+                            <img src="${image}" alt="thumb">
+                            <div>
+                                <a href="${articlePath}">${article.title}</a>
+                                <span class="f-date">${displayDate}</span>
+                            </div>
+                        </article>`;
+    }).join('');
+}
+
+/**
  * Generate article filename from title or slug
  * @param {string} title - Article title
  * @param {string} contentType - Type of content (article, news, multimedia)
@@ -294,6 +379,23 @@ async function createArticle(data) {
     $('.author-box a').attr('href', authorUrl)
         .text(`View all posts by ${data.author.split(' ')[0]}`);
 
+    // Update Latest News sidebar with real articles
+    const latestNewsSidebarHtml = await generateLatestNewsSidebar(basePath, filename);
+    const latestNewsWidget = $('.widget .post-list-small');
+    if (latestNewsWidget.length > 0) {
+        latestNewsWidget.html(latestNewsSidebarHtml);
+    }
+
+    // Update footer Recent Post with real articles
+    const footerRecentPostsHtml = await generateFooterRecentPosts(basePath);
+    const footerPostsContainer = $('.footer-widget').filter((i, el) => {
+        const title = $(el).find('h4').first().text().trim().toLowerCase();
+        return title === 'recent post' || title === 'recent posts';
+    }).find('.f-posts');
+    if (footerPostsContainer.length > 0) {
+        footerPostsContainer.html(footerRecentPostsHtml);
+    }
+
     // Save file
     const filePath = path.join(NEWS_DIR, filename);
     await fs.mkdir(path.dirname(filePath), { recursive: true });
@@ -453,6 +555,23 @@ async function updateArticle(filename, data) {
         const avatarPath = data.authorAvatar.startsWith('/') ? data.authorAvatar : `/${data.authorAvatar.replace(/^\//, '')}`;
         $('.author-info .author-avatar-small').attr('src', avatarPath);
         $('.author-box img').attr('src', avatarPath);
+    }
+
+    // Update Latest News sidebar with real articles
+    const latestNewsSidebarHtml = await generateLatestNewsSidebar(basePath, newFilename);
+    const latestNewsWidget = $('.widget .post-list-small');
+    if (latestNewsWidget.length > 0) {
+        latestNewsWidget.html(latestNewsSidebarHtml);
+    }
+
+    // Update footer Recent Post with real articles
+    const footerRecentPostsHtml = await generateFooterRecentPosts(basePath);
+    const footerPostsContainer = $('.footer-widget').filter((i, el) => {
+        const title = $(el).find('h4').first().text().trim().toLowerCase();
+        return title === 'recent post' || title === 'recent posts';
+    }).find('.f-posts');
+    if (footerPostsContainer.length > 0) {
+        footerPostsContainer.html(footerRecentPostsHtml);
     }
 
     // Save updated file
