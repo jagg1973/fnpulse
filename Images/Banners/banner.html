@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="ad.size" content="width=970,height=250">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FnPulse 970x250 Banner</title>
+    <style>
+        /* RESET & BASE STYLES */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* BANNER CONTAINER - 970x250 */
+        .banner-container {
+            position: relative;
+            width: 970px;
+            height: 250px;
+            background: linear-gradient(135deg, #0a1f33 0%, #112d4e 100%);
+            overflow: hidden;
+            color: #ffffff;
+            border: 1px solid #333;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        /* BACKGROUND ELEMENTS (Grid & Graph) */
+        .bg-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: 1;
+        }
+
+        .bg-graph {
+            position: absolute;
+            bottom: -20px;
+            right: -50px;
+            width: 600px;
+            height: 200px;
+            opacity: 0.1;
+            z-index: 1;
+        }
+
+        .bg-graph path {
+            fill: none;
+            stroke: #4db8ff;
+            stroke-width: 3;
+        }
+
+        /* CONTENT Z-INDEX MANAGEMENT */
+        .content-left, .content-right, .logo-area {
+            position: absolute;
+            z-index: 10;
+        }
+
+        /* LEFT CONTENT: LOGO & BRANDING */
+        .logo-area {
+            top: 40px;
+            left: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pulse-icon {
+            width: 40px;
+            height: 40px;
+            background: #4db8ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 0 0 rgba(77, 184, 255, 0.7);
+            animation: pulse-ring 2s infinite;
+        }
+
+        .pulse-line {
+            width: 20px;
+            height: 2px;
+            background: white;
+            position: relative;
+        }
+        .pulse-line::after {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: 6px;
+            width: 6px;
+            height: 6px;
+            border-right: 2px solid white;
+            border-bottom: 2px solid white;
+            transform: rotate(45deg);
+        }
+
+        .brand-name {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #fff;
+        }
+        .brand-name span { color: #4db8ff; }
+
+        /* MAIN TEXT COPY */
+        .main-copy {
+            top: 100px;
+            left: 50px;
+            position: absolute;
+            z-index: 10;
+        }
+
+        .headline {
+            font-size: 36px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 10px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideUpFade 0.8s forwards 0.3s;
+        }
+
+        .subheadline {
+            font-size: 18px;
+            color: #cbd5e1;
+            font-weight: 400;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideUpFade 0.8s forwards 0.6s;
+        }
+
+        /* RIGHT CONTENT: STATS & CTA */
+        .stats-container {
+            position: absolute;
+            top: 40px;
+            right: 300px;
+            text-align: right;
+            border-right: 1px solid rgba(255,255,255,0.2);
+            padding-right: 30px;
+            height: 170px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .stat-item {
+            margin-bottom: 15px;
+            opacity: 0;
+            animation: fadeIn 1s forwards 1s;
+        }
+        .stat-number { font-size: 24px; font-weight: bold; color: #4db8ff; }
+        .stat-label { font-size: 14px; color: #a0aec0; text-transform: uppercase; }
+
+        /* CTA BUTTON */
+        .cta-container {
+            position: absolute;
+            top: 50%;
+            right: 50px;
+            transform: translateY(-50%);
+            z-index: 20;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 18px 40px;
+            background-color: #4db8ff;
+            color: #0a1f33;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 20px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(77, 184, 255, 0.4);
+            animation: buttonPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 1.2s;
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        .cta-button:hover {
+            background-color: #fff;
+            color: #000;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.4);
+        }
+
+        /* CLICK TAG OVERLAY (Standard for Ad Networks) */
+        #clickArea {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            cursor: pointer;
+        }
+
+        /* ANIMATIONS */
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(77, 184, 255, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(77, 184, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(77, 184, 255, 0); }
+        }
+
+        @keyframes slideUpFade {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        @keyframes buttonPop {
+            to { opacity: 1; transform: scale(1); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="banner-container">
+        
+        <a href="https://fnpulse.com/advertise" target="_blank" id="clickArea"></a>
+
+        <div class="bg-grid"></div>
+        <svg width="400" height="100" viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg" style="shape-rendering:geometricPrecision">
+  <defs>
+    <linearGradient id="pulseGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="50%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#34D399" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(10, 22)">
+    <circle cx="28" cy="28" r="27" stroke="#CBD5E1" stroke-width="1.5" fill="#F8FAFC" />
+    <path d="M12 28 H20 L24 14 L32 42 L36 28 H44"
+          stroke="url(#pulseGradient)"
+          stroke-width="4.5"
+          fill="none"
+          stroke-linecap="round"
+          stroke-linejoin="round" />
+  </g>
+  <g transform="translate(75, 0)">
+    <text y="62" font-family="system-ui, -apple-system, Arial, sans-serif" font-weight="800" font-size="44" letter-spacing="-1.5">
+      <tspan fill="#F2F7FC">fn</tspan><tspan fill="#10B981">pulse</tspan>
+    </text>
+    <text x="2" y="82" font-family="system-ui, -apple-system, Arial, sans-serif" font-size="10" font-weight="600" letter-spacing="3.5" fill="#64748B">
+      REAL-TIME MARKET INSIGHTS
+    </text>
+  </g>
+</svg>
+        <div class="main-copy">
+            <div class="headline">Capture the<br>Financial Elite</div>
+            <div class="subheadline">Premium Ad Placements Available Now</div>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-item">
+                <div class="stat-number">High CPM</div>
+                <div class="stat-label">Value</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">Targeted</div>
+                <div class="stat-label">Audience</div>
+            </div>
+        </div>
+
+        <div class="cta-container">
+            <span class="cta-button">Advertise Here</span>
+        </div>
+
+    </div>
+    <script>
+        // Optional: Add simple JavaScript interactions if needed.
+        // Currently, all animations are CSS-based for better performance.
+        
+        // Example: Mouse movement parallax effect (Subtle)
+        const banner = document.querySelector('.banner-container');
+        const graph = document.querySelector('.bg-graph');
+        
+        banner.addEventListener('mousemove', (e) => {
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            
+            graph.style.transform = `translate(-${x * 10}px, -${y * 5}px)`;
+        });
+    </script>
+</body>
+</html>

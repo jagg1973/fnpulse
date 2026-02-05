@@ -49,7 +49,8 @@
                                             <option value="">-- Select Client --</option>
                                             <% clients.forEach(client=> { %>
                                                 <option value="<%= client.id %>" <%=campaign?.clientId===client.id
-                                                    ? 'selected' : '' %>><%= client.name %>
+                                                    ? 'selected' : '' %>>
+                                                    <%= client.name %>
                                                 </option>
                                                 <% }); %>
                                         </select>

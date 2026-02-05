@@ -1,0 +1,141 @@
+{
+  "banners": [],
+  "clients": [
+    {
+      "id": "cli_cd12796ccbae0749",
+      "name": "Jesus Guzman",
+      "company": "M&G Speed Marketing LTD",
+      "email": "jaguzman123@hotmail.com",
+      "phone": "99762835",
+      "website": "https://speed.cy",
+      "address": "Chrisosotiros 77, Kolossi,",
+      "contactName": "Jesus Guzman",
+      "contactEmail": "jaguzman123@hotmail.com",
+      "contactPhone": "99762835",
+      "status": "active",
+      "tier": "enterprise",
+      "billingEmail": "",
+      "paymentTerms": "net30",
+      "portalAccess": true,
+      "portalUsername": "12345",
+      "portalPasswordHash": "",
+      "notes": "",
+      "tags": [],
+      "createdAt": "2026-02-05T19:08:50.252Z",
+      "updatedAt": "2026-02-05T19:08:50.252Z"
+    }
+  ],
+  "campaigns": [],
+  "placements": [
+    {
+      "id": "homepage-top-leaderboard",
+      "name": "Homepage Top Leaderboard",
+      "pageType": "homepage",
+      "position": "top",
+      "allowedSizes": [
+        "leaderboard",
+        "billboard"
+      ],
+      "maxBanners": 3,
+      "rotation": "weighted",
+      "enabled": true,
+      "description": "Premium placement above main content"
+    },
+    {
+      "id": "article-sidebar",
+      "name": "Article Sidebar",
+      "pageType": "article",
+      "position": "sidebar",
+      "allowedSizes": [
+        "medium-rectangle",
+        "half-page",
+        "skyscraper"
+      ],
+      "maxBanners": 2,
+      "rotation": "weighted",
+      "enabled": true,
+      "description": "Sidebar placement on article pages"
+    },
+    {
+      "id": "article-inline",
+      "name": "Article Inline",
+      "pageType": "article",
+      "position": "inline",
+      "allowedSizes": [
+        "medium-rectangle",
+        "large-rectangle"
+      ],
+      "maxBanners": 2,
+      "rotation": "sequential",
+      "enabled": true,
+      "description": "Inline placement within article content"
+    },
+    {
+      "id": "footer-global",
+      "name": "Footer Global Banner",
+      "pageType": "all",
+      "position": "footer",
+      "allowedSizes": [
+        "billboard",
+        "leaderboard"
+      ],
+      "maxBanners": 1,
+      "rotation": "random",
+      "enabled": true,
+      "description": "Global footer placement on all pages"
+    },
+    {
+      "id": "mobile-sticky",
+      "name": "Mobile Sticky Bottom",
+      "pageType": "all",
+      "position": "sticky-bottom",
+      "allowedSizes": [
+        "mobile-banner"
+      ],
+      "maxBanners": 1,
+      "rotation": "weighted",
+      "enabled": true,
+      "deviceTarget": "mobile",
+      "description": "Sticky banner for mobile devices"
+    },
+    {
+      "id": "category-header",
+      "name": "Category Page Header",
+      "pageType": "category",
+      "position": "top",
+      "allowedSizes": [
+        "leaderboard",
+        "billboard"
+      ],
+      "maxBanners": 2,
+      "rotation": "weighted",
+      "enabled": true,
+      "description": "Header placement on category archive pages"
+    },
+    {
+      "id": "between-articles",
+      "name": "Between Articles",
+      "pageType": "archive",
+      "position": "inline",
+      "allowedSizes": [
+        "medium-rectangle",
+        "large-rectangle"
+      ],
+      "maxBanners": 3,
+      "rotation": "sequential",
+      "enabled": true,
+      "description": "Inserted between article listings"
+    }
+  ],
+  "analytics": {
+    "impressions": [],
+    "clicks": []
+  },
+  "auditLog": [],
+  "settings": {
+    "defaultRotation": "weighted",
+    "frequencyCap": 5,
+    "lazyLoading": true,
+    "gdprCompliant": true
+  }
+}
