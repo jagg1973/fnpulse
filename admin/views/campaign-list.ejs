@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campaigns - FNPulse Admin</title>
+    <link rel="stylesheet" href="/public/css/admin.css">
+    <link rel="stylesheet" href="/public/css/banner-admin.css">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <%- include('partials/sidebar', { page: 'banners' }) %>
+
+            <main class="main-content">
+                <div class="content-header">
+                    <h1>📦 Campaigns</h1>
+                    <a href="/banners/campaigns/new" class="btn btn-primary">+ New Campaign</a>
+                </div>
+
+                <% if (campaigns.length===0) { %>
+                    <div class="empty-state">
+                        <p>No campaigns yet. Create a campaign to organize banners by marketing initiative.</p>
+                        <a href="/banners/campaigns/new" class="btn btn-primary">Create First Campaign</a>
+                    </div>
+                    <% } else { %>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Status</th>
+                                    <th>Campaign</th>
+                                    <th>Client</th>
+                                    <th>Banners</th>
+                                    <th>Schedule</th>
+                                    <th>Impressions</th>
+                                    <th>Clicks</th>
+                                    <th>CTR</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% campaigns.forEach(campaign=> { %>
+                                    <tr>
+                                        <td>
+                                            <span class="status-badge status-<%= campaign.status %>">
+                                                <%= campaign.status %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="campaign-info">
+                                                <strong>
+                                                    <%= campaign.name %>
+                                                </strong>
+                                                <% if (campaign.description) { %>
+                                                    <small>
+                                                        <%= campaign.description.substring(0, 50) %>...
+                                                    </small>
+                                                    <% } %>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <% if (campaign.client) { %>
+                                                <a href="/banners/clients/edit/<%= campaign.client.id %>">
+                                                    <%= campaign.client.name %>
+                                                </a>
+                                                <% } else { %>
+                                                    <span class="text-muted">-</span>
+                                                    <% } %>
+                                        </td>
+                                        <td>
+                                            <span class="badge">
+                                                <%= campaign.stats?.totalBanners || 0 %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <% if (campaign.startDate || campaign.endDate) { %>
+                                                <div class="schedule-info">
+                                                    <% if (campaign.startDate) { %>
+                                                        <small>
+                                                            <%= new Date(campaign.startDate).toLocaleDateString() %>
+                                                        </small>
+                                                        <% } %>
+                                                            <% if (campaign.endDate) { %>
+                                                                <small>→ <%= new
+                                                                        Date(campaign.endDate).toLocaleDateString() %>
+                                                                        </small>
+                                                                <% } %>
+                                                </div>
+                                                <% } else { %>
+                                                    <span class="text-muted">Always</span>
+                                                    <% } %>
+                                        </td>
+                                        <td>
+                                            <%= (campaign.stats?.totalImpressions || 0).toLocaleString() %>
+                                        </td>
+                                        <td>
+                                            <%= (campaign.stats?.totalClicks || 0).toLocaleString() %>
+                                        </td>
+                                        <td>
+                                            <span
+                                                class="ctr-badge <%= parseFloat(campaign.stats?.ctr || 0) >= 1 ? 'ctr-good' : '' %>">
+                                                <%= campaign.stats?.ctr || 0 %>%
+                                            </span>
+                                        </td>
+                                        <td class="actions-cell">
+                                            <a href="/banners/campaigns/edit/<%= campaign.id %>"
+                                                class="btn btn-small">Edit</a>
+                                            <button
+                                                onclick="deleteCampaign('<%= campaign.id %>', '<%= campaign.name %>')"
+                                                class="btn btn-small btn-danger">Delete</button>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                            </tbody>
+                        </table>
+                        <% } %>
+
+                            <div class="back-link">
+                                <a href="/banners" class="btn">← Back to Dashboard</a>
+                            </div>
+            </main>
+    </div>
+
+    <script>
+        async function deleteCampaign(id, name) {
+            if (!confirm('Delete campaign "' + name + '"?\n\nNote: You must remove assigned banners first.')) {
+                return;
+            }
+            try {
+                const response = await fetch('/banners/api/campaigns/' + id, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

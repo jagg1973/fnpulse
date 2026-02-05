@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banner Management - FNPulse Admin</title>
+    <link rel="stylesheet" href="/public/css/admin.css">
+    <link rel="stylesheet" href="/public/css/banner-admin.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <%- include('partials/sidebar', { page: 'banners' }) %>
+
+            <main class="main-content">
+                <div class="content-header">
+                    <h1>📊 Banner Management Dashboard</h1>
+                    <div class="header-actions">
+                        <a href="/banners/new" class="btn btn-primary">+ New Banner</a>
+                        <a href="/banners/clients/new" class="btn btn-secondary">+ New Client</a>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon">🖼️</div>
+                        <div class="stat-info">
+                            <span class="stat-value">
+                                <%= stats.total %>
+                            </span>
+                            <span class="stat-label">Total Banners</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-success">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-info">
+                            <span class="stat-value">
+                                <%= stats.active %>
+                            </span>
+                            <span class="stat-label">Active</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-warning">
+                        <div class="stat-icon">⏸️</div>
+                        <div class="stat-info">
+                            <span class="stat-value">
+                                <%= stats.paused %>
+                            </span>
+                            <span class="stat-label">Paused</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-info">
+                        <div class="stat-icon">📝</div>
+                        <div class="stat-info">
+                            <span class="stat-value">
+                                <%= stats.draft %>
+                            </span>
+                            <span class="stat-label">Drafts</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <span class="stat-value">
+                                <%= stats.clients %>
+                            </span>
+                            <span class="stat-label">Clients</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📍</div>
+                        <div class="stat-info">
+                            <span class="stat-value">
+                                <%= stats.placements %>
+                            </span>
+                            <span class="stat-label">Placements</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Metrics -->
+                <div class="dashboard-grid">
+                    <div class="card performance-card">
+                        <h3>📈 Performance Overview</h3>
+                        <div class="performance-stats">
+                            <div class="perf-block">
+                                <span class="perf-label">Today</span>
+                                <div class="perf-numbers">
+                                    <span><strong>
+                                            <%= dashboard.today.impressions.toLocaleString() %>
+                                        </strong> impressions</span>
+                                    <span><strong>
+                                            <%= dashboard.today.clicks.toLocaleString() %>
+                                        </strong> clicks</span>
+                                    <span><strong>
+                                            <%= dashboard.today.ctr %>%
+                                        </strong> CTR</span>
+                                </div>
+                            </div>
+                            <div class="perf-block">
+                                <span class="perf-label">This Week</span>
+                                <div class="perf-numbers">
+                                    <span><strong>
+                                            <%= dashboard.week.impressions.toLocaleString() %>
+                                        </strong> impressions</span>
+                                    <span><strong>
+                                            <%= dashboard.week.clicks.toLocaleString() %>
+                                        </strong> clicks</span>
+                                    <span><strong>
+                                            <%= dashboard.week.ctr %>%
+                                        </strong> CTR</span>
+                                </div>
+                            </div>
+                            <div class="perf-block">
+                                <span class="perf-label">This Month</span>
+                                <div class="perf-numbers">
+                                    <span><strong>
+                                            <%= dashboard.month.impressions.toLocaleString() %>
+                                        </strong> impressions</span>
+                                    <span><strong>
+                                            <%= dashboard.month.clicks.toLocaleString() %>
+                                        </strong> clicks</span>
+                                    <span><strong>
+                                            <%= dashboard.month.ctr %>%
+                                        </strong> CTR</span>
+                                </div>
+                            </div>
+                        </div>
+                        <canvas id="performanceChart" height="200"></canvas>
+                    </div>
+
+                    <div class="card alerts-card">
+                        <h3>⚠️ Alerts & Notifications</h3>
+                        <div class="alerts-list">
+                            <% if (stats.expiringSoon> 0) { %>
+                                <div class="alert alert-warning">
+                                    <span class="alert-icon">⏰</span>
+                                    <span><strong>
+                                            <%= stats.expiringSoon %>
+                                        </strong> banner(s) expiring within 7 days</span>
+                                </div>
+                                <% } %>
+                                    <% if (dashboard.underperformingBanners && dashboard.underperformingBanners.length>
+                                        0) { %>
+                                        <div class="alert alert-info">
+                                            <span class="alert-icon">📉</span>
+                                            <span><strong>
+                                                    <%= dashboard.underperformingBanners.length %>
+                                                </strong> underperforming banner(s) (CTR < 0.5%)</span>
+                                        </div>
+                                        <% } %>
+                                            <% if (stats.expired> 0) { %>
+                                                <div class="alert alert-danger">
+                                                    <span class="alert-icon">🚫</span>
+                                                    <span><strong>
+                                                            <%= stats.expired %>
+                                                        </strong> expired banner(s) need attention</span>
+                                                </div>
+                                                <% } %>
+                                                    <% if (stats.expiringSoon===0 && stats.expired===0 &&
+                                                        (!dashboard.underperformingBanners ||
+                                                        dashboard.underperformingBanners.length===0)) { %>
+                                                        <div class="alert alert-success">
+                                                            <span class="alert-icon">✅</span>
+                                                            <span>All banners are performing well!</span>
+                                                        </div>
+                                                        <% } %>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Navigation -->
+                <div class="quick-nav">
+                    <h3>Quick Actions</h3>
+                    <div class="nav-buttons">
+                        <a href="/banners/list" class="nav-btn">
+                            <span class="nav-icon">🖼️</span>
+                            <span>All Banners</span>
+                        </a>
+                        <a href="/banners/clients" class="nav-btn">
+                            <span class="nav-icon">👥</span>
+                            <span>Clients</span>
+                        </a>
+                        <a href="/banners/campaigns" class="nav-btn">
+                            <span class="nav-icon">📦</span>
+                            <span>Campaigns</span>
+                        </a>
+                        <a href="/banners/placements" class="nav-btn">
+                            <span class="nav-icon">📍</span>
+                            <span>Placements</span>
+                        </a>
+                        <a href="/banners/analytics" class="nav-btn">
+                            <span class="nav-icon">📊</span>
+                            <span>Analytics</span>
+                        </a>
+                        <a href="/banners/audit-log" class="nav-btn">
+                            <span class="nav-icon">📋</span>
+                            <span>Audit Log</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Top Performing Banners -->
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <h3>🏆 Top Performing Banners</h3>
+                        <% if (dashboard.topBanners && dashboard.topBanners.length> 0) { %>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Banner</th>
+                                        <th>Impressions</th>
+                                        <th>Clicks</th>
+                                        <th>CTR</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% dashboard.topBanners.forEach(item=> { %>
+                                        <tr>
+                                            <td>
+                                                <a href="/banners/edit/<%= item.id %>">
+                                                    <%= item.banner?.name || item.id %>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <%= item.impressions.toLocaleString() %>
+                                            </td>
+                                            <td>
+                                                <%= item.clicks.toLocaleString() %>
+                                            </td>
+                                            <td><span
+                                                    class="badge badge-<%= parseFloat(item.ctr) >= 1 ? 'success' : parseFloat(item.ctr) >= 0.5 ? 'warning' : 'danger' %>">
+                                                    <%= item.ctr %>%
+                                                </span></td>
+                                        </tr>
+                                        <% }); %>
+                                </tbody>
+                            </table>
+                            <% } else { %>
+                                <p class="empty-message">No performance data available yet.</p>
+                                <% } %>
+                    </div>
+
+                    <div class="card">
+                        <h3>⏰ Expiring Soon</h3>
+                        <% if (dashboard.expiringBanners && dashboard.expiringBanners.length> 0) { %>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Banner</th>
+                                        <th>End Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% dashboard.expiringBanners.forEach(banner=> { %>
+                                        <tr>
+                                            <td>
+                                                <%= banner.name %>
+                                            </td>
+                                            <td>
+                                                <%= new Date(banner.endDate).toLocaleDateString() %>
+                                            </td>
+                                            <td>
+                                                <a href="/banners/edit/<%= banner.id %>"
+                                                    class="btn btn-small">Extend</a>
+                                            </td>
+                                        </tr>
+                                        <% }); %>
+                                </tbody>
+                            </table>
+                            <% } else { %>
+                                <p class="empty-message">No banners expiring soon.</p>
+                                <% } %>
+                    </div>
+                </div>
+
+                <!-- Recent Banners -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🕐 Recent Banners</h3>
+                        <a href="/banners/list" class="btn btn-small">View All</a>
+                    </div>
+                    <% if (banners && banners.length> 0) { %>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Status</th>
+                                    <th>Banner Name</th>
+                                    <th>Size</th>
+                                    <th>Client</th>
+                                    <th>Placements</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% banners.forEach(banner=> {
+                                    const client = clients.find(c => c.id === banner.clientId);
+                                    %>
+                                    <tr>
+                                        <td>
+                                            <span class="status-badge status-<%= banner.status %>">
+                                                <%= banner.status %>
+                                            </span>
+                                        </td>
+                                        <td><strong>
+                                                <%= banner.name %>
+                                            </strong></td>
+                                        <td>
+                                            <%= BANNER_SIZES[banner.size]?.label || banner.size %>
+                                        </td>
+                                        <td>
+                                            <%= client?.name || '-' %>
+                                        </td>
+                                        <td>
+                                            <%= banner.placements?.length || 0 %>
+                                        </td>
+                                        <td>
+                                            <%= new Date(banner.createdAt).toLocaleDateString() %>
+                                        </td>
+                                        <td class="actions-cell">
+                                            <a href="/banners/edit/<%= banner.id %>" class="btn btn-small">Edit</a>
+                                            <button onclick="toggleBanner('<%= banner.id %>')" class="btn btn-small"
+                                                title="<%= banner.status === 'active' ? 'Pause' : 'Activate' %>">
+                                                <%= banner.status==='active' ? '⏸' : '▶️' %>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                            </tbody>
+                        </table>
+                        <% } else { %>
+                            <div class="empty-state">
+                                <p>No banners created yet.</p>
+                                <a href="/banners/new" class="btn btn-primary">Create Your First Banner</a>
+                            </div>
+                            <% } %>
+                </div>
+            </main>
+    </div>
+
+    <script>
+        // Performance chart
+        const ctx = document.getElementById('performanceChart');
+        if (ctx) {
+            const chartData = <%= JSON.stringify(dashboard.week.daily || []) %>;
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData.map(d => d.date),
+                    datasets: [
+                        {
+                            label: 'Impressions',
+                            data: chartData.map(d => d.impressions),
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Clicks',
+                            data: chartData.map(d => d.clicks),
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        async function toggleBanner(id) {
+            try {
+                const response = await fetch('/banners/api/banners/' + id + '/toggle', {
+                    method: 'PUT'
+                });
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

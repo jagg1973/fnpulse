@@ -1,0 +1,69 @@
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <h2>FNPulse</h2>
+        <p>Admin Dashboard</p>
+    </div>
+    <nav class="sidebar-nav">
+        <a href="/" class="nav-item <%= page === 'dashboard' ? 'active' : '' %>">
+            <span class="icon">📊</span>
+            <span>Dashboard</span>
+        </a>
+        <a href="/articles" class="nav-item <%= page === 'articles' ? 'active' : '' %>">
+            <span class="icon">📝</span>
+            <span>Articles</span>
+        </a>
+        <a href="/news" class="nav-item <%= page === 'news' ? 'active' : '' %>">
+            <span class="icon">🗞️</span>
+            <span>News</span>
+        </a>
+        <a href="/press-releases" class="nav-item <%= page === 'press-releases' ? 'active' : '' %>">
+            <span class="icon">📢</span>
+            <span>Press Releases</span>
+        </a>
+        <a href="/pages" class="nav-item <%= page === 'pages' ? 'active' : '' %>">
+            <span class="icon">📄</span>
+            <span>Pages</span>
+        </a>
+        <a href="/authors" class="nav-item <%= page === 'authors' ? 'active' : '' %>">
+            <span class="icon">👤</span>
+            <span>Authors</span>
+        </a>
+
+        <!-- Banner Management Section -->
+        <div class="nav-section">
+            <span class="nav-section-title">Advertising</span>
+        </div>
+        <a href="/banners" class="nav-item <%= page === 'banners' ? 'active' : '' %>">
+            <span class="icon">📺</span>
+            <span>Banner Manager</span>
+        </a>
+        <% if (page==='banners' ) { %>
+            <div class="nav-submenu">
+                <a href="/banners/list" class="nav-subitem">All Banners</a>
+                <a href="/banners/new" class="nav-subitem">New Banner</a>
+                <a href="/banners/clients" class="nav-subitem">Clients</a>
+                <a href="/banners/campaigns" class="nav-subitem">Campaigns</a>
+                <a href="/banners/placements" class="nav-subitem">Placements</a>
+                <a href="/banners/analytics" class="nav-subitem">Analytics</a>
+            </div>
+            <% } %>
+
+                <a href="/ads" class="nav-item">
+                    <span class="icon">📢</span>
+                    <span>Legacy Ads</span>
+                </a>
+                <a href="/images" class="nav-item <%= page === 'images' ? 'active' : '' %>">
+                    <span class="icon">🖼️</span>
+                    <span>Images</span>
+                </a>
+                <a href="/settings" class="nav-item <%= page === 'settings' ? 'active' : '' %>">
+                    <span class="icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+    </nav>
+    <div class="sidebar-footer">
+        <a href="/" class="btn-preview" target="_blank">
+            <span>👁️ Preview Site</span>
+        </a>
+    </div>
+</aside>

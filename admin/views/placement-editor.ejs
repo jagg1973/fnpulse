@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= mode==='edit' ? 'Edit' : 'New' %> Placement - FNPulse Admin
+    </title>
+    <link rel="stylesheet" href="/public/css/admin.css">
+    <link rel="stylesheet" href="/public/css/banner-admin.css">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <%- include('partials/sidebar', { page: 'banners' }) %>
+
+            <main class="main-content">
+                <div class="content-header">
+                    <h1>
+                        <%= mode==='edit' ? '✏️ Edit Placement' : '➕ Create New Placement' %>
+                    </h1>
+                    <a href="/banners/placements" class="btn">← Back to Placements</a>
+                </div>
+
+                <% if (mode==='edit' && stats) { %>
+                    <div class="stats-row">
+                        <div class="stat-card">
+                            <div class="stat-icon">🖼️</div>
+                            <div class="stat-info">
+                                <span class="stat-value">
+                                    <%= stats.totalBanners %>
+                                </span>
+                                <span class="stat-label">Assigned Banners</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-success">
+                            <div class="stat-icon">✅</div>
+                            <div class="stat-info">
+                                <span class="stat-value">
+                                    <%= stats.activeBanners %>
+                                </span>
+                                <span class="stat-label">Active</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">👁️</div>
+                            <div class="stat-info">
+                                <span class="stat-value">
+                                    <%= stats.totalImpressions.toLocaleString() %>
+                                </span>
+                                <span class="stat-label">Impressions</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-info">
+                                <span class="stat-value">
+                                    <%= stats.ctr %>%
+                                </span>
+                                <span class="stat-label">CTR</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📈</div>
+                            <div class="stat-info">
+                                <span class="stat-value">
+                                    <%= stats.fillRate %>%
+                                </span>
+                                <span class="stat-label">Fill Rate</span>
+                            </div>
+                        </div>
+                    </div>
+                    <% } %>
+
+                        <form id="placementForm" class="editor-form">
+                            <div class="form-section">
+                                <h3>📋 Basic Information</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="name">Placement Name *</label>
+                                        <input type="text" id="name" name="name" required
+                                            value="<%= placement?.name || '' %>"
+                                            placeholder="e.g., Homepage Top Leaderboard">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="id">Placement ID</label>
+                                        <input type="text" id="id" name="id" value="<%= placement?.id || '' %>"
+                                            placeholder="auto-generated or custom-id" <%=mode==='edit' ? 'readonly' : ''
+                                            %>>
+                                        <small>Unique identifier used in embed code</small>
+                                    </div>
+                                </div>
+
+                                <div class="form-group full-width">
+                                    <label for="description">Description</label>
+                                    <textarea id="description" name="description" rows="2"
+                                        placeholder="Describe this placement location..."><%= placement?.description || '' %></textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3>📍 Location Settings</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="pageType">Page Type *</label>
+                                        <select id="pageType" name="pageType" required>
+                                            <option value="all" <%=placement?.pageType==='all' ? 'selected' : '' %>>All
+                                                Pages</option>
+                                            <option value="homepage" <%=placement?.pageType==='homepage' ? 'selected'
+                                                : '' %>>Homepage</option>
+                                            <option value="article" <%=placement?.pageType==='article' ? 'selected' : ''
+                                                %>>Article Pages</option>
+                                            <option value="category" <%=placement?.pageType==='category' ? 'selected'
+                                                : '' %>>Category Pages</option>
+                                            <option value="archive" <%=placement?.pageType==='archive' ? 'selected' : ''
+                                                %>>Archive/Listing Pages</option>
+                                            <option value="search" <%=placement?.pageType==='search' ? 'selected' : ''
+                                                %>>Search Results</option>
+                                            <option value="author" <%=placement?.pageType==='author' ? 'selected' : ''
+                                                %>>Author Pages</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="position">Position *</label>
+                                        <select id="position" name="position" required>
+                                            <option value="top" <%=placement?.position==='top' ? 'selected' : '' %>>Top
+                                                / Header</option>
+                                            <option value="sidebar" <%=placement?.position==='sidebar' ? 'selected' : ''
+                                                %>>Sidebar</option>
+                                            <option value="footer" <%=placement?.position==='footer' ? 'selected' : ''
+                                                %>>Footer</option>
+                                            <option value="inline" <%=placement?.position==='inline' ? 'selected' : ''
+                                                %>>Inline / In-Content</option>
+                                            <option value="sticky-top" <%=placement?.position==='sticky-top'
+                                                ? 'selected' : '' %>>Sticky Top</option>
+                                            <option value="sticky-bottom" <%=placement?.position==='sticky-bottom'
+                                                ? 'selected' : '' %>>Sticky Bottom</option>
+                                            <option value="floating" <%=placement?.position==='floating' ? 'selected'
+                                                : '' %>>Floating</option>
+                                            <option value="interstitial" <%=placement?.position==='interstitial'
+                                                ? 'selected' : '' %>>Interstitial</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="cssSelector">CSS Selector (Optional)</label>
+                                        <input type="text" id="cssSelector" name="cssSelector"
+                                            value="<%= placement?.cssSelector || '' %>"
+                                            placeholder="e.g., #header-ad, .sidebar-widget">
+                                        <small>Custom DOM selector for dynamic insertion</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="insertMethod">Insert Method</label>
+                                        <select id="insertMethod" name="insertMethod">
+                                            <option value="append" <%=placement?.insertMethod==='append' ? 'selected'
+                                                : '' %>>Append (inside, at end)</option>
+                                            <option value="prepend" <%=placement?.insertMethod==='prepend' ? 'selected'
+                                                : '' %>>Prepend (inside, at start)</option>
+                                            <option value="before" <%=placement?.insertMethod==='before' ? 'selected'
+                                                : '' %>>Before (outside, above)</option>
+                                            <option value="after" <%=placement?.insertMethod==='after' ? 'selected' : ''
+                                                %>>After (outside, below)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3>📐 Size Configuration</h3>
+                                <div class="form-group full-width">
+                                    <label>Allowed Banner Sizes *</label>
+                                    <div class="size-checkbox-grid">
+                                        <% Object.entries(BANNER_SIZES).forEach(([key, size])=> { %>
+                                            <label class="size-checkbox">
+                                                <input type="checkbox" name="allowedSizes" value="<%= key %>"
+                                                    <%=placement?.allowedSizes?.includes(key) ? 'checked' : '' %>>
+                                                <div class="size-option">
+                                                    <strong>
+                                                        <%= size.label %>
+                                                    </strong>
+                                                    <span>
+                                                        <%= size.width %>x<%= size.height %>
+                                                    </span>
+                                                </div>
+                                            </label>
+                                            <% }); %>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3>🔄 Rotation Settings</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="maxBanners">Maximum Banners in Rotation</label>
+                                        <input type="number" id="maxBanners" name="maxBanners" min="1" max="10"
+                                            value="<%= placement?.maxBanners || 1 %>">
+                                        <small>How many banners can rotate in this slot</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="rotation">Rotation Logic</label>
+                                        <select id="rotation" name="rotation">
+                                            <option value="weighted" <%=placement?.rotation==='weighted' ? 'selected'
+                                                : '' %>>Weighted (by priority)</option>
+                                            <option value="random" <%=placement?.rotation==='random' ? 'selected' : ''
+                                                %>>Random</option>
+                                            <option value="sequential" <%=placement?.rotation==='sequential'
+                                                ? 'selected' : '' %>>Sequential</option>
+                                            <option value="even" <%=placement?.rotation==='even' ? 'selected' : '' %>
+                                                >Even Distribution</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="rotationInterval">Auto-Rotation Interval (seconds)</label>
+                                        <input type="number" id="rotationInterval" name="rotationInterval" min="5"
+                                            value="<%= placement?.rotationInterval || '' %>"
+                                            placeholder="Leave empty for no auto-rotation">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="refreshInterval">Ad Refresh Interval (seconds)</label>
+                                        <input type="number" id="refreshInterval" name="refreshInterval" min="10"
+                                            value="<%= placement?.refreshInterval || 30 %>">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3>⚙️ Display Settings</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="deviceTarget">Device Target</label>
+                                        <select id="deviceTarget" name="deviceTarget">
+                                            <option value="all" <%=placement?.deviceTarget==='all' ? 'selected' : '' %>
+                                                >All Devices</option>
+                                            <option value="desktop" <%=placement?.deviceTarget==='desktop' ? 'selected'
+                                                : '' %>>Desktop Only</option>
+                                            <option value="mobile" <%=placement?.deviceTarget==='mobile' ? 'selected'
+                                                : '' %>>Mobile Only</option>
+                                            <option value="tablet" <%=placement?.deviceTarget==='tablet' ? 'selected'
+                                                : '' %>>Tablet Only</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="priority">Priority</label>
+                                        <input type="number" id="priority" name="priority" min="1" max="10"
+                                            value="<%= placement?.priority || 5 %>">
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>
+                                            <input type="checkbox" id="enabled" name="enabled" <%=placement?.enabled
+                                                !==false ? 'checked' : '' %>>
+                                            Placement Enabled
+                                        </label>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>
+                                            <input type="checkbox" id="lazyLoad" name="lazyLoad" <%=placement?.lazyLoad
+                                                !==false ? 'checked' : '' %>>
+                                            Enable Lazy Loading
+                                        </label>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>
+                                            <input type="checkbox" id="refreshEnabled" name="refreshEnabled"
+                                                <%=placement?.refreshEnabled ? 'checked' : '' %>>
+                                            Enable Ad Refresh
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>
+                                            <input type="checkbox" id="showLabel" name="showLabel"
+                                                <%=placement?.showLabel !==false ? 'checked' : '' %>>
+                                            Show "Advertisement" Label
+                                        </label>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="labelText">Label Text</label>
+                                        <input type="text" id="labelText" name="labelText"
+                                            value="<%= placement?.labelText || 'Advertisement' %>">
+                                    </div>
+                                </div>
+
+                                <div class="form-group full-width">
+                                    <label for="containerClass">Custom Container Class</label>
+                                    <input type="text" id="containerClass" name="containerClass"
+                                        value="<%= placement?.containerClass || '' %>"
+                                        placeholder="e.g., my-custom-ad-container">
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <%= mode==='edit' ? '💾 Update Placement' : '✨ Create Placement' %>
+                                </button>
+                                <a href="/banners/placements" class="btn">Cancel</a>
+                            </div>
+                        </form>
+
+                        <% if (mode==='edit' && embedCode) { %>
+                            <div class="form-section">
+                                <h3>📋 Embed Code</h3>
+                                <p class="section-help">Copy this code and paste it into your page templates where you
+                                    want ads to appear.</p>
+                                <div class="embed-code-container">
+                                    <pre id="embedCodePre"><%= embedCode %></pre>
+                                    <button onclick="copyEmbedCode()" class="btn btn-small">📋 Copy Code</button>
+                                </div>
+                            </div>
+                            <% } %>
+
+                                <% if (mode==='edit' && banners && banners.length> 0) { %>
+                                    <div class="form-section">
+                                        <h3>🖼️ Assigned Banners</h3>
+                                        <table class="data-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Status</th>
+                                                    <th>Banner Name</th>
+                                                    <th>Size</th>
+                                                    <th>Priority</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% banners.forEach(banner=> { %>
+                                                    <tr>
+                                                        <td><span class="status-badge status-<%= banner.status %>">
+                                                                <%= banner.status %>
+                                                            </span></td>
+                                                        <td>
+                                                            <%= banner.name %>
+                                                        </td>
+                                                        <td>
+                                                            <%= banner.size %>
+                                                        </td>
+                                                        <td>
+                                                            <%= banner.priority %>
+                                                        </td>
+                                                        <td>
+                                                            <a href="/banners/edit/<%= banner.id %>"
+                                                                class="btn btn-small">Edit</a>
+                                                        </td>
+                                                    </tr>
+                                                    <% }); %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <% } %>
+            </main>
+    </div>
+
+    <script>
+        const isEditMode = <%= mode === 'edit' ? 'true' : 'false' %>;
+        const placementId = '<%= placement?.id || '' %>';
+
+        function copyEmbedCode() {
+            const code = document.getElementById('embedCodePre').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Embed code copied to clipboard!');
+            });
+        }
+
+        // Form submission
+        document.getElementById('placementForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const allowedSizes = Array.from(document.querySelectorAll('input[name="allowedSizes"]:checked'))
+                .map(cb => cb.value);
+
+            if (allowedSizes.length === 0) {
+                alert('Please select at least one allowed banner size.');
+                return;
+            }
+
+            const formData = {
+                id: isEditMode ? placementId : (document.getElementById('id').value || undefined),
+                name: document.getElementById('name').value,
+                description: document.getElementById('description').value,
+                pageType: document.getElementById('pageType').value,
+                position: document.getElementById('position').value,
+                cssSelector: document.getElementById('cssSelector').value,
+                insertMethod: document.getElementById('insertMethod').value,
+                allowedSizes,
+                maxBanners: parseInt(document.getElementById('maxBanners').value) || 1,
+                rotation: document.getElementById('rotation').value,
+                rotationInterval: parseInt(document.getElementById('rotationInterval').value) || null,
+                refreshInterval: parseInt(document.getElementById('refreshInterval').value) || 30,
+                deviceTarget: document.getElementById('deviceTarget').value,
+                priority: parseInt(document.getElementById('priority').value) || 5,
+                enabled: document.getElementById('enabled').checked,
+                lazyLoad: document.getElementById('lazyLoad').checked,
+                refreshEnabled: document.getElementById('refreshEnabled').checked,
+                showLabel: document.getElementById('showLabel').checked,
+                labelText: document.getElementById('labelText').value,
+                containerClass: document.getElementById('containerClass').value
+            };
+
+            try {
+                const url = isEditMode ? '/banners/api/placements/' + placementId : '/banners/api/placements';
+                const method = isEditMode ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    window.location.href = '/banners/placements';
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+    </script>
+</body>
+
+</html>

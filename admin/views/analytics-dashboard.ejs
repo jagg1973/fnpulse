@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - FNPulse Admin</title>
+    <link rel="stylesheet" href="/public/css/admin.css">
+    <link rel="stylesheet" href="/public/css/banner-admin.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <%- include('partials/sidebar', { page: 'banners' }) %>
+
+            <main class="main-content">
+                <div class="content-header">
+                    <h1>📊 Analytics Dashboard</h1>
+                    <div class="header-actions">
+                        <button onclick="exportData()" class="btn">📥 Export CSV</button>
+                    </div>
+                </div>
+
+                <!-- Date Range Filter -->
+                <div class="filter-bar">
+                    <div class="date-range-picker">
+                        <label>Date Range:</label>
+                        <input type="date" id="startDate"
+                            value="<%= new Date(Date.now() - 30*24*60*60*1000).toISOString().split('T')[0] %>">
+                        <span>to</span>
+                        <input type="date" id="endDate" value="<%= new Date().toISOString().split('T')[0] %>">
+                        <button onclick="loadAnalytics()" class="btn btn-primary">Apply</button>
+                    </div>
+                    <div class="quick-dates">
+                        <button onclick="setDateRange(7)" class="btn btn-small">7 Days</button>
+                        <button onclick="setDateRange(30)" class="btn btn-small">30 Days</button>
+                        <button onclick="setDateRange(90)" class="btn btn-small">90 Days</button>
+                    </div>
+                </div>
+
+                <!-- Summary Stats -->
+                <div class="stats-grid" id="summaryStats">
+                    <div class="stat-card">
+                        <h3>Total Impressions</h3>
+                        <div class="stat-value" id="totalImpressions">-</div>
+                        <div class="stat-change" id="impressionChange">Loading...</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Clicks</h3>
+                        <div class="stat-value" id="totalClicks">-</div>
+                        <div class="stat-change" id="clickChange">Loading...</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Avg. CTR</h3>
+                        <div class="stat-value" id="avgCtr">-</div>
+                        <div class="stat-change" id="ctrChange">Loading...</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Active Banners</h3>
+                        <div class="stat-value" id="activeBanners">-</div>
+                        <div class="stat-change" id="bannerChange">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="charts-section">
+                    <div class="chart-container chart-large">
+                        <h3>📈 Performance Over Time</h3>
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="charts-row">
+                    <div class="chart-container chart-half">
+                        <h3>🎯 Top Performing Banners</h3>
+                        <div id="topBannersTable">
+                            <table class="data-table data-table-compact">
+                                <thead>
+                                    <tr>
+                                        <th>Banner</th>
+                                        <th>Impressions</th>
+                                        <th>Clicks</th>
+                                        <th>CTR</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topBannersBody">
+                                    <tr>
+                                        <td colspan="4" class="text-center">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="chart-container chart-half">
+                        <h3>📍 Performance by Placement</h3>
+                        <canvas id="placementChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="charts-row">
+                    <div class="chart-container chart-half">
+                        <h3>👤 Performance by Client</h3>
+                        <div id="clientStatsTable">
+                            <table class="data-table data-table-compact">
+                                <thead>
+                                    <tr>
+                                        <th>Client</th>
+                                        <th>Banners</th>
+                                        <th>Impressions</th>
+                                        <th>Clicks</th>
+                                        <th>CTR</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="clientStatsBody">
+                                    <tr>
+                                        <td colspan="5" class="text-center">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="chart-container chart-half">
+                        <h3>📱 Device Distribution</h3>
+                        <canvas id="deviceChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Hourly Heatmap -->
+                <div class="chart-container">
+                    <h3>⏰ Performance by Hour (Last 7 Days)</h3>
+                    <div id="hourlyHeatmap" class="hourly-heatmap">
+                        <div class="heatmap-row heatmap-header">
+                            <div class="heatmap-label"></div>
+                            <% for (let h=0; h < 24; h++) { %>
+                                <div class="heatmap-cell">
+                                    <%= h %>:00
+                                </div>
+                                <% } %>
+                        </div>
+                        <div class="heatmap-row" id="impressionHeatmap">
+                            <div class="heatmap-label">Impressions</div>
+                            <!-- Filled by JS -->
+                        </div>
+                        <div class="heatmap-row" id="clickHeatmap">
+                            <div class="heatmap-label">Clicks</div>
+                            <!-- Filled by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="back-link">
+                    <a href="/banners" class="btn">← Back to Dashboard</a>
+                </div>
+            </main>
+    </div>
+
+    <script>
+        let performanceChart, placementChart, deviceChart;
+        let analyticsData = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAnalytics();
+        });
+
+        function setDateRange(days) {
+            const end = new Date();
+            const start = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+            document.getElementById('startDate').value = start.toISOString().split('T')[0];
+            document.getElementById('endDate').value = end.toISOString().split('T')[0];
+            loadAnalytics();
+        }
+
+        async function loadAnalytics() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            try {
+                const response = await fetch(`/banners/api/analytics?startDate=${startDate}&endDate=${endDate}`);
+                analyticsData = await response.json();
+                updateDashboard(analyticsData);
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+            }
+        }
+
+        function updateDashboard(data) {
+            // Update summary stats
+            document.getElementById('totalImpressions').textContent = data.summary.totalImpressions.toLocaleString();
+            document.getElementById('totalClicks').textContent = data.summary.totalClicks.toLocaleString();
+            document.getElementById('avgCtr').textContent = data.summary.avgCtr + '%';
+            document.getElementById('activeBanners').textContent = data.summary.activeBanners;
+
+            // Update change indicators
+            updateChangeIndicator('impressionChange', data.summary.impressionChange);
+            updateChangeIndicator('clickChange', data.summary.clickChange);
+            updateChangeIndicator('ctrChange', data.summary.ctrChange, true);
+            document.getElementById('bannerChange').textContent = `${data.summary.totalBanners} total`;
+
+            // Update charts
+            updatePerformanceChart(data.dailyData);
+            updatePlacementChart(data.placementData);
+            updateDeviceChart(data.deviceData);
+
+            // Update tables
+            updateTopBannersTable(data.topBanners);
+            updateClientStatsTable(data.clientData);
+
+            // Update hourly heatmap
+            updateHourlyHeatmap(data.hourlyData);
+        }
+
+        function updateChangeIndicator(elementId, change, isPercentage = false) {
+            const el = document.getElementById(elementId);
+            const value = parseFloat(change || 0);
+            const suffix = isPercentage ? ' pts' : '%';
+
+            if (value > 0) {
+                el.textContent = `↑ ${value.toFixed(1)}${suffix}`;
+                el.className = 'stat-change change-positive';
+            } else if (value < 0) {
+                el.textContent = `↓ ${Math.abs(value).toFixed(1)}${suffix}`;
+                el.className = 'stat-change change-negative';
+            } else {
+                el.textContent = `→ 0${suffix}`;
+                el.className = 'stat-change change-neutral';
+            }
+        }
+
+        function updatePerformanceChart(dailyData) {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+
+            if (performanceChart) {
+                performanceChart.destroy();
+            }
+
+            const labels = dailyData.map(d => d.date);
+            const impressions = dailyData.map(d => d.impressions);
+            const clicks = dailyData.map(d => d.clicks);
+
+            performanceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Impressions',
+                            data: impressions,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Clicks',
+                            data: clicks,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: 'Impressions' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: 'Clicks' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updatePlacementChart(placementData) {
+            const ctx = document.getElementById('placementChart').getContext('2d');
+
+            if (placementChart) {
+                placementChart.destroy();
+            }
+
+            placementChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: placementData.map(p => p.name),
+                    datasets: [
+                        {
+                            label: 'Impressions',
+                            data: placementData.map(p => p.impressions),
+                            backgroundColor: '#3b82f6'
+                        },
+                        {
+                            label: 'Clicks',
+                            data: placementData.map(p => p.clicks),
+                            backgroundColor: '#10b981'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        x: { stacked: false },
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function updateDeviceChart(deviceData) {
+            const ctx = document.getElementById('deviceChart').getContext('2d');
+
+            if (deviceChart) {
+                deviceChart.destroy();
+            }
+
+            deviceChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: deviceData.map(d => d.device),
+                    datasets: [{
+                        data: deviceData.map(d => d.impressions),
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' }
+                    }
+                }
+            });
+        }
+
+        function updateTopBannersTable(banners) {
+            const tbody = document.getElementById('topBannersBody');
+
+            if (!banners || banners.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No data available</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = banners.slice(0, 10).map(b => `
+                <tr>
+                    <td><a href="/banners/edit/${b.id}">${b.name}</a></td>
+                    <td>${b.impressions.toLocaleString()}</td>
+                    <td>${b.clicks.toLocaleString()}</td>
+                    <td><span class="ctr-badge ${parseFloat(b.ctr) >= 1 ? 'ctr-good' : ''}">${b.ctr}%</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function updateClientStatsTable(clients) {
+            const tbody = document.getElementById('clientStatsBody');
+
+            if (!clients || clients.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No data available</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = clients.map(c => `
+                <tr>
+                    <td><a href="/banners/clients/edit/${c.id}">${c.name}</a></td>
+                    <td>${c.bannerCount}</td>
+                    <td>${c.impressions.toLocaleString()}</td>
+                    <td>${c.clicks.toLocaleString()}</td>
+                    <td><span class="ctr-badge ${parseFloat(c.ctr) >= 1 ? 'ctr-good' : ''}">${c.ctr}%</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function updateHourlyHeatmap(hourlyData) {
+            if (!hourlyData) return;
+
+            const impressionRow = document.getElementById('impressionHeatmap');
+            const clickRow = document.getElementById('clickHeatmap');
+
+            // Keep label, add cells
+            let impressionCells = '<div class="heatmap-label">Impressions</div>';
+            let clickCells = '<div class="heatmap-label">Clicks</div>';
+
+            const maxImp = Math.max(...hourlyData.map(h => h.impressions || 0), 1);
+            const maxClick = Math.max(...hourlyData.map(h => h.clicks || 0), 1);
+
+            for (let h = 0; h < 24; h++) {
+                const hourData = hourlyData.find(d => d.hour === h) || { impressions: 0, clicks: 0 };
+                const impIntensity = Math.round((hourData.impressions / maxImp) * 100);
+                const clickIntensity = Math.round((hourData.clicks / maxClick) * 100);
+
+                impressionCells += `<div class="heatmap-cell" style="background: rgba(59, 130, 246, ${impIntensity / 100})" title="${hourData.impressions} impressions">${hourData.impressions}</div>`;
+                clickCells += `<div class="heatmap-cell" style="background: rgba(16, 185, 129, ${clickIntensity / 100})" title="${hourData.clicks} clicks">${hourData.clicks}</div>`;
+            }
+
+            impressionRow.innerHTML = impressionCells;
+            clickRow.innerHTML = clickCells;
+        }
+
+        async function exportData() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            try {
+                const response = await fetch(`/banners/api/analytics/export?startDate=${startDate}&endDate=${endDate}`);
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `fnpulse-analytics-${startDate}-to-${endDate}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                alert('Error exporting data: ' + error.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

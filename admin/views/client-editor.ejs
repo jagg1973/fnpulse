@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= mode==='edit' ? 'Edit' : 'New' %> Client - FNPulse Admin
+    </title>
+    <link rel="stylesheet" href="/public/css/admin.css">
+    <link rel="stylesheet" href="/public/css/banner-admin.css">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <%- include('partials/sidebar', { page: 'banners' }) %>
+
+            <main class="main-content">
+                <div class="content-header">
+                    <h1>
+                        <%= mode==='edit' ? '✏️ Edit Client' : '➕ Add New Client' %>
+                    </h1>
+                    <a href="/banners/clients" class="btn">← Back to Clients</a>
+                </div>
+
+                <% if (mode==='edit' && stats) { %>
+                    <div class="stats-row">
+                        <div class="stat-card">
+                            <div class="stat-icon">🖼️</div>
+                            <div class="stat-info">
+                                <span class="stat-value">
+                                    <%= stats.totalBanners %>
+                                </span>
+                                <span class="stat-label">Total Banners</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-success">
+                            <div class="stat-icon">✅</div>
+                            <div class="stat-info">
+                                <span class="stat-value">
+                                    <%= stats.activeBanners %>
+                                </span>
+                                <span class="stat-label">Active</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">👁️</div>
+                            <div class="stat-info">
+                                <span class="stat-value">
+                                    <%= stats.totalImpressions.toLocaleString() %>
+                                </span>
+                                <span class="stat-label">Impressions</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">👆</div>
+                            <div class="stat-info">
+                                <span class="stat-value">
+                                    <%= stats.totalClicks.toLocaleString() %>
+                                </span>
+                                <span class="stat-label">Clicks</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-info">
+                                <span class="stat-value">
+                                    <%= stats.ctr %>%
+                                </span>
+                                <span class="stat-label">CTR</span>
+                            </div>
+                        </div>
+                    </div>
+                    <% } %>
+
+                        <form id="clientForm" class="editor-form">
+                            <div class="form-section">
+                                <h3>📋 Company Information</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="name">Client Name *</label>
+                                        <input type="text" id="name" name="name" required
+                                            value="<%= client?.name || '' %>" placeholder="Company or Client Name">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="company">Company/Organization</label>
+                                        <input type="text" id="company" name="company"
+                                            value="<%= client?.company || '' %>"
+                                            placeholder="Parent Company (if different)">
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="email">Email</label>
+                                        <input type="email" id="email" name="email" value="<%= client?.email || '' %>"
+                                            placeholder="contact@company.com">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="phone">Phone</label>
+                                        <input type="tel" id="phone" name="phone" value="<%= client?.phone || '' %>"
+                                            placeholder="+1 (555) 123-4567">
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="website">Website</label>
+                                        <input type="url" id="website" name="website"
+                                            value="<%= client?.website || '' %>" placeholder="https://www.company.com">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="address">Address</label>
+                                        <input type="text" id="address" name="address"
+                                            value="<%= client?.address || '' %>" placeholder="123 Main St, City, State">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3>👤 Contact Person</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="contactName">Contact Name</label>
+                                        <input type="text" id="contactName" name="contactName"
+                                            value="<%= client?.contactName || '' %>" placeholder="John Smith">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="contactEmail">Contact Email</label>
+                                        <input type="email" id="contactEmail" name="contactEmail"
+                                            value="<%= client?.contactEmail || '' %>" placeholder="john@company.com">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="contactPhone">Contact Phone</label>
+                                        <input type="tel" id="contactPhone" name="contactPhone"
+                                            value="<%= client?.contactPhone || '' %>" placeholder="+1 (555) 123-4567">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3>⚙️ Account Settings</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="status">Status</label>
+                                        <select id="status" name="status">
+                                            <option value="active" <%=client?.status==='active' ? 'selected' : '' %>
+                                                >Active</option>
+                                            <option value="inactive" <%=client?.status==='inactive' ? 'selected' : '' %>
+                                                >Inactive</option>
+                                            <option value="pending" <%=client?.status==='pending' ? 'selected' : '' %>
+                                                >Pending</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tier">Account Tier</label>
+                                        <select id="tier" name="tier">
+                                            <option value="standard" <%=client?.tier==='standard' ? 'selected' : '' %>
+                                                >Standard</option>
+                                            <option value="premium" <%=client?.tier==='premium' ? 'selected' : '' %>
+                                                >Premium</option>
+                                            <option value="enterprise" <%=client?.tier==='enterprise' ? 'selected' : ''
+                                                %>>Enterprise</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group full-width">
+                                    <label for="notes">Notes</label>
+                                    <textarea id="notes" name="notes" rows="4"
+                                        placeholder="Internal notes about this client..."><%= client?.notes || '' %></textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3>🔐 Client Portal Access (Optional)</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>
+                                            <input type="checkbox" id="portalAccess" name="portalAccess"
+                                                <%=client?.portalAccess ? 'checked' : '' %>>
+                                            Enable Client Portal Access
+                                        </label>
+                                        <small>Allow client to view their own analytics and manage banners</small>
+                                    </div>
+                                </div>
+                                <div class="form-row portal-fields"
+                                    style="<%= client?.portalAccess ? '' : 'display: none;' %>">
+                                    <div class="form-group">
+                                        <label for="portalUsername">Portal Username</label>
+                                        <input type="text" id="portalUsername" name="portalUsername"
+                                            value="<%= client?.portalUsername || '' %>" placeholder="username">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <%= mode==='edit' ? '💾 Update Client' : '✨ Create Client' %>
+                                </button>
+                                <a href="/banners/clients" class="btn">Cancel</a>
+                            </div>
+                        </form>
+
+                        <% if (mode==='edit' && banners && banners.length> 0) { %>
+                            <div class="form-section">
+                                <h3>🖼️ Client's Banners</h3>
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Status</th>
+                                            <th>Banner Name</th>
+                                            <th>Size</th>
+                                            <th>Created</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% banners.forEach(banner=> { %>
+                                            <tr>
+                                                <td><span class="status-badge status-<%= banner.status %>">
+                                                        <%= banner.status %>
+                                                    </span></td>
+                                                <td>
+                                                    <%= banner.name %>
+                                                </td>
+                                                <td>
+                                                    <%= banner.size %>
+                                                </td>
+                                                <td>
+                                                    <%= new Date(banner.createdAt).toLocaleDateString() %>
+                                                </td>
+                                                <td>
+                                                    <a href="/banners/edit/<%= banner.id %>"
+                                                        class="btn btn-small">Edit</a>
+                                                </td>
+                                            </tr>
+                                            <% }); %>
+                                    </tbody>
+                                </table>
+                                <a href="/banners/new?client=<%= client.id %>" class="btn btn-primary">+ Add Banner for
+                                    This Client</a>
+                            </div>
+                            <% } %>
+            </main>
+    </div>
+
+    <script>
+        const isEditMode = <%= mode === 'edit' ? 'true' : 'false' %>;
+        const clientId = '<%= client?.id || '' %>';
+
+        // Portal access toggle
+        document.getElementById('portalAccess').addEventListener('change', function () {
+            document.querySelector('.portal-fields').style.display = this.checked ? 'flex' : 'none';
+        });
+
+        // Form submission
+        document.getElementById('clientForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = {
+                name: document.getElementById('name').value,
+                company: document.getElementById('company').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                website: document.getElementById('website').value,
+                address: document.getElementById('address').value,
+                contactName: document.getElementById('contactName').value,
+                contactEmail: document.getElementById('contactEmail').value,
+                contactPhone: document.getElementById('contactPhone').value,
+                status: document.getElementById('status').value,
+                tier: document.getElementById('tier').value,
+                notes: document.getElementById('notes').value,
+                portalAccess: document.getElementById('portalAccess').checked,
+                portalUsername: document.getElementById('portalUsername').value
+            };
+
+            try {
+                const url = isEditMode ? '/banners/api/clients/' + clientId : '/banners/api/clients';
+                const method = isEditMode ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    window.location.href = '/banners/clients';
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= campaign ? 'Edit Campaign' : 'New Campaign' %> - FNPulse Admin
+    </title>
+    <link rel="stylesheet" href="/public/css/admin.css">
+    <link rel="stylesheet" href="/public/css/banner-admin.css">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <%- include('partials/sidebar', { page: 'banners' }) %>
+
+            <main class="main-content">
+                <div class="content-header">
+                    <h1>
+                        <%= campaign ? '✏️ Edit Campaign' : '📦 New Campaign' %>
+                    </h1>
+                </div>
+
+                <form id="campaignForm" class="editor-form">
+                    <% if (campaign) { %>
+                        <input type="hidden" name="id" value="<%= campaign.id %>">
+                        <% } %>
+
+                            <div class="form-section">
+                                <h3>Campaign Details</h3>
+
+                                <div class="form-group">
+                                    <label for="name">Campaign Name *</label>
+                                    <input type="text" id="name" name="name" value="<%= campaign?.name || '' %>"
+                                        required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="description">Description</label>
+                                    <textarea id="description" name="description"
+                                        rows="3"><%= campaign?.description || '' %></textarea>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="clientId">Client</label>
+                                        <select id="clientId" name="clientId">
+                                            <option value="">-- Select Client --</option>
+                                            <% clients.forEach(client=> { %>
+                                                <option value="<%= client.id %>" <%=campaign?.clientId===client.id
+                                                    ? 'selected' : '' %>><%= client.name %>
+                                                </option>
+                                                <% }); %>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="status">Status</label>
+                                        <select id="status" name="status">
+                                            <option value="active" <%=campaign?.status==='active' ? 'selected' : '' %>
+                                                >Active</option>
+                                            <option value="paused" <%=campaign?.status==='paused' ? 'selected' : '' %>
+                                                >Paused</option>
+                                            <option value="draft" <%=campaign?.status==='draft' ? 'selected' : '' %>
+                                                >Draft</option>
+                                            <option value="completed" <%=campaign?.status==='completed' ? 'selected'
+                                                : '' %>>Completed</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3>🗓️ Schedule</h3>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="startDate">Start Date</label>
+                                        <input type="date" id="startDate" name="startDate"
+                                            value="<%= campaign?.startDate ? campaign.startDate.split('T')[0] : '' %>">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="endDate">End Date</label>
+                                        <input type="date" id="endDate" name="endDate"
+                                            value="<%= campaign?.endDate ? campaign.endDate.split('T')[0] : '' %>">
+                                    </div>
+                                </div>
+
+                                <div class="info-box">
+                                    <p>💡 Leave dates empty for an always-on campaign. Banners within this campaign will
+                                        inherit these date restrictions if their own dates are not set.</p>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3>📊 Budget & Goals (Optional)</h3>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="budget">Budget</label>
+                                        <div class="input-group">
+                                            <span class="input-prefix">$</span>
+                                            <input type="number" id="budget" name="budget" step="0.01" min="0"
+                                                value="<%= campaign?.budget || '' %>" placeholder="0.00">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="impressionGoal">Impression Goal</label>
+                                        <input type="number" id="impressionGoal" name="impressionGoal" min="0"
+                                            value="<%= campaign?.impressionGoal || '' %>" placeholder="e.g., 100000">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="clickGoal">Click Goal</label>
+                                        <input type="number" id="clickGoal" name="clickGoal" min="0"
+                                            value="<%= campaign?.clickGoal || '' %>" placeholder="e.g., 1000">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3>🏷️ Tags & Notes</h3>
+
+                                <div class="form-group">
+                                    <label for="tags">Tags</label>
+                                    <input type="text" id="tags" name="tags"
+                                        value="<%= campaign?.tags?.join(', ') || '' %>"
+                                        placeholder="e.g., q4-2024, holiday, premium">
+                                    <small>Comma-separated tags for organization</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="notes">Internal Notes</label>
+                                    <textarea id="notes" name="notes" rows="4"
+                                        placeholder="Notes visible only to admins..."><%= campaign?.notes || '' %></textarea>
+                                </div>
+                            </div>
+
+                            <% if (campaign) { %>
+                                <div class="form-section">
+                                    <h3>📋 Campaign Banners</h3>
+
+                                    <% const campaignBanners=banners.filter(b=> b.campaignId === campaign.id); %>
+                                        <% if (campaignBanners.length===0) { %>
+                                            <div class="info-box">
+                                                <p>No banners assigned to this campaign yet. <a
+                                                        href="/banners/new?campaignId=<%= campaign.id %>">Create a
+                                                        banner</a> for this campaign.</p>
+                                            </div>
+                                            <% } else { %>
+                                                <table class="data-table data-table-compact">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Banner</th>
+                                                            <th>Size</th>
+                                                            <th>Status</th>
+                                                            <th>Impressions</th>
+                                                            <th>Clicks</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <% campaignBanners.forEach(banner=> { %>
+                                                            <tr>
+                                                                <td>
+                                                                    <a href="/banners/edit/<%= banner.id %>">
+                                                                        <%= banner.name %>
+                                                                    </a>
+                                                                </td>
+                                                                <td>
+                                                                    <%= banner.width %>x<%= banner.height %>
+                                                                </td>
+                                                                <td><span
+                                                                        class="status-badge status-<%= banner.status %>">
+                                                                        <%= banner.status %>
+                                                                    </span></td>
+                                                                <td>
+                                                                    <%= (banner.impressions || 0).toLocaleString() %>
+                                                                </td>
+                                                                <td>
+                                                                    <%= (banner.clicks || 0).toLocaleString() %>
+                                                                </td>
+                                                            </tr>
+                                                            <% }); %>
+                                                    </tbody>
+                                                </table>
+                                                <% } %>
+                                </div>
+                                <% } %>
+
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn btn-primary">
+                                            <%= campaign ? 'Update Campaign' : 'Create Campaign' %>
+                                        </button>
+                                        <a href="/banners/campaigns" class="btn">Cancel</a>
+                                    </div>
+                </form>
+            </main>
+    </div>
+
+    <script>
+        document.getElementById('campaignForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+
+            // Parse tags
+            if (data.tags) {
+                data.tags = data.tags.split(',').map(t => t.trim()).filter(t => t);
+            } else {
+                data.tags = [];
+            }
+
+            // Parse numbers
+            if (data.budget) data.budget = parseFloat(data.budget);
+            if (data.impressionGoal) data.impressionGoal = parseInt(data.impressionGoal);
+            if (data.clickGoal) data.clickGoal = parseInt(data.clickGoal);
+
+            const isEdit = !!data.id;
+            const url = isEdit ? '/banners/api/campaigns/' + data.id : '/banners/api/campaigns';
+            const method = isEdit ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    window.location.href = '/banners/campaigns';
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+    </script>
+</body>
+
+</html>

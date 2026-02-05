@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Placements - FNPulse Admin</title>
+    <link rel="stylesheet" href="/public/css/admin.css">
+    <link rel="stylesheet" href="/public/css/banner-admin.css">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <%- include('partials/sidebar', { page: 'banners' }) %>
+
+            <main class="main-content">
+                <div class="content-header">
+                    <h1>📍 Ad Placements</h1>
+                    <a href="/banners/placements/new" class="btn btn-primary">+ New Placement</a>
+                </div>
+
+                <p class="section-description">
+                    Manage where ads appear on your website. Each placement defines a specific location where banners
+                    can be displayed.
+                </p>
+
+                <% if (placements.length===0) { %>
+                    <div class="empty-state">
+                        <p>No placements configured. Create your first placement to start displaying ads.</p>
+                        <a href="/banners/placements/new" class="btn btn-primary">Create First Placement</a>
+                    </div>
+                    <% } else { %>
+                        <div class="placements-table">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Status</th>
+                                        <th>Placement</th>
+                                        <th>Page Type</th>
+                                        <th>Position</th>
+                                        <th>Allowed Sizes</th>
+                                        <th>Banners</th>
+                                        <th>Impressions</th>
+                                        <th>CTR</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% placements.forEach(placement=> { %>
+                                        <tr class="<%= placement.enabled ? '' : 'disabled-row' %>">
+                                            <td>
+                                                <span
+                                                    class="status-indicator <%= placement.enabled ? 'status-active' : 'status-inactive' %>"></span>
+                                            </td>
+                                            <td>
+                                                <div class="placement-info">
+                                                    <strong>
+                                                        <%= placement.name %>
+                                                    </strong>
+                                                    <% if (placement.description) { %>
+                                                        <small>
+                                                            <%= placement.description %>
+                                                        </small>
+                                                        <% } %>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="page-type-badge">
+                                                    <%= placement.pageType %>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <%= placement.position %>
+                                            </td>
+                                            <td>
+                                                <div class="size-tags">
+                                                    <% (placement.allowedSizes || []).forEach(size=> { %>
+                                                        <span class="size-tag">
+                                                            <%= BANNER_SIZES[size]?.label || size %>
+                                                        </span>
+                                                        <% }); %>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="banner-count">
+                                                    <%= placement.stats?.activeBanners || 0 %> / <%=
+                                                            placement.maxBanners %>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <%= (placement.stats?.totalImpressions || 0).toLocaleString() %>
+                                            </td>
+                                            <td>
+                                                <span
+                                                    class="ctr-badge <%= parseFloat(placement.stats?.ctr || 0) >= 1 ? 'ctr-good' : '' %>">
+                                                    <%= placement.stats?.ctr || 0 %>%
+                                                </span>
+                                            </td>
+                                            <td class="actions-cell">
+                                                <div class="action-buttons">
+                                                    <a href="/banners/placements/edit/<%= placement.id %>"
+                                                        class="btn btn-icon" title="Edit">✏️</a>
+                                                    <button onclick="togglePlacement('<%= placement.id %>')"
+                                                        class="btn btn-icon"
+                                                        title="<%= placement.enabled ? 'Disable' : 'Enable' %>">
+                                                        <%= placement.enabled ? '🔴' : '🟢' %>
+                                                    </button>
+                                                    <button onclick="copyEmbedCode('<%= placement.id %>')"
+                                                        class="btn btn-icon" title="Copy Embed Code">📋</button>
+                                                    <button
+                                                        onclick="deletePlacement('<%= placement.id %>', '<%= placement.name %>')"
+                                                        class="btn btn-icon btn-danger" title="Delete">🗑️</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                        <% } %>
+
+                            <!-- Placement Preview Grid -->
+                            <div class="card" style="margin-top: 2rem;">
+                                <h3>📐 Size Reference</h3>
+                                <div class="size-preview-grid">
+                                    <% Object.entries(BANNER_SIZES).forEach(([key, size])=> { %>
+                                        <div class="size-preview-item">
+                                            <div class="size-visual"
+                                                style="width: <%= Math.min(size.width / 4, 180) %>px; height: <%= Math.min(size.height / 4, 150) %>px;">
+                                                <%= size.width %>x<%= size.height %>
+                                            </div>
+                                            <span class="size-name">
+                                                <%= size.label %>
+                                            </span>
+                                        </div>
+                                        <% }); %>
+                                </div>
+                            </div>
+
+                            <div class="back-link">
+                                <a href="/banners" class="btn">← Back to Dashboard</a>
+                            </div>
+            </main>
+    </div>
+
+    <script>
+        async function togglePlacement(id) {
+            try {
+                const response = await fetch('/banners/api/placements/' + id + '/toggle', {
+                    method: 'PUT'
+                });
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function copyEmbedCode(id) {
+            try {
+                const response = await fetch('/banners/api/placements/' + id + '/embed');
+                const data = await response.json();
+
+                if (data.embedCode) {
+                    await navigator.clipboard.writeText(data.embedCode);
+                    alert('Embed code copied to clipboard!');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function deletePlacement(id, name) {
+            if (!confirm('Delete placement "' + name + '"?\n\nNote: You must remove assigned banners first.')) {
+                return;
+            }
+            try {
+                const response = await fetch('/banners/api/placements/' + id, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

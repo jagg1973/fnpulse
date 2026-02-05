@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clients - FNPulse Admin</title>
+    <link rel="stylesheet" href="/public/css/admin.css">
+    <link rel="stylesheet" href="/public/css/banner-admin.css">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <%- include('partials/sidebar', { page: 'banners' }) %>
+
+            <main class="main-content">
+                <div class="content-header">
+                    <h1>👥 Clients & Advertisers</h1>
+                    <a href="/banners/clients/new" class="btn btn-primary">+ New Client</a>
+                </div>
+
+                <% if (clients.length===0) { %>
+                    <div class="empty-state">
+                        <p>No clients yet. Add your first advertiser to get started.</p>
+                        <a href="/banners/clients/new" class="btn btn-primary">Add First Client</a>
+                    </div>
+                    <% } else { %>
+                        <div class="clients-grid">
+                            <% clients.forEach(client=> { %>
+                                <div class="client-card">
+                                    <div class="client-header">
+                                        <div class="client-avatar">
+                                            <%= client.name.charAt(0).toUpperCase() %>
+                                        </div>
+                                        <div class="client-info">
+                                            <h3>
+                                                <%= client.name %>
+                                            </h3>
+                                            <% if (client.company) { %>
+                                                <span class="client-company">
+                                                    <%= client.company %>
+                                                </span>
+                                                <% } %>
+                                        </div>
+                                        <span class="client-status status-<%= client.status %>">
+                                            <%= client.status %>
+                                        </span>
+                                    </div>
+
+                                    <div class="client-stats">
+                                        <div class="stat">
+                                            <span class="stat-value">
+                                                <%= client.stats?.totalBanners || 0 %>
+                                            </span>
+                                            <span class="stat-label">Banners</span>
+                                        </div>
+                                        <div class="stat">
+                                            <span class="stat-value">
+                                                <%= client.stats?.activeBanners || 0 %>
+                                            </span>
+                                            <span class="stat-label">Active</span>
+                                        </div>
+                                        <div class="stat">
+                                            <span class="stat-value">
+                                                <%= client.stats?.totalCampaigns || 0 %>
+                                            </span>
+                                            <span class="stat-label">Campaigns</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="client-metrics">
+                                        <div class="metric">
+                                            <span class="metric-icon">👁️</span>
+                                            <span>
+                                                <%= (client.stats?.totalImpressions || 0).toLocaleString() %>
+                                                    impressions
+                                            </span>
+                                        </div>
+                                        <div class="metric">
+                                            <span class="metric-icon">👆</span>
+                                            <span>
+                                                <%= (client.stats?.totalClicks || 0).toLocaleString() %> clicks
+                                            </span>
+                                        </div>
+                                        <div class="metric">
+                                            <span class="metric-icon">📊</span>
+                                            <span>
+                                                <%= client.stats?.ctr || 0 %>% CTR
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <% if (client.email || client.website) { %>
+                                        <div class="client-contact">
+                                            <% if (client.email) { %>
+                                                <a href="mailto:<%= client.email %>" class="contact-link">✉️ <%=
+                                                        client.email %></a>
+                                                <% } %>
+                                                    <% if (client.website) { %>
+                                                        <a href="<%= client.website %>" target="_blank"
+                                                            class="contact-link">🌐 Website</a>
+                                                        <% } %>
+                                        </div>
+                                        <% } %>
+
+                                            <div class="client-actions">
+                                                <a href="/banners/clients/edit/<%= client.id %>"
+                                                    class="btn btn-small">Edit</a>
+                                                <a href="/banners/analytics?client=<%= client.id %>"
+                                                    class="btn btn-small">Analytics</a>
+                                                <button onclick="deleteClient('<%= client.id %>', '<%= client.name %>')"
+                                                    class="btn btn-small btn-danger">Delete</button>
+                                            </div>
+                                </div>
+                                <% }); %>
+                        </div>
+                        <% } %>
+
+                            <div class="back-link">
+                                <a href="/banners" class="btn">← Back to Dashboard</a>
+                            </div>
+            </main>
+    </div>
+
+    <script>
+        async function deleteClient(id, name) {
+            if (!confirm('Delete client "' + name + '"? This cannot be undone.\n\nNote: You must remove or reassign all banners first.')) {
+                return;
+            }
+            try {
+                const response = await fetch('/banners/api/clients/' + id, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

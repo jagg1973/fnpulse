@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= mode==='edit' ? 'Edit' : 'New' %> Banner - FNPulse Admin
+    </title>
+    <link rel="stylesheet" href="/public/css/admin.css">
+    <link rel="stylesheet" href="/public/css/banner-admin.css">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <%- include('partials/sidebar', { page: 'banners' }) %>
+
+            <main class="main-content">
+                <div class="content-header">
+                    <h1>
+                        <%= mode==='edit' ? '✏️ Edit Banner' : '➕ Create New Banner' %>
+                    </h1>
+                    <a href="/banners/list" class="btn">← Back to Banners</a>
+                </div>
+
+                <form id="bannerForm" class="editor-form banner-editor">
+                    <!-- Basic Info Section -->
+                    <div class="form-section">
+                        <h3>📋 Basic Information</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name">Banner Name *</label>
+                                <input type="text" id="name" name="name" required value="<%= banner?.name || '' %>"
+                                    placeholder="e.g., Summer Sale Leaderboard">
+                            </div>
+                            <div class="form-group">
+                                <label for="internalId">Internal ID</label>
+                                <input type="text" id="internalId" name="internalId"
+                                    value="<%= banner?.internalId || '' %>" placeholder="e.g., CAMP-2026-001">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="clientId">Client/Advertiser</label>
+                                <select id="clientId" name="clientId">
+                                    <option value="">-- No Client --</option>
+                                    <% clients.forEach(client=> { %>
+                                        <option value="<%= client.id %>" <%=banner?.clientId===client.id ? 'selected'
+                                            : '' %>>
+                                            <%= client.name %>
+                                        </option>
+                                        <% }); %>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="campaignId">Campaign</label>
+                                <select id="campaignId" name="campaignId">
+                                    <option value="">-- No Campaign --</option>
+                                    <% campaigns.forEach(campaign=> { %>
+                                        <option value="<%= campaign.id %>" <%=banner?.campaignId===campaign.id
+                                            ? 'selected' : '' %>>
+                                            <%= campaign.name %>
+                                        </option>
+                                        <% }); %>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="status">Status *</label>
+                                <select id="status" name="status" required>
+                                    <option value="draft" <%=banner?.status==='draft' ? 'selected' : '' %>>Draft
+                                    </option>
+                                    <option value="active" <%=banner?.status==='active' ? 'selected' : '' %>>Active
+                                    </option>
+                                    <option value="paused" <%=banner?.status==='paused' ? 'selected' : '' %>>Paused
+                                    </option>
+                                    <option value="scheduled" <%=banner?.status==='scheduled' ? 'selected' : '' %>
+                                        >Scheduled</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="priority">Priority (1-10)</label>
+                                <input type="number" id="priority" name="priority" min="1" max="10"
+                                    value="<%= banner?.priority || 5 %>">
+                                <small>Higher priority = more likely to be shown</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Creative Section -->
+                    <div class="form-section">
+                        <h3>🎨 Creative Assets</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="creativeType">Creative Type *</label>
+                                <select id="creativeType" name="creativeType" required
+                                    onchange="updateCreativeFields()">
+                                    <option value="image" <%=banner?.creativeType==='image' ? 'selected' : '' %>>Image
+                                        Banner</option>
+                                    <option value="html" <%=banner?.creativeType==='html' ? 'selected' : '' %>
+                                        >HTML5/Code</option>
+                                    <option value="video" <%=banner?.creativeType==='video' ? 'selected' : '' %>>Video
+                                        (MP4)</option>
+                                    <option value="adsense" <%=banner?.creativeType==='adsense' ? 'selected' : '' %>
+                                        >Google AdSense</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="size">Banner Size *</label>
+                                <select id="size" name="size" required onchange="updateSizePreview()">
+                                    <% Object.entries(BANNER_SIZES).forEach(([key, size])=> { %>
+                                        <option value="<%= key %>" <%=banner?.size===key ? 'selected' : '' %>>
+                                            <%= size.label %> (<%= size.width %>x<%= size.height %>)
+                                        </option>
+                                        <% }); %>
+                                            <option value="custom" <%=banner?.size==='custom' ? 'selected' : '' %>
+                                                >Custom Size</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row custom-size-row" style="display: none;">
+                            <div class="form-group">
+                                <label for="customWidth">Custom Width (px)</label>
+                                <input type="number" id="customWidth" name="customWidth"
+                                    value="<%= banner?.customWidth || '' %>" min="50" max="2000">
+                            </div>
+                            <div class="form-group">
+                                <label for="customHeight">Custom Height (px)</label>
+                                <input type="number" id="customHeight" name="customHeight"
+                                    value="<%= banner?.customHeight || '' %>" min="50" max="2000">
+                            </div>
+                        </div>
+
+                        <!-- Image Upload -->
+                        <div id="imageUploadSection" class="creative-section">
+                            <div class="form-group">
+                                <label>Banner Image</label>
+                                <div class="upload-area" id="uploadArea">
+                                    <div class="upload-content">
+                                        <span class="upload-icon">📤</span>
+                                        <span>Drag & drop image here or click to browse</span>
+                                        <small>Supported: JPG, PNG, GIF, WebP, SVG (max 10MB)</small>
+                                    </div>
+                                    <input type="file" id="assetFile" accept="image/*,.svg"
+                                        onchange="handleFileUpload(event)">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="assetUrl">Or Enter Image URL</label>
+                                <input type="text" id="assetUrl" name="assetUrl" value="<%= banner?.assetUrl || '' %>"
+                                    placeholder="img/banners/banner.jpg">
+                            </div>
+                            <% if (banner?.assetUrl) { %>
+                                <div class="preview-container">
+                                    <label>Current Preview</label>
+                                    <div class="banner-preview">
+                                        <img src="/<%= banner.assetUrl %>" alt="Banner Preview" id="bannerPreview">
+                                    </div>
+                                </div>
+                                <% } %>
+                        </div>
+
+                        <!-- HTML Code -->
+                        <div id="htmlCodeSection" class="creative-section" style="display: none;">
+                            <div class="form-group full-width">
+                                <label for="htmlCode">HTML/JavaScript Code *</label>
+                                <textarea id="htmlCode" name="htmlCode" rows="10"
+                                    placeholder="Paste your HTML5 banner code or AdSense code here..."><%= banner?.htmlCode || '' %></textarea>
+                                <small>Include complete HTML code with any required scripts</small>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="altText">Alt Text</label>
+                            <input type="text" id="altText" name="altText"
+                                value="<%= banner?.altText || 'Advertisement' %>"
+                                placeholder="Advertisement description">
+                        </div>
+                    </div>
+
+                    <!-- Click/Target Section -->
+                    <div class="form-section">
+                        <h3>🔗 Click-Through Settings</h3>
+                        <div class="form-group full-width">
+                            <label for="targetUrl">Target URL</label>
+                            <input type="url" id="targetUrl" name="targetUrl" value="<%= banner?.targetUrl || '' %>"
+                                placeholder="https://advertiser-website.com/landing-page">
+                        </div>
+
+                        <div class="utm-builder">
+                            <h4>UTM Parameters</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="utmSource">utm_source</label>
+                                    <input type="text" id="utmSource" name="utmSource"
+                                        value="<%= banner?.utmSource || 'fnpulse' %>">
+                                </div>
+                                <div class="form-group">
+                                    <label for="utmMedium">utm_medium</label>
+                                    <input type="text" id="utmMedium" name="utmMedium"
+                                        value="<%= banner?.utmMedium || 'banner' %>">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="utmCampaign">utm_campaign</label>
+                                    <input type="text" id="utmCampaign" name="utmCampaign"
+                                        value="<%= banner?.utmCampaign || '' %>">
+                                </div>
+                                <div class="form-group">
+                                    <label for="utmContent">utm_content</label>
+                                    <input type="text" id="utmContent" name="utmContent"
+                                        value="<%= banner?.utmContent || '' %>">
+                                </div>
+                            </div>
+                            <div class="utm-preview">
+                                <label>Full URL Preview:</label>
+                                <code id="utmPreview"></code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Placements Section -->
+                    <div class="form-section">
+                        <h3>📍 Placements</h3>
+                        <p class="section-help">Select where this banner should appear on the site.</p>
+                        <div class="placements-grid">
+                            <% placements.forEach(placement=> { %>
+                                <label class="placement-option">
+                                    <input type="checkbox" name="placements" value="<%= placement.id %>"
+                                        <%=banner?.placements?.includes(placement.id) ? 'checked' : '' %>>
+                                    <div class="placement-card">
+                                        <strong>
+                                            <%= placement.name %>
+                                        </strong>
+                                        <small>
+                                            <%= placement.description || '' %>
+                                        </small>
+                                        <span class="placement-sizes">
+                                            <% placement.allowedSizes?.forEach(size=> { %>
+                                                <span class="size-tag">
+                                                    <%= size %>
+                                                </span>
+                                                <% }); %>
+                                        </span>
+                                    </div>
+                                </label>
+                                <% }); %>
+                        </div>
+                    </div>
+
+                    <!-- Scheduling Section -->
+                    <div class="form-section">
+                        <h3>📅 Scheduling</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="startDate">Start Date</label>
+                                <input type="datetime-local" id="startDate" name="startDate"
+                                    value="<%= banner?.startDate ? new Date(banner.startDate).toISOString().slice(0, 16) : '' %>">
+                                <small>Leave empty for immediate start</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="endDate">End Date</label>
+                                <input type="datetime-local" id="endDate" name="endDate"
+                                    value="<%= banner?.endDate ? new Date(banner.endDate).toISOString().slice(0, 16) : '' %>">
+                                <small>Leave empty for no end date</small>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Time Windows (Optional)</label>
+                            <div id="timeWindowsContainer">
+                                <% if (banner?.timeWindows?.length> 0) { %>
+                                    <% banner.timeWindows.forEach((tw, i)=> { %>
+                                        <div class="time-window-row">
+                                            <input type="time" name="timeWindowStart[]" value="<%= tw.start %>">
+                                            <span>to</span>
+                                            <input type="time" name="timeWindowEnd[]" value="<%= tw.end %>">
+                                            <button type="button" onclick="removeTimeWindow(this)"
+                                                class="btn btn-icon btn-danger">✕</button>
+                                        </div>
+                                        <% }); %>
+                                            <% } %>
+                            </div>
+                            <button type="button" onclick="addTimeWindow()" class="btn btn-small">+ Add Time
+                                Window</button>
+                        </div>
+                    </div>
+
+                    <!-- Targeting Section -->
+                    <div class="form-section">
+                        <h3>🎯 Targeting</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="deviceTargeting">Device Targeting</label>
+                                <select id="deviceTargeting" name="deviceTargeting">
+                                    <option value="all" <%=banner?.deviceTargeting==='all' ? 'selected' : '' %>>All
+                                        Devices</option>
+                                    <option value="desktop" <%=banner?.deviceTargeting==='desktop' ? 'selected' : '' %>
+                                        >Desktop Only</option>
+                                    <option value="mobile" <%=banner?.deviceTargeting==='mobile' ? 'selected' : '' %>
+                                        >Mobile Only</option>
+                                    <option value="tablet" <%=banner?.deviceTargeting==='tablet' ? 'selected' : '' %>
+                                        >Tablet Only</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="frequencyCap">Frequency Cap (per user/day)</label>
+                                <input type="number" id="frequencyCap" name="frequencyCap" min="0"
+                                    value="<%= banner?.frequencyCap || '' %>" placeholder="Leave empty for unlimited">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Page Targeting</label>
+                            <div class="checkbox-group">
+                                <label>
+                                    <input type="checkbox" name="pageTargeting" value="all"
+                                        <%=banner?.pageTargeting?.includes('all') ? 'checked' : '' %>>
+                                    All Pages
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="pageTargeting" value="homepage"
+                                        <%=banner?.pageTargeting?.includes('homepage') ? 'checked' : '' %>>
+                                    Homepage
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="pageTargeting" value="article"
+                                        <%=banner?.pageTargeting?.includes('article') ? 'checked' : '' %>>
+                                    Articles
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="pageTargeting" value="category"
+                                        <%=banner?.pageTargeting?.includes('category') ? 'checked' : '' %>>
+                                    Category Pages
+                                </label>
+                                <label>
+                                    <input type="checkbox" name="pageTargeting" value="search"
+                                        <%=banner?.pageTargeting?.includes('search') ? 'checked' : '' %>>
+                                    Search Results
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="impressionLimit">Impression Limit</label>
+                                <input type="number" id="impressionLimit" name="impressionLimit" min="0"
+                                    value="<%= banner?.impressionLimit || '' %>"
+                                    placeholder="Leave empty for unlimited">
+                            </div>
+                            <div class="form-group">
+                                <label for="clickLimit">Click Limit</label>
+                                <input type="number" id="clickLimit" name="clickLimit" min="0"
+                                    value="<%= banner?.clickLimit || '' %>" placeholder="Leave empty for unlimited">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="abTestGroup">A/B Test Group</label>
+                            <select id="abTestGroup" name="abTestGroup">
+                                <option value="">-- No A/B Testing --</option>
+                                <option value="A" <%=banner?.abTestGroup==='A' ? 'selected' : '' %>>Group A (50%)
+                                </option>
+                                <option value="B" <%=banner?.abTestGroup==='B' ? 'selected' : '' %>>Group B (50%)
+                                </option>
+                            </select>
+                            <small>Split traffic between banners in same placement</small>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <%= mode==='edit' ? '💾 Update Banner' : '✨ Create Banner' %>
+                        </button>
+                        <% if (mode==='edit' ) { %>
+                            <button type="button" onclick="duplicateBanner()" class="btn btn-secondary">
+                                📋 Duplicate
+                            </button>
+                            <% } %>
+                                <a href="/banners/list" class="btn">Cancel</a>
+                    </div>
+                </form>
+            </main>
+    </div>
+
+    <script>
+        const isEditMode = <%= mode === 'edit' ? 'true' : 'false' %>;
+        const bannerId = '<%= banner?.id || '' %>';
+        const BANNER_SIZES = <% - JSON.stringify(BANNER_SIZES) %>;
+
+        // Creative type toggle
+        function updateCreativeFields() {
+            const type = document.getElementById('creativeType').value;
+            const imageSection = document.getElementById('imageUploadSection');
+            const htmlSection = document.getElementById('htmlCodeSection');
+
+            if (type === 'image' || type === 'video') {
+                imageSection.style.display = 'block';
+                htmlSection.style.display = 'none';
+            } else {
+                imageSection.style.display = 'none';
+                htmlSection.style.display = 'block';
+            }
+        }
+
+        // Custom size toggle
+        function updateSizePreview() {
+            const size = document.getElementById('size').value;
+            const customRow = document.querySelector('.custom-size-row');
+            customRow.style.display = size === 'custom' ? 'flex' : 'none';
+        }
+
+        // UTM preview
+        function updateUtmPreview() {
+            const url = document.getElementById('targetUrl').value;
+            if (!url) {
+                document.getElementById('utmPreview').textContent = '(enter target URL)';
+                return;
+            }
+
+            try {
+                const urlObj = new URL(url);
+                const source = document.getElementById('utmSource').value;
+                const medium = document.getElementById('utmMedium').value;
+                const campaign = document.getElementById('utmCampaign').value;
+                const content = document.getElementById('utmContent').value;
+
+                if (source) urlObj.searchParams.set('utm_source', source);
+                if (medium) urlObj.searchParams.set('utm_medium', medium);
+                if (campaign) urlObj.searchParams.set('utm_campaign', campaign);
+                if (content) urlObj.searchParams.set('utm_content', content);
+
+                document.getElementById('utmPreview').textContent = urlObj.toString();
+            } catch {
+                document.getElementById('utmPreview').textContent = '(invalid URL)';
+            }
+        }
+
+        // Time windows
+        function addTimeWindow() {
+            const container = document.getElementById('timeWindowsContainer');
+            const row = document.createElement('div');
+            row.className = 'time-window-row';
+            row.innerHTML = `
+                <input type="time" name="timeWindowStart[]" value="09:00">
+                <span>to</span>
+                <input type="time" name="timeWindowEnd[]" value="17:00">
+                <button type="button" onclick="removeTimeWindow(this)" class="btn btn-icon btn-danger">✕</button>
+            `;
+            container.appendChild(row);
+        }
+
+        function removeTimeWindow(btn) {
+            btn.closest('.time-window-row').remove();
+        }
+
+        // File upload
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('asset', file);
+
+            try {
+                const response = await fetch('/banners/api/banners/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    document.getElementById('assetUrl').value = result.path;
+
+                    // Update preview
+                    let preview = document.getElementById('bannerPreview');
+                    if (!preview) {
+                        const container = document.createElement('div');
+                        container.className = 'preview-container';
+                        container.innerHTML = `
+                            <label>Preview</label>
+                            <div class="banner-preview">
+                                <img src="${result.url}" alt="Banner Preview" id="bannerPreview">
+                            </div>
+                        `;
+                        document.getElementById('imageUploadSection').appendChild(container);
+                    } else {
+                        preview.src = result.url;
+                    }
+                } else {
+                    const error = await response.json();
+                    alert('Upload failed: ' + error.message);
+                }
+            } catch (error) {
+                alert('Upload failed: ' + error.message);
+            }
+        }
+
+        // Drag and drop
+        const uploadArea = document.getElementById('uploadArea');
+        if (uploadArea) {
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const file = e.dataTransfer.files[0];
+                if (file) {
+                    document.getElementById('assetFile').files = e.dataTransfer.files;
+                    handleFileUpload({ target: { files: [file] } });
+                }
+            });
+        }
+
+        // Form submission
+        document.getElementById('bannerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const placements = Array.from(document.querySelectorAll('input[name="placements"]:checked'))
+                .map(cb => cb.value);
+            const pageTargeting = Array.from(document.querySelectorAll('input[name="pageTargeting"]:checked'))
+                .map(cb => cb.value);
+
+            // Collect time windows
+            const timeWindowStarts = document.querySelectorAll('input[name="timeWindowStart[]"]');
+            const timeWindowEnds = document.querySelectorAll('input[name="timeWindowEnd[]"]');
+            const timeWindows = [];
+            timeWindowStarts.forEach((start, i) => {
+                if (start.value && timeWindowEnds[i]?.value) {
+                    timeWindows.push({ start: start.value, end: timeWindowEnds[i].value });
+                }
+            });
+
+            const formData = {
+                name: document.getElementById('name').value,
+                internalId: document.getElementById('internalId').value,
+                clientId: document.getElementById('clientId').value || null,
+                campaignId: document.getElementById('campaignId').value || null,
+                status: document.getElementById('status').value,
+                priority: parseInt(document.getElementById('priority').value) || 5,
+
+                creativeType: document.getElementById('creativeType').value,
+                size: document.getElementById('size').value,
+                customWidth: document.getElementById('customWidth').value || null,
+                customHeight: document.getElementById('customHeight').value || null,
+                assetUrl: document.getElementById('assetUrl').value,
+                htmlCode: document.getElementById('htmlCode').value,
+                altText: document.getElementById('altText').value,
+
+                targetUrl: document.getElementById('targetUrl').value,
+                utmSource: document.getElementById('utmSource').value,
+                utmMedium: document.getElementById('utmMedium').value,
+                utmCampaign: document.getElementById('utmCampaign').value,
+                utmContent: document.getElementById('utmContent').value,
+
+                placements,
+
+                startDate: document.getElementById('startDate').value || null,
+                endDate: document.getElementById('endDate').value || null,
+                timeWindows,
+
+                pageTargeting: pageTargeting.length > 0 ? pageTargeting : ['all'],
+                deviceTargeting: document.getElementById('deviceTargeting').value,
+                frequencyCap: document.getElementById('frequencyCap').value || null,
+                impressionLimit: document.getElementById('impressionLimit').value || null,
+                clickLimit: document.getElementById('clickLimit').value || null,
+                abTestGroup: document.getElementById('abTestGroup').value || null
+            };
+
+            try {
+                const url = isEditMode ? '/banners/api/banners/' + bannerId : '/banners/api/banners';
+                const method = isEditMode ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    window.location.href = '/banners/list';
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+
+        async function duplicateBanner() {
+            try {
+                const response = await fetch('/banners/api/banners/' + bannerId + '/duplicate', {
+                    method: 'POST'
+                });
+                if (response.ok) {
+                    const result = await response.json();
+                    window.location.href = '/banners/edit/' + result.banner.id;
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Initialize
+        updateCreativeFields();
+        updateSizePreview();
+        updateUtmPreview();
+
+        // UTM preview updates
+        ['targetUrl', 'utmSource', 'utmMedium', 'utmCampaign', 'utmContent'].forEach(id => {
+            document.getElementById(id)?.addEventListener('input', updateUtmPreview);
+        });
+    </script>
+</body>
+
+</html>

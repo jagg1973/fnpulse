@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Banners - FNPulse Admin</title>
+    <link rel="stylesheet" href="/public/css/admin.css">
+    <link rel="stylesheet" href="/public/css/banner-admin.css">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <%- include('partials/sidebar', { page: 'banners' }) %>
+
+            <main class="main-content">
+                <div class="content-header">
+                    <h1>🖼️ All Banners</h1>
+                    <a href="/banners/new" class="btn btn-primary">+ New Banner</a>
+                </div>
+
+                <!-- Filters -->
+                <div class="filters-bar">
+                    <form id="filterForm" class="filter-form">
+                        <div class="filter-group">
+                            <label for="statusFilter">Status</label>
+                            <select id="statusFilter" name="status" onchange="applyFilters()">
+                                <option value="">All Statuses</option>
+                                <option value="active" <%=filters.status==='active' ? 'selected' : '' %>>Active</option>
+                                <option value="paused" <%=filters.status==='paused' ? 'selected' : '' %>>Paused</option>
+                                <option value="draft" <%=filters.status==='draft' ? 'selected' : '' %>>Draft</option>
+                                <option value="expired" <%=filters.status==='expired' ? 'selected' : '' %>>Expired
+                                </option>
+                                <option value="scheduled" <%=filters.status==='scheduled' ? 'selected' : '' %>>Scheduled
+                                </option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="clientFilter">Client</label>
+                            <select id="clientFilter" name="client" onchange="applyFilters()">
+                                <option value="">All Clients</option>
+                                <% clients.forEach(client=> { %>
+                                    <option value="<%= client.id %>" <%=filters.clientId===client.id ? 'selected' : ''
+                                        %>><%= client.name %>
+                                    </option>
+                                    <% }); %>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="placementFilter">Placement</label>
+                            <select id="placementFilter" name="placement" onchange="applyFilters()">
+                                <option value="">All Placements</option>
+                                <% placements.forEach(placement=> { %>
+                                    <option value="<%= placement.id %>" <%=filters.placementId===placement.id
+                                        ? 'selected' : '' %>><%= placement.name %>
+                                    </option>
+                                    <% }); %>
+                            </select>
+                        </div>
+                        <button type="button" onclick="clearFilters()" class="btn btn-small">Clear</button>
+                    </form>
+                </div>
+
+                <!-- Banners Table -->
+                <% if (banners.length===0) { %>
+                    <div class="empty-state">
+                        <p>No banners found matching your criteria.</p>
+                        <a href="/banners/new" class="btn btn-primary">Create New Banner</a>
+                    </div>
+                    <% } else { %>
+                        <div class="banner-table-container">
+                            <table class="data-table banner-table">
+                                <thead>
+                                    <tr>
+                                        <th class="col-checkbox">
+                                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                                        </th>
+                                        <th class="col-status">Status</th>
+                                        <th class="col-preview">Preview</th>
+                                        <th class="col-name">Banner</th>
+                                        <th class="col-size">Size</th>
+                                        <th class="col-client">Client</th>
+                                        <th class="col-placements">Placements</th>
+                                        <th class="col-schedule">Schedule</th>
+                                        <th class="col-priority">Priority</th>
+                                        <th class="col-actions">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% banners.forEach(banner=> {
+                                        const client = clients.find(c => c.id === banner.clientId);
+                                        const bannerPlacements = placements.filter(p =>
+                                        banner.placements?.includes(p.id));
+                                        %>
+                                        <tr class="banner-row status-<%= banner.status %>">
+                                            <td>
+                                                <input type="checkbox" class="banner-checkbox" value="<%= banner.id %>">
+                                            </td>
+                                            <td>
+                                                <span class="status-badge status-<%= banner.status %>">
+                                                    <%= banner.status %>
+                                                </span>
+                                            </td>
+                                            <td class="preview-cell">
+                                                <% if (banner.creativeType==='image' && banner.assetUrl) { %>
+                                                    <div class="banner-thumbnail">
+                                                        <img src="/<%= banner.assetUrl %>" alt="<%= banner.name %>">
+                                                    </div>
+                                                    <% } else { %>
+                                                        <div class="banner-thumbnail placeholder">
+                                                            <span>
+                                                                <%= banner.creativeType==='html' ? 'HTML' :
+                                                                    banner.creativeType==='video' ? '🎬' : '📢' %>
+                                                            </span>
+                                                        </div>
+                                                        <% } %>
+                                            </td>
+                                            <td>
+                                                <div class="banner-info">
+                                                    <strong>
+                                                        <%= banner.name %>
+                                                    </strong>
+                                                    <% if (banner.internalId) { %>
+                                                        <small class="internal-id">
+                                                            <%= banner.internalId %>
+                                                        </small>
+                                                        <% } %>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="size-badge">
+                                                    <%= BANNER_SIZES[banner.size]?.label || banner.size %>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <% if (client) { %>
+                                                    <a href="/banners/clients/edit/<%= client.id %>">
+                                                        <%= client.name %>
+                                                    </a>
+                                                    <% } else { %>
+                                                        <span class="text-muted">-</span>
+                                                        <% } %>
+                                            </td>
+                                            <td>
+                                                <% if (bannerPlacements.length> 0) { %>
+                                                    <div class="placement-tags">
+                                                        <% bannerPlacements.slice(0, 2).forEach(p=> { %>
+                                                            <span class="placement-tag">
+                                                                <%= p.name %>
+                                                            </span>
+                                                            <% }); %>
+                                                                <% if (bannerPlacements.length> 2) { %>
+                                                                    <span class="placement-more">+<%=
+                                                                            bannerPlacements.length - 2 %></span>
+                                                                    <% } %>
+                                                    </div>
+                                                    <% } else { %>
+                                                        <span class="text-muted">None</span>
+                                                        <% } %>
+                                            </td>
+                                            <td>
+                                                <% if (banner.startDate || banner.endDate) { %>
+                                                    <div class="schedule-info">
+                                                        <% if (banner.startDate) { %>
+                                                            <small>Start: <%= new
+                                                                    Date(banner.startDate).toLocaleDateString() %>
+                                                                    </small>
+                                                            <% } %>
+                                                                <% if (banner.endDate) { %>
+                                                                    <small>End: <%= new
+                                                                            Date(banner.endDate).toLocaleDateString() %>
+                                                                            </small>
+                                                                    <% } %>
+                                                    </div>
+                                                    <% } else { %>
+                                                        <span class="text-muted">Always</span>
+                                                        <% } %>
+                                            </td>
+                                            <td>
+                                                <span
+                                                    class="priority-badge priority-<%= banner.priority <= 3 ? 'low' : banner.priority <= 7 ? 'medium' : 'high' %>">
+                                                    <%= banner.priority %>
+                                                </span>
+                                            </td>
+                                            <td class="actions-cell">
+                                                <div class="action-buttons">
+                                                    <a href="/banners/edit/<%= banner.id %>" class="btn btn-icon"
+                                                        title="Edit">✏️</a>
+                                                    <button onclick="toggleBanner('<%= banner.id %>')"
+                                                        class="btn btn-icon"
+                                                        title="<%= banner.status === 'active' ? 'Pause' : 'Activate' %>">
+                                                        <%= banner.status==='active' ? '⏸' : '▶️' %>
+                                                    </button>
+                                                    <button onclick="duplicateBanner('<%= banner.id %>')"
+                                                        class="btn btn-icon" title="Duplicate">📋</button>
+                                                    <button
+                                                        onclick="deleteBanner('<%= banner.id %>', '<%= banner.name %>')"
+                                                        class="btn btn-icon btn-danger" title="Delete">🗑️</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Bulk Actions -->
+                        <div class="bulk-actions" id="bulkActions" style="display: none;">
+                            <span class="selected-count">0 selected</span>
+                            <button onclick="bulkAction('activate')" class="btn btn-small btn-success">Activate</button>
+                            <button onclick="bulkAction('pause')" class="btn btn-small btn-warning">Pause</button>
+                            <button onclick="bulkAction('delete')" class="btn btn-small btn-danger">Delete</button>
+                        </div>
+                        <% } %>
+
+                            <div class="back-link">
+                                <a href="/banners" class="btn">← Back to Dashboard</a>
+                            </div>
+            </main>
+    </div>
+
+    <script>
+        function applyFilters() {
+            const status = document.getElementById('statusFilter').value;
+            const client = document.getElementById('clientFilter').value;
+            const placement = document.getElementById('placementFilter').value;
+
+            const params = new URLSearchParams();
+            if (status) params.set('status', status);
+            if (client) params.set('client', client);
+            if (placement) params.set('placement', placement);
+
+            window.location.href = '/banners/list?' + params.toString();
+        }
+
+        function clearFilters() {
+            window.location.href = '/banners/list';
+        }
+
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll').checked;
+            document.querySelectorAll('.banner-checkbox').forEach(cb => {
+                cb.checked = selectAll;
+            });
+            updateBulkActions();
+        }
+
+        function updateBulkActions() {
+            const checked = document.querySelectorAll('.banner-checkbox:checked').length;
+            const bulkActions = document.getElementById('bulkActions');
+            if (checked > 0) {
+                bulkActions.style.display = 'flex';
+                bulkActions.querySelector('.selected-count').textContent = checked + ' selected';
+            } else {
+                bulkActions.style.display = 'none';
+            }
+        }
+
+        document.querySelectorAll('.banner-checkbox').forEach(cb => {
+            cb.addEventListener('change', updateBulkActions);
+        });
+
+        async function toggleBanner(id) {
+            try {
+                const response = await fetch('/banners/api/banners/' + id + '/toggle', {
+                    method: 'PUT'
+                });
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function duplicateBanner(id) {
+            try {
+                const response = await fetch('/banners/api/banners/' + id + '/duplicate', {
+                    method: 'POST'
+                });
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function deleteBanner(id, name) {
+            if (!confirm('Delete banner "' + name + '"? This cannot be undone.')) {
+                return;
+            }
+            try {
+                const response = await fetch('/banners/api/banners/' + id, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function bulkAction(action) {
+            const selected = Array.from(document.querySelectorAll('.banner-checkbox:checked')).map(cb => cb.value);
+            if (selected.length === 0) return;
+
+            if (action === 'delete' && !confirm('Delete ' + selected.length + ' banner(s)? This cannot be undone.')) {
+                return;
+            }
+
+            for (const id of selected) {
+                try {
+                    if (action === 'delete') {
+                        await fetch('/banners/api/banners/' + id, { method: 'DELETE' });
+                    } else {
+                        await fetch('/banners/api/banners/' + id, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ status: action === 'activate' ? 'active' : 'paused' })
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error processing ' + id + ':', error);
+                }
+            }
+            window.location.reload();
+        }
+    </script>
+</body>
+
+</html>

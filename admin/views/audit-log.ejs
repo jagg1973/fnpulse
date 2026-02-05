@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Log - FNPulse Admin</title>
+    <link rel="stylesheet" href="/public/css/admin.css">
+    <link rel="stylesheet" href="/public/css/banner-admin.css">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <%- include('partials/sidebar', { page: 'banners' }) %>
+
+            <main class="main-content">
+                <div class="content-header">
+                    <h1>📋 Audit Log</h1>
+                </div>
+
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <label>Action Type:</label>
+                        <select id="actionFilter" onchange="filterLogs()">
+                            <option value="">All Actions</option>
+                            <option value="create">Created</option>
+                            <option value="update">Updated</option>
+                            <option value="delete">Deleted</option>
+                            <option value="toggle">Toggled</option>
+                            <option value="duplicate">Duplicated</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Entity Type:</label>
+                        <select id="entityFilter" onchange="filterLogs()">
+                            <option value="">All Types</option>
+                            <option value="banner">Banner</option>
+                            <option value="client">Client</option>
+                            <option value="placement">Placement</option>
+                            <option value="campaign">Campaign</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Date Range:</label>
+                        <input type="date" id="startDate" onchange="filterLogs()">
+                        <span>to</span>
+                        <input type="date" id="endDate" onchange="filterLogs()">
+                    </div>
+                </div>
+
+                <% if (!auditLog || auditLog.length===0) { %>
+                    <div class="empty-state">
+                        <p>No audit log entries found. Actions will be recorded as you manage banners, clients, and
+                            placements.</p>
+                    </div>
+                    <% } else { %>
+                        <table class="data-table" id="auditTable">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Action</th>
+                                    <th>Type</th>
+                                    <th>Entity</th>
+                                    <th>Details</th>
+                                    <th>User</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% auditLog.forEach(entry=> { %>
+                                    <tr data-action="<%= entry.action %>" data-entity="<%= entry.entityType %>"
+                                        data-date="<%= entry.timestamp %>">
+                                        <td>
+                                            <div class="timestamp">
+                                                <span class="date">
+                                                    <%= new Date(entry.timestamp).toLocaleDateString() %>
+                                                </span>
+                                                <span class="time">
+                                                    <%= new Date(entry.timestamp).toLocaleTimeString() %>
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="action-badge action-<%= entry.action %>">
+                                                <% if (entry.action==='create' ) { %>✨ Created
+                                                    <% } else if (entry.action==='update' ) { %>✏️ Updated
+                                                        <% } else if (entry.action==='delete' ) { %>🗑️ Deleted
+                                                            <% } else if (entry.action==='toggle' ) { %>🔀 Toggled
+                                                                <% } else if (entry.action==='duplicate' ) { %>📋
+                                                                    Duplicated
+                                                                    <% } else { %>
+                                                                        <%= entry.action %>
+                                                                            <% } %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="entity-badge entity-<%= entry.entityType %>">
+                                                <% if (entry.entityType==='banner' ) { %>🖼️ Banner
+                                                    <% } else if (entry.entityType==='client' ) { %>👤 Client
+                                                        <% } else if (entry.entityType==='placement' ) { %>📍 Placement
+                                                            <% } else if (entry.entityType==='campaign' ) { %>📦
+                                                                Campaign
+                                                                <% } else { %>
+                                                                    <%= entry.entityType %>
+                                                                        <% } %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <strong>
+                                                <%= entry.entityName || entry.entityId %>
+                                            </strong>
+                                            <% if (entry.entityId) { %>
+                                                <small class="text-muted">
+                                                    <%= entry.entityId.substring(0, 8) %>...
+                                                </small>
+                                                <% } %>
+                                        </td>
+                                        <td>
+                                            <% if (entry.details) { %>
+                                                <button onclick="showDetails(this)" class="btn btn-small btn-link"
+                                                    data-details='<%= JSON.stringify(entry.details) %>'>
+                                                    View Details
+                                                </button>
+                                                <% } else { %>
+                                                    <span class="text-muted">-</span>
+                                                    <% } %>
+                                        </td>
+                                        <td>
+                                            <span class="user-badge">
+                                                <%= entry.user || 'Admin' %>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                            </tbody>
+                        </table>
+
+                        <div class="pagination">
+                            <p class="text-muted">Showing <%= auditLog.length %> entries</p>
+                        </div>
+                        <% } %>
+
+                            <div class="back-link">
+                                <a href="/banners" class="btn">← Back to Dashboard</a>
+                            </div>
+            </main>
+    </div>
+
+    <!-- Details Modal -->
+    <div id="detailsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Change Details</h3>
+                <button onclick="closeModal()" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <pre id="detailsContent"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function filterLogs() {
+            const actionFilter = document.getElementById('actionFilter').value.toLowerCase();
+            const entityFilter = document.getElementById('entityFilter').value.toLowerCase();
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            const rows = document.querySelectorAll('#auditTable tbody tr');
+
+            rows.forEach(row => {
+                const action = row.dataset.action?.toLowerCase() || '';
+                const entity = row.dataset.entity?.toLowerCase() || '';
+                const date = row.dataset.date;
+
+                let show = true;
+
+                if (actionFilter && !action.includes(actionFilter)) {
+                    show = false;
+                }
+                if (entityFilter && entity !== entityFilter) {
+                    show = false;
+                }
+                if (startDate && date < startDate) {
+                    show = false;
+                }
+                if (endDate && date > endDate + 'T23:59:59') {
+                    show = false;
+                }
+
+                row.style.display = show ? '' : 'none';
+            });
+        }
+
+        function showDetails(button) {
+            const details = JSON.parse(button.dataset.details);
+            document.getElementById('detailsContent').textContent = JSON.stringify(details, null, 2);
+            document.getElementById('detailsModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('detailsModal').style.display = 'none';
+        }
+
+        // Close modal on outside click
+        document.getElementById('detailsModal').addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+
+</html>

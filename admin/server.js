@@ -19,6 +19,9 @@ const deployer = require('./utils/deployer');
 const gitDeployer = require('./utils/gitDeployer');
 const fsSync = require('fs');
 
+// Import banner management routes
+const bannerRoutes = require('./bannerRoutes');
+
 // Middleware
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
@@ -51,6 +54,9 @@ app.get('/.well-known/appspecific/com.chrome.devtools.json', (req, res) => {
 // View engine setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
+// Mount banner management routes
+app.use('/banners', bannerRoutes);
 
 // Image upload configuration
 const storage = multer.diskStorage({
